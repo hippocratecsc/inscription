@@ -833,6 +833,8 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
     try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
     arreterAudio();
     cacherBulle();
+    // Intégrée dans l'écran d'affichage (affichage.html) : signaler la fin d'une boucle complète
+    if(i === 0 && idx === scenes.length-1){ try{ if(window.parent !== window) window.parent.postMessage('hcc-demo-fin', '*'); }catch(e){} }
     if(MODE === 'alt' && i === 0 && idx === scenes.length-1) appliquerLangue(LANG === 'fr' ? 'tn' : 'fr');
     const prec = scenes[idx]; idx = i; const s = scenes[i];
     const filmPrec = prec ? +prec.dataset.film : -1, film = +s.dataset.film;
