@@ -98,7 +98,21 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   const auj = ()=>{ const d = new Date(); return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); };
   const ls = { get(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} } };
   const stage = $('stage');
-  function ajuster(){ const s = Math.min(innerWidth/1920, innerHeight/1080); stage.style.transform = 'translate(-50%,-50%) scale('+s+')'; }
+  function ajuster(){
+    // (16/10/2026) Mise à l'échelle robuste pour les navigateurs de boîtier TV (Fully Kiosk) :
+    // on prend la zone RÉELLEMENT visible (visualViewport), et on recalcule régulièrement,
+    // car certaines vues web annoncent d'abord une taille fausse sans signaler de changement.
+    const vv = window.visualViewport, de = document.documentElement;
+    const cand = (a,b,c)=>[a,b,c].filter(x=>x>0);
+    const w = Math.min(...cand(innerWidth, de.clientWidth, vv && vv.width), 1e9);
+    const h = Math.min(...cand(innerHeight, de.clientHeight, vv && vv.height), 1e9);
+    const s = Math.min(w/1920, h/1080);
+    stage.style.left = ((vv ? vv.offsetLeft : 0) + w/2) + 'px';
+    stage.style.top = ((vv ? vv.offsetTop : 0) + h/2) + 'px';
+    stage.style.transform = 'translate(-50%,-50%) scale('+s+')';
+  }
+  if(window.visualViewport){ visualViewport.addEventListener('resize', ajuster); visualViewport.addEventListener('scroll', ajuster); }
+  addEventListener('load', ajuster); setInterval(ajuster, 2000);
   addEventListener('resize', ajuster); ajuster();
   function horloge(){ const d = new Date(); const t = p2(d.getHours())+':'+p2(d.getMinutes()); document.querySelectorAll('.hr').forEach(e=>e.textContent = t); }
   horloge(); setInterval(horloge, 15000);

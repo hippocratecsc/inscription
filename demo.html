@@ -695,9 +695,20 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
   let idx = -1, timers = [], pause = false, jeton = 0;
 
   function ajuster(){
-    const s = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+    // (16/10/2026) Mise à l'échelle robuste pour les navigateurs de boîtier TV (Fully Kiosk) :
+    // on prend la zone RÉELLEMENT visible (visualViewport), et on recalcule régulièrement,
+    // car certaines vues web annoncent d'abord une taille fausse sans signaler de changement.
+    const vv = window.visualViewport, de = document.documentElement;
+    const cand = (a,b,c)=>[a,b,c].filter(x=>x>0);
+    const w = Math.min(...cand(innerWidth, de.clientWidth, vv && vv.width), 1e9);
+    const h = Math.min(...cand(innerHeight, de.clientHeight, vv && vv.height), 1e9);
+    const s = Math.min(w/1920, h/1080);
+    stage.style.left = ((vv ? vv.offsetLeft : 0) + w/2) + 'px';
+    stage.style.top = ((vv ? vv.offsetTop : 0) + h/2) + 'px';
     stage.style.transform = 'translate(-50%,-50%) scale('+s+')';
   }
+  if(window.visualViewport){ visualViewport.addEventListener('resize', ajuster); visualViewport.addEventListener('scroll', ajuster); }
+  addEventListener('load', ajuster); setInterval(ajuster, 2000);
   window.addEventListener('resize', ajuster); ajuster();
 
   // QR d'exemple (motif décoratif, ne renvoie nulle part)
