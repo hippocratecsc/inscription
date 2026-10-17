@@ -61,6 +61,11 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
 .statut{display:inline-block;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:800;background:rgba(242,181,68,.18);color:var(--saffron)}
 .statut.v{background:rgba(93,202,165,.2);color:var(--mint)}
 .statut.r{background:rgba(255,59,92,.15);color:var(--err)}
+.types{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 12px}
+.types button{padding:11px 4px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--cream);font-size:13px;font-weight:700;cursor:pointer}
+.types button[aria-pressed="true"]{background:rgba(93,202,165,.2);border-color:var(--mint)}
+.chk{display:flex;align-items:center;gap:10px;text-transform:none;letter-spacing:0;font-size:15px;font-weight:600;color:var(--cream);background:rgba(255,255,255,.05);border-radius:10px;padding:11px 12px;margin:0 0 8px;cursor:pointer}
+.chk input{width:22px;height:22px;flex:none;-webkit-appearance:checkbox;appearance:auto;padding:0;margin:0;accent-color:var(--mint)}
 </style>
 </head>
 <body>
@@ -206,7 +211,7 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
   function montrerInfo(html){ const z = $('z-acces'); z.classList.remove('hide'); $('z-buv').classList.add('hide'); z.innerHTML = '<div class="ok">'+html+'</div>'; }
 
   let gen = 0;
-  function couperEcoutes(){ gen++; [ecouteDem, ecouteCmd].forEach(r=>{ try{ if(r) r.off(); }catch(e){} }); ecouteDem = null; ecouteCmd = null; choixF = null; panier = {}; window._noteCmd = ''; }
+  function couperEcoutes(){ gen++; [ecouteDem, ecouteCmd].forEach(r=>{ try{ if(r) r.off(); }catch(e){} }); ecouteDem = null; ecouteCmd = null; choixF = null; panier = {}; window._noteCmd = '';  typeA = 'IND'; membresA = []; nbH = 1; aboJour = null; monGroupe = null; }
   function entrer(){
     couperEcoutes();
     $('q-nom').textContent = cap(moi.p)+' '+String(moi.f||'').toUpperCase();
@@ -229,33 +234,61 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
     {col:'DJ', label:'DJ', nom:'Demi-journée', desc:'Dès 14 h', prix:7, grp:'Aujourd\'hui'},
     {col:'MATIN_EXP', label:'Matinée', nom:'Matinée', desc:'8 h – 13 h', prix:8, grp:'Aujourd\'hui'},
     {col:'SOIR', label:'Soir 20h', nom:'Soirée', desc:'Dès 20 h', prix:5, grp:'Aujourd\'hui'},
-    {col:'HORAIRE', label:'1h', nom:'Une heure', desc:'Créneau d\'une heure', prix:2, grp:'Aujourd\'hui'},
+    {col:'HORAIRE', label:'1h', nom:'À l\'heure', desc:'Choisissez le nombre d\'heures', prix:2, grp:'Aujourd\'hui'},
     {col:'SEM_JC', label:'SEM JC', nom:'Semaine JC', desc:'7 jours', prix:49, grp:'Abonnement'},
     {col:'SEM_DJ', label:'SEM DJ', nom:'Semaine DJ', desc:'7 jours', prix:42, grp:'Abonnement'},
     {col:'MOIS_JC', label:'MOIS JC', nom:'Mois JC', desc:'30 jours', prix:180, grp:'Abonnement'},
     {col:'MOIS_DJ', label:'MOIS DJ', nom:'Mois DJ', desc:'30 jours', prix:168, grp:'Abonnement'}
   ];
-  pret().then(()=>db.ref('formules_prix_override').once('value')).then(s=>{ const o = s.val()||{}; FORMULES.forEach(f=>{ if(o[f.col]!=null && !isNaN(Number(o[f.col]))) f.prix = Number(o[f.col]); }); }).catch(()=>{});
+  // (17/10/2026) Accès en groupe — mêmes codes et tarifs que l'application (prix remplacés
+  // par formules_prix_override). Le prix affiché est celui du groupe entier.
+  const FORM_GRP = {
+    BIN:[
+      {col:'BIN_JC', label:'BIN JC', nom:'Journée complète', desc:'2 personnes · dès 8 h', prix:17, grp:'Aujourd\'hui'},
+      {col:'BIN_DJ', label:'BIN DJ', nom:'Demi-journée', desc:'2 personnes · dès 14 h', prix:13, grp:'Aujourd\'hui'},
+      {col:'BIN_JC_SEM', label:'BIN JC SEM', nom:'Semaine JC', desc:'2 personnes · 7 jours', prix:92, grp:'Abonnement'},
+      {col:'BIN_DJ_SEM', label:'BIN DJ SEM', nom:'Semaine DJ', desc:'2 personnes · 7 jours', prix:78, grp:'Abonnement'},
+      {col:'BIN_JC_MOIS', label:'BIN JC MOIS', nom:'Mois JC', desc:'2 personnes · 30 jours', prix:340, grp:'Abonnement'},
+      {col:'BIN_DJ_MOIS', label:'BIN DJ MOIS', nom:'Mois DJ', desc:'2 personnes · 30 jours', prix:300, grp:'Abonnement'} ],
+    TRI:[
+      {col:'TRI_JC', label:'TRIN JC', nom:'Journée complète', desc:'3 personnes · dès 8 h', prix:20, grp:'Aujourd\'hui'},
+      {col:'TRI_DJ', label:'TRIN DJ', nom:'Demi-journée', desc:'3 personnes · dès 14 h', prix:17, grp:'Aujourd\'hui'},
+      {col:'TRI_JC_SEM', label:'TR JC SEM', nom:'Semaine JC', desc:'3 personnes · 7 jours', prix:134, grp:'Abonnement'},
+      {col:'TRI_DJ_SEM', label:'TR DJ SEM', nom:'Semaine DJ', desc:'3 personnes · 7 jours', prix:114, grp:'Abonnement'},
+      {col:'TRI_JC_MOIS', label:'TR JC MOIS', nom:'Mois JC', desc:'3 personnes · 30 jours', prix:501, grp:'Abonnement'},
+      {col:'TRI_DJ_MOIS', label:'TR DJ MOIS', nom:'Mois DJ', desc:'3 personnes · 30 jours', prix:420, grp:'Abonnement'} ],
+    PACK:[
+      {col:'PACK_JC', label:'Pack JC', nom:'Journée complète', desc:'5 à 6 personnes · dès 8 h', prix:39, grp:'Aujourd\'hui'},
+      {col:'PACK_DJ', label:'Pack 1/2J', nom:'Demi-journée', desc:'5 à 6 personnes · dès 14 h', prix:33, grp:'Aujourd\'hui'} ]
+  };
+  const TYPES = { IND:{t:'Seul(e)', n:0}, BIN:{t:'Binôme', n:1}, TRI:{t:'Trinôme', n:2}, PACK:{t:'Groupe 5–6', n:4, max:5} };
+  const toutesFormules = ()=>FORMULES.concat(FORM_GRP.BIN, FORM_GRP.TRI, FORM_GRP.PACK);
+  const listeType = t=>t==='IND' ? FORMULES : (FORM_GRP[t]||[]);
+  pret().then(()=>db.ref('formules_prix_override').once('value')).then(s=>{ const o = s.val()||{}; toutesFormules().forEach(f=>{ if(o[f.col]!=null && !isNaN(Number(o[f.col]))) f.prix = Number(o[f.col]); }); }).catch(()=>{});
   payA = 'immediat';
+  let aboJour = null, monGroupe = null, typeA = 'IND', membresA = [], nbH = 1;
+  const nomsM = {};   // N° → "Prénom N." (ou false si introuvable)
 
   $('t-acces').addEventListener('click', ()=>{ $('t-acces').setAttribute('aria-pressed','true'); $('t-buv').setAttribute('aria-pressed','false'); $('z-buv').classList.add('hide'); ouvrirAcces(); });
 
   async function ouvrirAcces(){
     const z = $('z-acces'); z.classList.remove('hide'); z.innerHTML = '<div class="carte">Chargement…</div>';
     const T = auj();
-    let present = null, abos = null, dems = null;
+    let present = null, abos = null, dems = null, sortie = null, grps = null;
     try{
-      [present, abos, dems] = await Promise.all([ lire('presents/'+T+'/'+moi.n), lire('abonnements_ld'), pret().then(()=>db.ref('demandes_acces').orderByChild('date').equalTo(T).once('value')).then(s=>s.val()).catch(()=>null) ]);
+      [present, abos, dems, sortie, grps] = await Promise.all([ lire('presents/'+T+'/'+moi.n), lire('abonnements_ld'), pret().then(()=>db.ref('demandes_acces').orderByChild('date').equalTo(T).once('value')).then(s=>s.val()).catch(()=>null), lire('sorties/'+T+'/'+moi.n).catch(()=>null), lire('groupes_predefinis').catch(()=>null) ]);
     }catch(e){ z.innerHTML = '<div class="warn">Connexion impossible pour le moment. Vérifiez Internet et réessayez.</div>'; return; }
     const monAbo = Object.values(abos||{}).find(a=>a && Number(a.num)===Number(moi.n) && !a.cloture && a.dateDebut<=T && a.dateFin>=T);
+    aboJour = monAbo || null;
+    // Groupe prédéfini (onglet Groupes de l'application) : le plus récent qui contient ce N°
+    monGroupe = Object.values(grps||{}).filter(g=>g && Array.isArray(g.membres) && g.membres.map(Number).includes(Number(moi.n)))
+      .sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')))[0] || null;
     const maDem = Object.values(dems||{}).filter(d=>d && Number(d.num)===Number(moi.n) && d.date===T && d.statut!=='refuse').sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
-    if(present){
-      z.innerHTML = '<div class="ok">✓ Votre présence est enregistrée aujourd\'hui (depuis '+esc(present.heure||'')+').<br>Bonne séance de travail !</div>';
-      return;
-    }
+    if(present){ rendrePresent(present, sortie); return; }
     if(monAbo){
       const lib = LABELS[monAbo.formule] || monAbo.formule;
       z.innerHTML = '<div class="carte"><label>Mon abonnement</label><div style="font-size:18px;font-weight:800">'+esc(lib)+'</div><div style="color:var(--dim);font-size:13px;margin:2px 0 14px">Du '+esc(monAbo.dateDebut.split('-').reverse().join('/'))+' au '+esc(monAbo.dateFin.split('-').reverse().join('/'))+'</div>'
+        + (estResid(monAbo) ? '<p class="sub" style="margin:-6px 0 12px">☕💧 Votre eau et votre café offerts se choisissent juste après.</p>' : '')
         + '<button class="btn mint" id="b-pres">✓ Confirmer ma présence aujourd\'hui</button></div>';
       $('b-pres').addEventListener('click', ()=>confirmerPresence(monAbo, lib));
       return;
@@ -274,31 +307,179 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
     try{
       await pret();
       await Promise.all([ db.ref('journal_etudiant_auto/'+T+'/'+Date.now()+'_'+moi.n).set(entry), db.ref('presents/'+T+'/'+moi.n).set({ nom, heure:h, ts:Date.now() }) ]);
-      $('z-acces').innerHTML = '<div class="ok">✓ Présence confirmée à '+h+'.<br>Bonne séance de travail, '+esc(cap(moi.p))+' !</div>';
+      rendrePresent({ heure:h }, null, '✓ Présence confirmée à '+h+'.<br>Bonne séance de travail, '+esc(cap(moi.p))+' !');
     }catch(e){ b.disabled = false; b.textContent = '✓ Confirmer ma présence aujourd\'hui'; alert("L'envoi a échoué. Vérifiez Internet et réessayez."); }
   }
 
+  // (17/10/2026) Libération de place : sorties/<jour>/<N°> — fait baisser le nombre de places
+  // occupées sur l'écran d'affichage et favorise la rotation.
+  const minutes = h=>{ const m = String(h||'').match(/(\d{1,2})\D(\d{2})/); return m ? (+m[1])*60 + (+m[2]) : null; };
+  function rendrePresent(present, sortie, titre){
+    const z = $('z-acces');
+    const ms = sortie ? minutes(sortie.heure) : null, mp = minutes(present && present.heure);
+    if(sortie && (ms==null || mp==null || ms >= mp)){
+      z.innerHTML = '<div class="ok">🚪 Vous avez libéré votre place à '+esc(sortie.heure)+'.<br>Merci : vous facilitez l\'accès au suivant.</div><button class="btn sec" id="b-retour">↩ Je suis de retour</button>';
+      $('b-retour').addEventListener('click', async ()=>{
+        try{ await pret(); await db.ref('sorties/'+auj()+'/'+moi.n).remove(); rendrePresent({ heure: heure() }, null, '✓ Bon retour ! Votre présence est de nouveau comptée.'); }
+        catch(e){ alert("L'envoi a échoué. Vérifiez Internet et réessayez."); }
+      });
+      return;
+    }
+    z.innerHTML = '<div class="ok">'+(titre || '✓ Votre présence est enregistrée aujourd\'hui (depuis '+esc(present.heure||'')+').<br>Bonne séance de travail !')+'</div>'
+      + (estResid(aboJour) ? '<div id="z-avant"><div class="carte">☕💧 Chargement de vos avantages…</div></div>' : '')
+      + '<button class="btn sec" id="b-sortie">🚪 Libérer ma place</button>'
+      + '<p class="sub" style="margin-top:8px;text-align:center">Vous partez ? Libérez votre place pour faciliter l\'accès au suivant.</p>';
+    $('b-sortie').addEventListener('click', async ()=>{
+      if(!confirm("Vous quittez le club pour le moment ? Votre place sera affichée comme libre.")) return;
+      const v = { heure: heure(), ts: Date.now(), par: 'etudiant' };
+      try{ await pret(); await db.ref('sorties/'+auj()+'/'+moi.n).set(v); rendrePresent(present, v); }
+      catch(e){ alert("L'envoi a échoué. Vérifiez Internet et réessayez."); }
+    });
+    if(estResid(aboJour)) chargerAvantages();
+  }
+
+  // ═════ AVANTAGES RÉSIDANAT (17/10/2026) ═════
+  // 1 eau 0,5 L + 1 café par jour. Même nœud que la borne et le PC accueil
+  // (gratuites_residanat_<jour>/<N°>) : ce qui est déjà servi n'est jamais proposé deux fois.
+  // La commande part en File DK, offerte (total 0), comme depuis la borne.
+  const estResid = a=>!!(a && /^RESID_/.test(String(a.formule||'')));
+  const bas = a=>((a.cat||'')+' '+(a.nom||'')).toLowerCase();
+  let cafeAv = null;
+  async function chargerAvantages(){
+    const g = gen, T = auj();
+    let deja = null, cat = (CAT && CAT.length) ? CAT : null;
+    try{
+      [deja, cat] = await Promise.all([ lire('gratuites_residanat_'+T+'/'+moi.n), cat ? Promise.resolve(cat) : lire('catalogue_buvette_public').then(c=>(c && c.items) || []).catch(()=>[]) ]);
+    }catch(e){ const zz = $('z-avant'); if(zz) zz.innerHTML = '<div class="warn">Avantages indisponibles pour le moment. Demandez-les au comptoir.</div>'; return; }
+    const zone = $('z-avant'); if(g!==gen || !zone) return;
+    deja = deja || {};
+    const cafes = (cat||[]).filter(a=>/caf[eé]|express|cappuc/.test(bas(a)));
+    const eau = (cat||[]).find(a=>/\beau\b/.test(bas(a)) && /0[,.]5/.test(String(a.nom||'')));
+    if(deja.eau && deja.cafe){ zone.innerHTML = '<div class="carte" style="font-size:14px">☕💧 Vos avantages Résidanat du jour ont déjà été servis.</div>'; return; }
+    if(!cafes.some(a=>String(a.id)===String(cafeAv))) cafeAv = cafes.length ? String(cafes[0].id) : null;
+    let h = '<div class="carte"><label>☕💧 Mes avantages Résidanat du jour</label><p class="sub" style="margin:2px 0 10px">Offerts avec votre abonnement : 1 eau + 1 café par jour. Décochez ce que vous ne voulez pas.</p>';
+    h += deja.eau ? '<div class="sub" style="margin:0 0 8px">💧 Eau — déjà servie aujourd\'hui</div>'
+                  : '<label class="chk"><input type="checkbox" id="av-eau" checked> 💧 Bouteille d\'eau 0,5 L</label>';
+    if(deja.cafe) h += '<div class="sub" style="margin:0 0 8px">☕ Café — déjà servi aujourd\'hui</div>';
+    else {
+      h += '<label class="chk"><input type="checkbox" id="av-cafe" checked> ☕ Un café au choix</label>';
+      if(cafes.length) h += '<div id="av-choix">'+cafes.map(a=>'<button class="fo" data-cafe="'+esc(a.id)+'" aria-pressed="'+(String(a.id)===cafeAv)+'"><span><b>'+esc(a.nom)+'</b></span><span>'+(String(a.id)===cafeAv?'✓':'')+'</span></button>').join('')+'</div>';
+    }
+    h += '<div class="err" id="e-av"></div><button class="btn mint" id="b-av">Envoyer à la buvette</button></div>';
+    zone.innerHTML = h;
+    const ch = $('av-cafe'), choix = $('av-choix');
+    if(ch && choix) ch.addEventListener('change', ()=>{ choix.classList.toggle('hide', !ch.checked); });
+    zone.querySelectorAll('[data-cafe]').forEach(b=>b.addEventListener('click', ()=>{ cafeAv = b.dataset.cafe; zone.querySelectorAll('[data-cafe]').forEach(x=>{ const on = x.dataset.cafe===cafeAv; x.setAttribute('aria-pressed', on); x.lastChild.textContent = on ? '✓' : ''; }); }));
+    $('b-av').addEventListener('click', ()=>envoyerAvantages(cafes, eau));
+  }
+  async function envoyerAvantages(cafes, eau){
+    const ve = !!($('av-eau') && $('av-eau').checked), vc = !!($('av-cafe') && $('av-cafe').checked);
+    if(!ve && !vc){ erreur('e-av', 'Cochez au moins un avantage.'); return; }
+    const b = $('b-av'); b.disabled = true; b.textContent = 'Envoi…';
+    const T = auj(), g = gen;
+    try{
+      await pret();
+      const ref = db.ref('gratuites_residanat_'+T+'/'+moi.n);
+      const cur = (await ref.once('value')).val() || {};
+      const e2 = ve && !cur.eau, c2 = vc && !cur.cafe;
+      if(!e2 && !c2){ chargerAvantages(); return; }
+      const items = [];
+      if(e2) items.push(eau ? {id:eau.id, nom:eau.nom, emoji:'💧', prix:0, qty:1, offert:true} : {id:'eau_05l', nom:'Eau minérale 0,5L', emoji:'💧', prix:0, qty:1, offert:true});
+      if(c2){ const c = cafes.find(a=>String(a.id)===String(cafeAv)); items.push(c ? {id:c.id, nom:c.nom, emoji:'☕', prix:0, qty:1, offert:true} : {id:'cafe', nom:'Café', emoji:'☕', prix:0, qty:1, offert:true}); }
+      const cmd = { id:'DK-R-'+Date.now(), num:Math.floor(Math.random()*9000)+1000, statut:'nouvelle',
+        studentNum:Number(moi.n), studentNom:nomComplet(), studentTel:'', items, total:0, paiement:'offert',
+        note:'Avantages Résidanat — choisis par l’étudiant (espace en ligne)'+(!ve?' (eau refusée)':'')+(!vc?' (café refusé)':'')+'.',
+        heure:heure(), date:T, createdAt:Date.now(), typeResid:true, source:'en_ligne' };
+      await ref.set({ eau: !!(cur.eau || e2), cafe: !!(cur.cafe || c2) });
+      await db.ref('commandes/'+cmd.id).set(cmd);
+      const zone = $('z-avant'); if(g!==gen || !zone) return;
+      zone.innerHTML = '<div class="ok">✓ Envoyé à la buvette (commande n°'+cmd.num+') : '+items.map(i=>i.emoji+' '+esc(i.nom)).join(' + ')+'.<br>Récupérez-le au comptoir.</div>';
+    }catch(e){ b.disabled = false; b.textContent = 'Envoyer à la buvette'; erreur('e-av', "L'envoi a échoué. Vérifiez Internet et réessayez."); }
+  }
+
+  // ═════ FORMULES : seul, en groupe, à l'heure ═════
+  function nomMembre(n, cb){
+    n = Number(n); if(!n) return;
+    if(nomsM[n] !== undefined){ cb(nomsM[n]); return; }
+    lire('base_etudiants_complete/'+n).then(f=>{ nomsM[n] = f && (f.prenom || f.nom) ? cap(f.prenom||'')+' '+String(f.nom||'').trim().charAt(0).toUpperCase()+'.' : false; cb(nomsM[n]); }).catch(()=>{});
+  }
+  function afficherNomMembre(i){
+    const el = $('mbn-'+i), v = parseInt(String(membresA[i]||'').replace(/\D/g,''), 10);
+    if(!el) return;
+    if(!v){ el.textContent = ''; return; }
+    if(v===Number(moi.n)){ el.textContent = 'C\'est votre propre numéro.'; el.style.color = 'var(--err)'; return; }
+    el.textContent = '…'; el.style.color = 'var(--dim)';
+    nomMembre(v, nm=>{ const e2 = $('mbn-'+i); if(!e2 || parseInt(String(membresA[i]||''),10)!==v) return; e2.textContent = nm ? '✓ '+nm : 'N° introuvable'; e2.style.color = nm ? 'var(--mint)' : 'var(--err)'; });
+  }
+  function choisirType(t){
+    if(typeA===t) return;
+    typeA = t; choixF = null; membresA = [];
+    if(t!=='IND' && monGroupe) membresA = monGroupe.membres.map(Number).filter(m=>m!==Number(moi.n));
+    rendreFormules();
+  }
   function rendreFormules(){
-    const z = $('z-acces'); let h = '<p class="sub" style="margin-top:4px">Choisissez votre formule : l\'accueil la confirme et vous encaisse.</p>', g = null;
-    FORMULES.forEach(f=>{
+    const z = $('z-acces'); let h = '', g = null;
+    const tg = monGroupe ? (TYPES[monGroupe.type] ? monGroupe.type : (monGroupe.membres.length>=4 ? 'PACK' : monGroupe.membres.length===3 ? 'TRI' : 'BIN')) : null;
+    if(monGroupe){
+      h += '<div class="carte" style="margin-bottom:12px"><label>👥 Mon groupe enregistré</label><div id="grp-noms" style="font-size:14px;line-height:1.5">'
+        + monGroupe.membres.map(Number).filter(m=>m!==Number(moi.n)).map(m=>'N°'+m+' <span data-nm="'+m+'"></span>').join(' · ')+'</div>'
+        + (typeA!==tg ? '<button class="btn sec" id="b-grp" style="margin-top:10px;padding:11px">Nous venons ensemble</button>' : '') + '</div>';
+    }
+    h += '<label>Je viens</label><div class="types">'+Object.keys(TYPES).map(t=>'<button data-t="'+t+'" aria-pressed="'+(typeA===t)+'">'+esc(TYPES[t].t)+'</button>').join('')+'</div>';
+    if(typeA!=='IND'){
+      const T = TYPES[typeA], nb = T.max || T.n;
+      h += '<p class="sub" style="margin:4px 0 8px">N° d\'inscription '+(nb>1?'des autres membres':'de l\'autre membre')+(T.max?' (le 6ᵉ est facultatif)':'')+' :</p>';
+      for(let i=0;i<nb;i++) h += '<div class="f" style="margin-bottom:8px"><input class="mb" data-i="'+i+'" inputmode="numeric" autocomplete="off" placeholder="N° membre '+(i+2)+(i>=T.n?' (facultatif)':'')+'" value="'+esc(membresA[i]||'')+'"><div id="mbn-'+i+'" style="font-size:13px;font-weight:700;margin-top:3px"></div></div>';
+    }
+    h += '<p class="sub" style="margin:10px 0 0">Choisissez votre formule : l\'accueil la confirme et vous encaisse.</p>';
+    listeType(typeA).forEach(f=>{
       if(f.grp!==g){ g = f.grp; h += '<div class="grp">'+esc(g)+'</div>'; }
-      h += '<button class="fo" data-col="'+f.col+'" aria-pressed="'+(choixF && choixF.col===f.col)+'"><span><b>'+esc(f.nom)+'</b><small>'+esc(f.desc)+'</small></span><span class="px">'+fmt(f.prix)+'</span></button>';
+      const sel = !!(choixF && choixF.col===f.col);
+      const px = f.col==='HORAIRE' ? fmt(f.prix)+'<small style="font-size:11px"> /h</small>' : fmt(f.prix);
+      h += '<button class="fo" data-col="'+f.col+'" aria-pressed="'+sel+'"><span><b>'+esc(f.nom)+'</b><small>'+esc(f.desc)+(typeA!=='IND'?' · prix du groupe':'')+'</small></span><span class="px">'+px+'</span></button>';
+      if(sel && f.col==='HORAIRE'){
+        const fin = new Date(Date.now()+nbH*3600000);
+        h += '<div class="carte" style="margin:-2px 0 10px"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span style="font-weight:700">Nombre d\'heures</span>'
+          + '<div class="qte"><button data-h="-1" aria-label="Moins">−</button><span style="font-size:18px">'+nbH+'</span><button class="p" data-h="1" aria-label="Plus">+</button></div>'
+          + '<span class="px">'+fmt(nbH*f.prix)+'</span></div><div class="sub" style="margin:6px 0 0;font-size:12.5px">Jusqu\'à '+p2(fin.getHours())+':'+p2(fin.getMinutes())+' environ (à partir de maintenant)</div></div>';
+      }
     });
     h += '<label style="margin-top:12px">Paiement</label><div class="pay"><button data-p="immediat" aria-pressed="'+(payA==='immediat')+'">💵 Maintenant, à l\'accueil</button><button data-p="credit" aria-pressed="'+(payA==='credit')+'">🚪 À la sortie</button></div>'
       + '<div class="err" id="e-acc"></div><button class="btn" id="b-dem">Envoyer ma demande</button>';
     z.innerHTML = h;
-    z.querySelectorAll('.fo').forEach(b=>b.addEventListener('click', ()=>{ choixF = FORMULES.find(f=>f.col===b.dataset.col); rendreFormules(); }));
+    z.querySelectorAll('[data-nm]').forEach(s=>nomMembre(s.dataset.nm, nm=>{ s.textContent = nm || ''; }));
+    const bg = $('b-grp'); if(bg) bg.addEventListener('click', ()=>choisirType(tg));
+    z.querySelectorAll('.types button').forEach(b=>b.addEventListener('click', ()=>choisirType(b.dataset.t)));
+    z.querySelectorAll('input.mb').forEach(inp=>{ const i = +inp.dataset.i; afficherNomMembre(i);
+      inp.addEventListener('input', ()=>{ inp.value = inp.value.replace(/\D/g,''); membresA[i] = inp.value; clearTimeout(inp._t); inp._t = setTimeout(()=>afficherNomMembre(i), 450); }); });
+    z.querySelectorAll('.fo').forEach(b=>b.addEventListener('click', ()=>{ choixF = listeType(typeA).find(f=>f.col===b.dataset.col); rendreFormules(); }));
+    z.querySelectorAll('[data-h]').forEach(b=>b.addEventListener('click', ()=>{ nbH = Math.max(1, Math.min(12, nbH + Number(b.dataset.h))); rendreFormules(); }));
     z.querySelectorAll('.pay button').forEach(b=>b.addEventListener('click', ()=>{ payA = b.dataset.p; rendreFormules(); }));
     $('b-dem').addEventListener('click', envoyerDemande);
   }
 
   async function envoyerDemande(){
+    erreur('e-acc');
     if(!choixF){ erreur('e-acc', 'Choisissez une formule.'); return; }
+    let membres = [Number(moi.n)];
+    if(typeA!=='IND'){
+      const T = TYPES[typeA], nb = T.max || T.n;
+      const saisis = membresA.slice(0, nb).map(v=>parseInt(String(v||'').replace(/\D/g,''), 10)).filter(Boolean);
+      if(saisis.length < T.n){ erreur('e-acc', 'Saisissez le N° d\'inscription de '+(T.n>1?'chaque membre':'l\'autre membre')+' du groupe.'); return; }
+      if(saisis.includes(Number(moi.n)) || new Set(saisis).size !== saisis.length){ erreur('e-acc', 'Un même numéro est saisi deux fois.'); return; }
+      const b0 = $('b-dem'); b0.disabled = true; b0.textContent = 'Vérification…';
+      const noms = await Promise.all(saisis.map(n=>new Promise(ok=>{ nomMembre(n, ok); setTimeout(()=>ok(null), 8000); })));
+      b0.disabled = false; b0.textContent = 'Envoyer ma demande';
+      const inconnus = saisis.filter((n,i)=>!noms[i]);
+      if(inconnus.length){ erreur('e-acc', 'N°'+inconnus.join(', N°')+' : aucune fiche trouvée. Vérifiez le numéro.'); return; }
+      membres = membres.concat(saisis);
+    }
     const b = $('b-dem'); b.disabled = true; b.textContent = 'Envoi…';
-    const T = auj();
+    const T = auj(), hr = choixF.col==='HORAIRE' ? nbH : 0;
     const d = { id:'dem_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), num:Number(moi.n), nom:nomComplet(), etab:moi.e||'—',
-      formule:choixF.col, label:choixF.label, prix:choixF.prix, paiement:payA, typeAcces:'IND', membres:[Number(moi.n)],
+      formule:choixF.col, label: hr ? hr+'h' : choixF.label, prix: hr ? Math.round(hr*choixF.prix*1000)/1000 : choixF.prix, paiement:payA, typeAcces:typeA, membres,
       heure:heure(), date:T, statut:'en_attente', source:'en_ligne' };
+    if(hr) d.nbHeures = hr;
     try{ await pret(); await db.ref('demandes_acces/'+d.id).set(d); suivreDemande(d); }
     catch(e){ b.disabled = false; b.textContent = 'Envoyer ma demande'; erreur('e-acc', "L'envoi a échoué. Vérifiez Internet et réessayez."); }
   }
@@ -310,10 +491,14 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
       const lib = st==='en_attente' ? '<span class="statut">⏳ En attente de l\'accueil</span>'
         : st==='refuse' ? '<span class="statut r">✗ Refusée — voyez l\'accueil</span>'
         : '<span class="statut v">✓ Prise en charge par l\'accueil</span>';
-      const f = FORMULES.find(y=>y.col===x.formule);
-      z.innerHTML = '<div class="carte"><label>Ma demande du jour</label><div style="font-size:17px;font-weight:800;margin-bottom:4px">'+esc(f ? f.nom : x.label)+' · <span class="px">'+fmt(x.prix)+'</span></div>'
+      const f = toutesFormules().find(y=>y.col===x.formule);
+      const typ = x.typeAcces && x.typeAcces!=='IND' && TYPES[x.typeAcces] ? TYPES[x.typeAcces].t+' · ' : '';
+      const nom = x.formule==='HORAIRE' ? (x.nbHeures||1)+' heure'+((x.nbHeures||1)>1?'s':'') : (f ? f.nom : x.label);
+      const autres = (x.membres||[]).map(Number).filter(m=>m!==Number(moi.n));
+      z.innerHTML = '<div class="carte"><label>Ma demande du jour</label><div style="font-size:17px;font-weight:800;margin-bottom:4px">'+esc(typ+nom)+' · <span class="px">'+fmt(x.prix)+'</span></div>'
+        + (autres.length ? '<div style="font-size:13px;margin-bottom:4px">👥 Avec N°'+autres.join(', N°')+'</div>' : '')
         + '<div style="color:var(--dim);font-size:13px;margin-bottom:10px">Envoyée à '+esc(x.heure)+' · paiement '+(x.paiement==='credit'?'à la sortie':'à l\'accueil')+'</div>'+lib
-        + (st==='en_attente' ? '<p class="sub" style="margin:12px 0 0">Présentez-vous à l\'accueil : votre demande est déjà affichée sur leur écran.</p>' : '') + '</div>';
+        + (st==='en_attente' ? '<p class="sub" style="margin:12px 0 0">Présentez-vous à l\'accueil'+(autres.length?' ensemble':'')+' : votre demande est déjà affichée sur leur écran.</p>' : '') + '</div>';
     };
     dessiner(d);
     try{ if(ecouteDem) ecouteDem.off(); const g = gen; ecouteDem = db.ref('demandes_acces/'+d.id); ecouteDem.on('value', s=>{ const v = s.val(); if(v && g===gen && !$('z-acces').classList.contains('hide')) dessiner(v); }); }catch(e){}
