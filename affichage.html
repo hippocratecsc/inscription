@@ -52,6 +52,8 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 /* Démo */
 #s-demo{padding:0}
 #s-demo iframe{width:100%;height:100%;border:0}
+/* Veille de nuit */
+#s-nuit{background:#000;padding:0}
 </style>
 </head>
 <body>
@@ -83,6 +85,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
       <div><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlAAAAJQCAIAAADOgM0SAAAMY0lEQVR4nO3dMW4s2RFFQVH4nvYjU4uXqf3IbtlyPvAwzGHmnIgFNKurin3wrPv1+Xz+BgB/dX//6QsAgD+D4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJPya/gP/+Oe/pv9Eyn//8++fvoTVXt+36ft5/f3f9r55vn9t08/LCQ+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgY38N7tW1/a9q2Pa3p69n2fLd93+t7b9e/77Tr1/9q2++bEx4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZCwbg/v1ba9pW17V7W9sVfb9uS2ff70/bGf93t+376XEx4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZBwfg+P72Vf7Xs//9W2vbFte2yvtj1ffpYTHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkGAPjz/Vtn21bft52/YIt92fV9veN36WEx4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZBwfg9vek+r5vp+2zbX78+2fbtX267n1fXr38YJD4AEwQMgQfAASBA8ABIED4AEwQMgQfAASBA8ABIED4AEwQMgQfAASBA8ABIED4AEwQMgQfAASFi3hze9H8bPmt7b8/nf+/nTavfH79vPcsIDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASxvfwtu1v8Xvb9sO2qd2f6f25V9vu//XnW+OEB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJHx9Pp/RPzC9XzW9v7XN9P7Wtvt5/X2Yvv7re2y153Xd9ffNCQ+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgY38N7VdvPu74vNa22D/dq2/u8zfX9yG2/b9f3HZ3wAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+AhF8/fQF/tm37Utv2/7bdn2227Xu92vZ8t+3VvV7P9et//fzr778THgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkHB+D+/6Htv1fbttn/9q2/W82nb/a/tq21z/PZzmhAdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACSM7+FN7zNd30vbtgd2/fpfXf++267n1bbruX4/X9XeTyc8ABIED4AEwQMgQfAASBA8ABIED4AEwQMgQfAASBA8ABIED4AEwQMgQfAASBA8ABIED4AEwQMg4evz+Yz+gW17cq+27aVNf9/rrt/Pbftq2+7Pddf357b93r5ywgMgQfAASBA8ABIED4AEwQMgQfAASBA8ABIED4AEwQMgQfAASBA8ABIED4AEwQMgQfAASBA8ABLW7eG9ur7n5Hp+b9seW23PbNs+36va+zPt+vvjhAdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACSM7+Fdd33/6fq+nf2573V9H27b86rZ9vv2ygkPgATBAyBB8ABIEDwAEgQPgATBAyBB8ABIEDwAEgQPgATBAyBB8ABIEDwAEgQPgATBAyBB8ABI+PXTF/BHTe9jbdsnu37905+/ba9r297btNr+3PXvu+33Yfp6nPAASBA8ABIED4AEwQMgQfAASBA8ABIED4AEwQMgQfAASBA8ABIED4AEwQMgQfAASBA8ABIED4CE83t42/bGtu0/vdq213Xdtr3AbbbtydWu5/rv1SsnPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIGF8D2/bXtS0bft59tJ+9vOnTb//2/b8tj2v63t1265nmhMeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQ8PX5fH76Gv6Q63tX2z7/1fXvu23fbptte2avrv+/1Ezffyc8ABIED4AEwQMgQfAASBA8ABIED4AEwQMgQfAASBA8ABIED4AEwQMgQfAASBA8ABIED4AEwQMg4df0H9i2/zS9t7Rt7+3VtudVs21/btv7sO393/a8XtX2I53wAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+AhPE9vG2m967sad36/Gnb9sZer2fb+7/t/2vb9bza9rymOeEBkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJ6/bwtu1XTe85bduLmrbt+07ve13fG7v+vLa5fj+v7/854QGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAlfn89n9A9c3wOr7UVdv/5p7s/vXd97m1b7PdzGCQ+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEg4v4d3nf2wn7Xt/r+6/ryu3/9tpt+H63t7TngAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0DCr+k/cH2va9r1/apt+1jb9hevX0/Ntt+rbf+/0/+P05zwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+AhPE9vG17SNe97lFt26/atm+37fu+qt2fbb8n2/YOt9n2fZ3wAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+ABMEDIEHwAEgQPAASBA+AhPE9vFfb9pOmTe97Xd9Le7XteqZd/3+5/ry23f9tvyevpu+nEx4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZCwbg/v1bY9rW37WK9qe1rTe4HTpq//+v18vZ5tvyfTru9fvnLCAyBB8ABIEDwAEgQPgATBAyBB8ABIEDwAEgQPgATBAyBB8ABIEDwAEgQPgATBAyBB8ABIEDwAEs7v4fG9ru+9Tdu257dtT27b50/bdv+37Rdue75OeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQII9PP7P9D7Wq237fNuu59X1/bNt93/b9/X/+3tOeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQILgAZAgeAAkCB4ACYIHQML5Pbxte0vbbNszezW97zX9/lzfn9u293bd9ed7/Xk54QGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAlfn89n9A9s21e7btue1rRt37e2n7ft+26z7f5f//xpTngAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0CC4AGQIHgAJAgeAAmCB0DC+B4eAGzghAdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACQIHgAJggdAguABkCB4ACT8DygnD9rL5uU1AAAAAElFTkSuQmCC" alt=""><b>📝 Première visite ?</b><small>Inscris-toi en une minute</small></div>
     </div>
   </section>
+  <section class="sl" id="s-nuit"></section>
   <section class="sl" id="s-demo"><iframe id="d-if" allow="autoplay; fullscreen" title="Démo Hippocrate"></iframe></section>
 </div>
 
@@ -179,16 +182,35 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── Programme en boucle ──
   let langDemo = 'fr', finDemo = null, t0 = Date.now();
-  function montrer(id){ document.querySelectorAll('.sl').forEach(s=>s.classList.toggle('on', s.id===id)); }
+  function montrer(id){ if(nuit && id!=='s-nuit') return; document.querySelectorAll('.sl').forEach(s=>s.classList.toggle('on', s.id===id)); }
+
+  // ── (17/10/2026) Veille de nuit : écran noir et silencieux entre CFG.veille et CFG.reveil
+  // (par défaut 00:00 → 08:00), puis reprise automatique (rechargement de la page).
+  let nuit = false;
+  const hm = v=>{ const m = String(v||'').match(/^(\d{1,2}):(\d{2})/); return m ? (+m[1])*60 + (+m[2]) : null; };
+  function enVeille(){
+    const v = hm(CFG.veille || '00:00'), r = hm(CFG.reveil || '08:00');
+    if(v==null || r==null || v===r) return false;
+    const d = new Date(), n = d.getHours()*60 + d.getMinutes();
+    return v < r ? (n >= v && n < r) : (n >= v || n < r);
+  }
+  function verifierVeille(){
+    if(enVeille()){
+      if(!nuit){ nuit = true; try{ $('d-if').src = 'about:blank'; }catch(e){} document.querySelectorAll('.sl').forEach(s=>s.classList.toggle('on', s.id==='s-nuit')); }
+    } else if(nuit){ location.reload(); }
+  }
+  setInterval(verifierVeille, 30000);
   const RAP = /[?&]rapide=1/.test(location.search) ? 0.08 : 1;
   const attendre = ms=>new Promise(ok=>setTimeout(ok, ms*RAP));
   function demo(){
+    if(nuit) return attendre(30000);
     return new Promise(ok=>{
       const fr = $('d-if'); let fini = false;
       const fin = ()=>{ if(fini) return; fini = true; removeEventListener('message', onm); clearTimeout(t); ok(); };
       const onm = e=>{ if(e.data==='hcc-demo-fin') fin(); };
       addEventListener('message', onm);
       const t = setTimeout(fin, 9*60000);       // filet de sécurité
+      const tn = setInterval(()=>{ if(nuit){ clearInterval(tn); fin(); } }, 5000);
       fr.src = 'demo.html?lang='+langDemo+'&t='+Date.now();
       langDemo = langDemo==='fr' ? 'tn' : 'fr';
       montrer('s-demo');
@@ -207,6 +229,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
     }
   }
   try{ if('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{}); }catch(e){}
+  verifierVeille();
   setTimeout(boucle, 1500);
 })();
 </script>
