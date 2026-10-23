@@ -89,6 +89,11 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
 .types button[aria-pressed="true"]{background:rgba(93,202,165,.2);border-color:var(--mint)}
 .chk{display:flex;align-items:center;gap:10px;text-transform:none;letter-spacing:0;font-size:15px;font-weight:600;color:var(--cream);background:rgba(255,255,255,.05);border-radius:10px;padding:11px 12px;margin:0 0 8px;cursor:pointer}
 .chk input{width:22px;height:22px;flex:none;-webkit-appearance:checkbox;appearance:auto;padding:0;margin:0;accent-color:var(--mint)}
+.art .nm em.sb{display:inline-block;font-style:normal;font-size:11px;font-weight:700;color:#FFB74D;background:rgba(230,81,0,.18);border:1px solid rgba(255,183,77,.5);border-radius:8px;padding:1px 7px;margin-top:3px}
+.bulle-sb{position:relative;margin:2px 14px 8px 48px;background:#FFF3E0;color:#5D2E00;font-size:13px;font-weight:700;line-height:1.35;border-radius:12px;padding:9px 12px;box-shadow:0 6px 16px rgba(0,0,0,.25);animation:sbIn .25s ease-out}
+.bulle-sb:before{content:'';position:absolute;left:22px;top:-8px;border:8px solid transparent;border-top:0;border-bottom-color:#FFF3E0}
+.avert-sb{background:rgba(230,81,0,.16);border:1px solid #FFB74D;color:#FFE0B2;border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.4;margin:6px 0 10px}
+@keyframes sbIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -547,7 +552,22 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
       try{ const c = await lire('catalogue_buvette_public'); CAT = (c && c.items) || []; }catch(e){ z.innerHTML = '<div class="warn">Menu indisponible pour le moment. Réessayez dans un instant.</div>'; return; }
       if(!CAT.length){ z.innerHTML = '<div class="warn">Le menu n\'est pas encore publié. Commandez à la borne ou au comptoir.</div>'; return; }
     }
+    // (23/10/2026) Mise à jour en direct du menu, dont l'alerte « presque épuisé » publiée par l'accueil
+    if(!window._catEcoute){ window._catEcoute = true;
+      try{ db.ref('catalogue_buvette_public').on('value', sn=>{ const c = sn.val(); if(!(c && c.items && c.items.length)) return; CAT = c.items;
+        Object.values(panier).forEach(p=>{ const n = CAT.find(x=>String(x.id)===String(p.a.id)); if(n) p.a = n; });
+        const zb = $('z-buv'); if(zb && !zb.classList.contains('hide') && zb.querySelector('.cat')) rendreMenu(); }); }catch(e){} }
     rendreMenu();
+  }
+
+  const MSG_SB = 'Article presque épuisé — vérifiez sur l\'étalage avant validation';
+  function bulleStock(id){
+    const z = $('z-buv'); const bp = z && z.querySelector('[data-p="'+(window.CSS && CSS.escape ? CSS.escape(String(id)) : String(id))+'"]'); if(!bp) return;
+    const row = bp.closest('.art'); if(!row) return;
+    z.querySelectorAll('.bulle-sb').forEach(x=>x.remove());
+    const d = document.createElement('div'); d.className = 'bulle-sb'; d.setAttribute('role','alert'); d.textContent = '⚠ ' + MSG_SB;
+    row.insertAdjacentElement('afterend', d);
+    setTimeout(()=>{ try{ d.remove(); }catch(e){} }, 6000);
   }
 
   function rendreMenu(){
@@ -559,7 +579,7 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
       const ouv = c===catOuverte, nb = cats[c].reduce((s,a)=>s+((panier[a.id]||{}).q||0),0);
       h += '<div class="cat"><button data-cat="'+esc(c)+'"><span>'+esc(c)+(nb?' <span class="statut v" style="font-size:11px;padding:2px 8px">'+nb+'</span>':'')+'</span><span>'+(ouv?'▲':'▼')+'</span></button>';
       if(ouv) cats[c].forEach(a=>{ const q = (panier[a.id]||{}).q||0;
-        h += '<div class="art"><span style="font-size:24px">'+emoji(a)+'</span><div class="nm">'+esc(a.nom)+'<small>'+fmt(a.prix)+' TND</small></div><div class="qte">'
+        h += '<div class="art"><span style="font-size:24px">'+emoji(a)+'</span><div class="nm">'+esc(a.nom)+'<small>'+fmt(a.prix)+' TND</small>'+(a.alerte?'<em class="sb">⚠ presque épuisé</em>':'')+'</div><div class="qte">'
           + (q ? '<button data-m="'+esc(a.id)+'" aria-label="Retirer">−</button><span>'+q+'</span>' : '') + '<button class="p" data-p="'+esc(a.id)+'" aria-label="Ajouter">+</button></div></div>'; });
       h += '</div>';
     });
@@ -568,11 +588,12 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
       h += '<div class="panier"><div class="tot"><span>🛒 '+items.reduce((s,x)=>s+x.q,0)+' article(s)</span><span class="px">'+fmt(total)+' TND</span></div>'
         + '<div class="f"><label for="c-note">Précision (facultatif)</label><input id="c-note" placeholder="Ex. sans sucre, sandwich sans harissa…" value="'+esc(window._noteCmd||'')+'"></div>'
         + '<label>Paiement</label><div class="pay"><button data-pb="immediat" aria-pressed="'+(payB==='immediat')+'">💵 Au comptoir</button><button data-pb="credit" aria-pressed="'+(payB==='credit')+'">🚪 À la sortie</button></div>'
+        + (items.some(x=>x.a.alerte) ? '<div class="avert-sb">⚠ '+items.filter(x=>x.a.alerte).map(x=>esc(x.a.nom)).join(', ')+' : article presque épuisé — vérifiez sur l\'étalage avant validation.</div>' : '')
         + '<div class="err" id="e-cmd"></div><button class="btn" id="b-cmd">Envoyer ma commande</button></div>';
     }
     z.innerHTML = h;
     z.querySelectorAll('.cat>button').forEach(b=>b.addEventListener('click', ()=>{ catOuverte = catOuverte===b.dataset.cat ? '' : b.dataset.cat; rendreMenu(); }));
-    z.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click', ()=>{ const a = CAT.find(x=>String(x.id)===b.dataset.p); panier[a.id] = panier[a.id] || {a, q:0}; panier[a.id].q++; rendreMenu(); }));
+    z.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click', ()=>{ const a = CAT.find(x=>String(x.id)===b.dataset.p); panier[a.id] = panier[a.id] || {a, q:0}; panier[a.id].q++; rendreMenu(); if(a.alerte) bulleStock(a.id); }));
     z.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click', ()=>{ const p = panier[b.dataset.m]; if(p){ p.q--; if(p.q<=0) delete panier[b.dataset.m]; } rendreMenu(); }));
     z.querySelectorAll('[data-pb]').forEach(b=>b.addEventListener('click', ()=>{ payB = b.dataset.pb; rendreMenu(); }));
     const n = $('c-note'); if(n) n.addEventListener('input', ()=>{ window._noteCmd = n.value; });
