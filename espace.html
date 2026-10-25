@@ -34,6 +34,24 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
 .tuile{background:rgba(93,202,165,.12);border:1px solid var(--line);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;color:var(--cream);font-size:14px;font-weight:700}
 .tuile i{display:block;font-style:normal;font-size:30px;margin-bottom:6px}
 .tuile[aria-pressed="true"]{background:rgba(93,202,165,.25);border-color:var(--mint)}
+.tuile-l{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 10px;background:rgba(242,181,68,.10);border-color:rgba(242,181,68,.4)}
+.tuile-l i{display:inline;font-size:22px;margin:0}
+.tuile-l[aria-pressed="true"]{background:rgba(242,181,68,.22);border-color:var(--saffron)}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--mint) 50%),linear-gradient(135deg,var(--mint) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 12px) 55%;background-size:6px 6px;background-repeat:no-repeat}
+select option{color:#14282C}
+textarea{resize:vertical;min-height:110px;line-height:1.45}
+.recl-ou{text-align:center;font-size:12px;color:var(--dim);margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.recl-ou::before,.recl-ou::after{content:"";flex:1;height:1px;background:var(--line)}
+.recl-canaux{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.recl-c{display:block;text-align:center;text-decoration:none;color:var(--cream);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:10px 6px;font-size:13.5px;font-weight:700;min-width:0}
+.recl-c i{display:block;font-style:normal;font-size:22px;margin-bottom:3px}
+.recl-c small{display:block;font-weight:400;font-size:11px;color:var(--dim);margin-top:2px;overflow-wrap:anywhere}
+.recl-astuce{font-size:11px;color:var(--dim);text-align:center;margin-top:8px}
+.recl-t{display:flex;justify-content:space-between;gap:8px;font-size:13px}.recl-t span{color:var(--dim);font-size:12px;white-space:nowrap}
+.recl-txt{font-size:13.5px;line-height:1.45;margin:6px 0 8px;white-space:pre-wrap;color:var(--cream)}
+.recl-st{display:inline-block;font-size:11.5px;font-weight:700;border-radius:10px;padding:2px 9px;background:rgba(255,255,255,.08)}
+.recl-st.recl-vue{background:rgba(242,181,68,.18);color:var(--saffron)}.recl-st.recl-traitee{background:rgba(93,202,165,.2);color:var(--mint)}
+.recl-rep{margin-top:8px;font-size:13px;background:rgba(93,202,165,.12);border-left:3px solid var(--mint);border-radius:6px;padding:7px 9px;line-height:1.45}
 .fo{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;color:var(--cream);cursor:pointer}
 .fo[aria-pressed="true"]{background:rgba(93,202,165,.16);border-color:var(--mint)}
 .fo b{font-size:15px}.fo small{display:block;font-size:12px;color:var(--dim);margin-top:2px}
@@ -132,9 +150,11 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
     <div class="tuiles">
       <button class="tuile" id="t-acces"><i>🎫</i>Mon accès<br>aujourd'hui</button>
       <button class="tuile" id="t-buv"><i>☕</i>Commander<br>à la buvette</button>
+      <button class="tuile tuile-l" id="t-recl"><i>📝</i>Réclamation ou suggestion</button>
     </div>
     <div id="z-acces" class="hide"></div>
     <div id="z-buv" class="hide"></div>
+    <div id="z-recl" class="hide"></div>
   </section>
 
   <p class="foot">Toute demande est confirmée par l'accueil.<br>Hippocrate Co-Studying Club · Bab Saadoun, Tunis</p>
@@ -237,7 +257,7 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
   });
   $('b-sortir').addEventListener('click', ()=>{ couperEcoutes(); ls.del('hcc_espace_moi'); ls.del('hcc_espace_cmd'); moi = null; $('i-num').value=''; $('i-ddn').value=''; voir('v-id'); });
 
-  function montrerInfo(html){ const z = $('z-acces'); z.classList.remove('hide'); $('z-buv').classList.add('hide'); z.innerHTML = '<div class="ok">'+html+'</div>'; }
+  function montrerInfo(html){ const z = $('z-acces'); z.classList.remove('hide'); $('z-buv').classList.add('hide'); $('z-recl').classList.add('hide'); z.innerHTML = '<div class="ok">'+html+'</div>'; }
 
   let gen = 0;
   function couperEcoutes(){ gen++; [ecouteDem, ecouteCmd].forEach(r=>{ try{ if(r) r.off(); }catch(e){} }); ecouteDem = null; ecouteCmd = null; choixF = null; panier = {}; window._noteCmd = '';  typeA = 'IND'; membresA = []; nbH = 1; aboJour = null; monGroupe = null; }
@@ -246,8 +266,8 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
     $('q-nom').textContent = cap(moi.p)+' '+String(moi.f||'').toUpperCase();
     $('q-num').textContent = moi.n;
     voir('v-menu');
-    $('z-acces').classList.add('hide'); $('z-buv').classList.add('hide');
-    ['t-acces','t-buv'].forEach(t=>$(t).setAttribute('aria-pressed','false'));
+    $('z-acces').classList.add('hide'); $('z-buv').classList.add('hide'); $('z-recl').classList.add('hide');
+    ['t-acces','t-buv','t-recl'].forEach(t=>$(t).setAttribute('aria-pressed','false'));
   }
   // Reprise de session mémorisée
   (async ()=>{
@@ -301,7 +321,7 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
   let aboJour = null, monGroupe = null, typeA = 'IND', membresA = [], nbH = 1;
   const nomsM = {};   // N° → "Prénom N." (ou false si introuvable)
 
-  $('t-acces').addEventListener('click', ()=>{ $('t-acces').setAttribute('aria-pressed','true'); $('t-buv').setAttribute('aria-pressed','false'); $('z-buv').classList.add('hide'); ouvrirAcces(); });
+  $('t-acces').addEventListener('click', ()=>{ $('t-acces').setAttribute('aria-pressed','true'); $('t-buv').setAttribute('aria-pressed','false'); $('t-recl').setAttribute('aria-pressed','false'); $('z-buv').classList.add('hide'); $('z-recl').classList.add('hide'); ouvrirAcces(); });
 
   async function ouvrirAcces(){
     const z = $('z-acces'); z.classList.remove('hide'); z.innerHTML = '<div class="carte">Chargement…</div>';
@@ -541,7 +561,7 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
   const EMO = {'CAFÉ':'☕','CAFE':'☕','EXPRES':'☕','CAPPUC':'☕','THÉ':'🍵','THE ':'🍵','EAU':'💧','LIMONADE':'🍋','JUS':'🧃','COCA':'🥤','SODA':'🥤','BOISSON':'🧃','SANDWICH':'🥪','PIZZA':'🍕','BURGER':'🍔','CROISSANT':'🥐','BISCUIT':'🍪','GATEAU':'🍰','GÂTEAU':'🍰','CHOCOLAT':'🍫','CHIPS':'🍟','SNACK':'🍿','FRUIT':'🍎','YAOURT':'🥛','LAIT':'🥛'};
   const emoji = a=>{ if(a.emoji) return a.emoji; const u = (a.nom||'').toUpperCase(); for(const k in EMO) if(u.includes(k)) return EMO[k]; return '🍽️'; };
 
-  $('t-buv').addEventListener('click', ()=>{ $('t-buv').setAttribute('aria-pressed','true'); $('t-acces').setAttribute('aria-pressed','false'); $('z-acces').classList.add('hide'); ouvrirBuvette(); });
+  $('t-buv').addEventListener('click', ()=>{ $('t-buv').setAttribute('aria-pressed','true'); $('t-acces').setAttribute('aria-pressed','false'); $('t-recl').setAttribute('aria-pressed','false'); $('z-acces').classList.add('hide'); $('z-recl').classList.add('hide'); ouvrirBuvette(); });
 
   async function ouvrirBuvette(){
     const z = $('z-buv'); z.classList.remove('hide');
@@ -632,6 +652,84 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
     };
     z.innerHTML = '<div class="carte">Commande envoyée…</div>';
     pret().then(()=>{ if(ecouteCmd){ try{ ecouteCmd.off(); }catch(e){} } const g = gen; ecouteCmd = db.ref('commandes/'+id); ecouteCmd.on('value', s=>{ if(g!==gen || $('z-buv').classList.contains('hide')) return; const v = s.val(); if(v) dessiner(v); else { ls.del('hcc_espace_cmd'); rendreMenuOuCharger(); } }); });
+  }
+
+  // ── Réclamations / suggestions (24/10/2026) ──
+  // Pour mettre les liens Facebook exacts : coller l'adresse entre les guillemets de fbPage / fbCompte.
+  const CONTACT = { tel:'+21698269561', telAff:'98 269 561', mail:'hippocratecsc@gmail.com',
+    fbPage:'https://www.facebook.com/share/19XyZ1hk82/', fbPageNom:'Hippocrate - Hippo pour Tous', fbCompte:'https://www.facebook.com/share/18bjhDZzFW/', fbCompteNom:'Hippocrate Csc' };
+  const fbLien = (url, nom)=> url || ('https://www.facebook.com/search/top?q='+encodeURIComponent(nom));
+  const MOTIFS = ['Accès / formules','Buvette','Propreté','Calme / bruit','Wi-Fi / prises / climatisation','Accueil / personnel','Paiement / crédit','Suggestion','Autre'];
+  const RECL_ST = { nouvelle:'📨 Reçue', vue:'👀 Lue par l\'accueil', traitee:'✅ Traitée' };
+  const mesRecl = ()=> (ls.get('hcc_espace_recl')||[]).filter(r=>r && Number(r.n)===Number(moi && moi.n));
+  $('t-recl').addEventListener('click', ()=>{
+    ['t-acces','t-buv'].forEach(t=>$(t).setAttribute('aria-pressed','false')); $('t-recl').setAttribute('aria-pressed','true');
+    $('z-acces').classList.add('hide'); $('z-buv').classList.add('hide'); ouvrirRecl();
+  });
+  function texteRecl(){
+    const mo = ($('r-motif')||{}).value || '', msg = (($('r-msg')||{}).value || '').trim();
+    return 'Réclamation Hippocrate — N°'+moi.n+' '+cap(moi.p)+' '+String(moi.f||'').toUpperCase()+(mo?' — '+mo:'')+' :\n'+msg;
+  }
+  function majLiensRecl(){
+    const t = encodeURIComponent(texteRecl());
+    const a = $('r-sms'); if(a) a.href = 'sms:'+CONTACT.tel+'?&body='+t;
+    const b = $('r-mail'); if(b) b.href = 'mailto:'+CONTACT.mail+'?subject='+encodeURIComponent('Réclamation N°'+moi.n)+'&body='+t;
+    const n = $('r-nb'); if(n) n.textContent = (($('r-msg')||{}).value||'').length+' / 800';
+  }
+  function ouvrirRecl(note){
+    const z = $('z-recl'); z.classList.remove('hide');
+    z.innerHTML = (note ? '<div class="ok">'+note+'</div>' : '')
+      + '<div class="carte"><h2 style="margin-top:0">📝 Réclamation ou suggestion</h2>'
+      + '<p class="sub" style="margin-bottom:12px">Un souci, une idée ? Écrivez-nous : l\'accueil la reçoit tout de suite et vous répond ici.</p>'
+      + '<div class="f"><label for="r-motif">Sujet</label><select id="r-motif">'+MOTIFS.map(m=>'<option>'+esc(m)+'</option>').join('')+'</select></div>'
+      + '<div class="f"><label for="r-msg">Votre message</label><textarea id="r-msg" rows="5" maxlength="800" placeholder="Décrivez la situation (jour, heure, ce qui s\'est passé…)"></textarea><div id="r-nb" style="text-align:right;font-size:11px;color:var(--dim);margin-top:3px">0 / 800</div></div>'
+      + '<div class="err" id="e-recl"></div>'
+      + '<button class="btn" id="b-recl">📨 Envoyer à l\'accueil</button>'
+      + '<div class="recl-ou">Ou écrivez-nous directement</div>'
+      + '<div class="recl-canaux">'
+      +   '<a class="recl-c" id="r-sms" href="#"><i>💬</i>SMS<small>'+esc(CONTACT.telAff)+'</small></a>'
+      +   '<a class="recl-c" id="r-mail" href="#"><i>✉️</i>E-mail<small>'+esc(CONTACT.mail)+'</small></a>'
+      +   '<a class="recl-c recl-fb" href="'+esc(fbLien(CONTACT.fbPage, CONTACT.fbPageNom))+'" target="_blank" rel="noopener"><i>📘</i>Page Facebook<small>'+esc(CONTACT.fbPageNom)+'</small></a>'
+      +   '<a class="recl-c recl-fb" href="'+esc(fbLien(CONTACT.fbCompte, CONTACT.fbCompteNom))+'" target="_blank" rel="noopener"><i>👤</i>Compte Facebook<small>'+esc(CONTACT.fbCompteNom)+'</small></a>'
+      + '</div><div class="recl-astuce">Pour Facebook, votre message est copié : collez-le dans Messenger.</div></div>'
+      + '<div id="r-liste"></div>';
+    $('r-msg').addEventListener('input', majLiensRecl); $('r-motif').addEventListener('change', majLiensRecl); majLiensRecl();
+    z.querySelectorAll('.recl-fb').forEach(a=>a.addEventListener('click', ()=>{ const m = (($('r-msg')||{}).value||'').trim(); if(m){ try{ navigator.clipboard.writeText(texteRecl()); }catch(e){} } }));
+    $('b-recl').addEventListener('click', envoyerRecl);
+    afficherMesRecl();
+  }
+  async function envoyerRecl(){
+    const e = $('e-recl'); e.style.display = 'none';
+    const msg = (($('r-msg')||{}).value||'').trim();
+    if(msg.length < 5){ e.textContent = 'Écrivez votre message (quelques mots au moins).'; e.style.display = 'block'; return; }
+    const T = auj(), dejaAuj = mesRecl().filter(r=>r.date===T).length;
+    if(dejaAuj >= 3){ e.textContent = 'Vous avez déjà envoyé 3 messages aujourd\'hui. Pour une urgence, appelez ou envoyez un SMS au '+CONTACT.telAff+'.'; e.style.display = 'block'; return; }
+    const b = $('b-recl'); b.disabled = true; b.textContent = 'Envoi…';
+    const r = { id:'R'+Date.now()+'_'+moi.n, num:Number(moi.n), nom:cap(moi.p)+' '+String(moi.f||'').toUpperCase(), motif:$('r-motif').value, message:msg.slice(0,800),
+      date:T, heure:heure(), ts:Date.now(), statut:'nouvelle', source:'espace' };
+    try{
+      await Promise.race([ pret().then(()=>db.ref('reclamations/'+r.id).set(r)), new Promise((_,ko)=>setTimeout(()=>ko(new Error('délai')),12000)) ]);
+      const l = ls.get('hcc_espace_recl')||[]; l.unshift({id:r.id, n:r.num, date:T}); ls.set('hcc_espace_recl', l.slice(0,15));
+      ouvrirRecl('✅ <b>Merci, votre message a bien été envoyé à l\'accueil.</b><br>Vous verrez sa réponse ci-dessous, dans « Mes messages ».');
+    }catch(err){
+      b.disabled = false; b.textContent = '📨 Envoyer à l\'accueil';
+      e.innerHTML = 'Envoi impossible pour le moment (connexion). Utilisez le <b>SMS</b> ou l\'<b>e-mail</b> ci-dessous : votre message y est déjà écrit.'; e.style.display = 'block';
+    }
+  }
+  async function afficherMesRecl(){
+    const z = $('r-liste'); const L = mesRecl(); if(!z || !L.length) return;
+    z.innerHTML = '<h2>Mes messages</h2><div class="carte">Chargement…</div>';
+    const g = gen;
+    const V = await Promise.all(L.map(x=>lire('reclamations/'+x.id).catch(()=>null)));
+    if(g!==gen || !$('r-liste')) return;
+    const ok = V.filter(Boolean);
+    $('r-liste').innerHTML = ok.length ? '<h2>Mes messages</h2>' + ok.map(r=>{
+      const d = String(r.date||'').split('-');
+      return '<div class="carte recl-m"><div class="recl-t"><b>'+esc(r.motif||'')+'</b><span>'+(d.length===3?d[2]+'/'+d[1]:'')+' '+esc(r.heure||'')+'</span></div>'
+        + '<div class="recl-txt">'+esc(r.message||'')+'</div>'
+        + '<span class="recl-st recl-'+esc(r.statut||'nouvelle')+'">'+(RECL_ST[r.statut]||RECL_ST.nouvelle)+'</span>'
+        + (r.reponse ? '<div class="recl-rep"><b>Réponse de l\'accueil :</b> '+esc(r.reponse)+'</div>' : '')
+        + '</div>'; }).join('') : '';
   }
   function rendreMenuOuCharger(){ if(CAT && CAT.length) rendreMenu(); else { CAT = null; ouvrirBuvette(); } }
 })();
