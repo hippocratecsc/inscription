@@ -348,7 +348,11 @@ function _qrGenerateDataURL(text, darkColor, lightColor){
     {col:'MOIS_JC', label:'Mois JC', desc:'+10 % offerts en crédit buvette', prix:180, grp:'Journée complète'},
     {col:'DJ', label:'Demi-journée (DJ)', desc:'Dès 14 h', prix:7, grp:'Demi-journée'},
     {col:'SEM_DJ', label:'Semaine DJ', desc:'+10 % offerts en crédit buvette', prix:42, grp:'Demi-journée'},
-    {col:'MOIS_DJ', label:'Mois DJ', desc:'+10 % offerts en crédit buvette', prix:168, grp:'Demi-journée'}
+    {col:'MOIS_DJ', label:'Mois DJ', desc:'+10 % offerts en crédit buvette', prix:168, grp:'Demi-journée'},
+    // (26/10/2026) Créneaux creux — proposés aussi dès la première inscription
+    {col:'MATIN_EXP', label:'Matinée', desc:'8 h – 13 h', prix:8, grp:'Créneaux creux'},
+    {col:'SOIR', label:'Soirée', desc:'Dès 20 h', prix:5, grp:'Créneaux creux'},
+    {col:'HORAIRE', label:'À l\'heure', desc:'Prix par heure — le nombre d\'heures se fixe à l\'accueil', prix:2, grp:'Créneaux creux'}
   ];
   let choix = null;
   function chargerPrix(){
@@ -363,7 +367,7 @@ function _qrGenerateDataURL(text, darkColor, lightColor){
     FORMULES.forEach(f=>{
       if(f.grp && f.grp!==g){ g=f.grp; h+=`<div class="grp">${g}</div>`; }
       const sel = choix && choix.col===f.col;
-      h+=`<button type="button" class="fo${f.col==='VISITE'?' vis':''}" aria-pressed="${sel}" data-col="${f.col}"><span><b>${f.label}</b><small>${f.desc}</small></span>${f.col==='VISITE'?'':`<span class="px">${fmt(f.prix)}</span>`}</button>`;
+      h+=`<button type="button" class="fo${f.col==='VISITE'?' vis':''}" aria-pressed="${sel}" data-col="${f.col}"><span><b>${f.label}</b><small>${f.desc}</small></span>${f.col==='VISITE'?'':`<span class="px">${fmt(f.prix)}${f.col==='HORAIRE'?'<small style="font-size:11px"> /h</small>':''}</span>`}</button>`;
     });
     z.innerHTML = h;
     z.querySelectorAll('.fo').forEach(b=>b.addEventListener('click',()=>{ choix = FORMULES.find(f=>f.col===b.dataset.col); document.getElementById('e3').style.display='none'; rendreFormules(); }));
@@ -395,7 +399,7 @@ function _qrGenerateDataURL(text, darkColor, lightColor){
     $('next').textContent = etape===3 ? 'Vérifier →' : etape===4 ? 'Envoyer mon inscription' : 'Suivant →';
     if(etape===4){
       const ddn = val('ddn') ? new Date(val('ddn')+'T12:00').toLocaleDateString('fr-FR') : '';
-      $('recap').innerHTML = `<b>${esc(cap(val('prenom')))} ${esc(val('nom').toUpperCase())}</b><br>Né(e) le ${esc(ddn)} · ☎ ${esc(val('tel1'))}<br>${esc(val('etab'))} · ${esc(val('niveau'))} · ${esc(val('cycle'))}<br>Formule : <b>${esc(choix.col==='VISITE'?'Visite simple':choix.label+' — '+fmt(choix.prix)+' TND')}</b>`;
+      $('recap').innerHTML = `<b>${esc(cap(val('prenom')))} ${esc(val('nom').toUpperCase())}</b><br>Né(e) le ${esc(ddn)} · ☎ ${esc(val('tel1'))}<br>${esc(val('etab'))} · ${esc(val('niveau'))} · ${esc(val('cycle'))}<br>Formule : <b>${esc(choix.col==='VISITE'?'Visite simple':choix.label+' — '+fmt(choix.prix)+' TND'+(choix.col==='HORAIRE'?' / heure':''))}</b>`;
     }
     window.scrollTo({top:0,behavior:'smooth'});
   }
