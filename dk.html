@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B3B43">
+<meta name="robots" content="noindex,nofollow">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>File DK · Hippocrate</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B3B43'/%3E%3Ctext x='32' y='43' font-size='34' text-anchor='middle'%3E%E2%98%95%3C/text%3E%3C/svg%3E">
+<style>
+  :root{ --fond:#0B3B43; --fond2:#0F4A54; --carte:#FFFFFF; --texte:#14282C; --dim:#5E7479; --mint:#5DCAA5; --or:#F2B544; --orange:#FF7A3D; --jaune:#FFC94D; --vert:#2E9E6A; --rouge:#D84343; --violet:#6A1B9A; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; background:var(--fond); color:#F6F1E4; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+  body{ min-height:100vh; padding:0 0 40px; }
+  .hide{ display:none !important; }
+  header{ position:sticky; top:0; z-index:5; background:var(--fond); padding:calc(10px + env(safe-area-inset-top)) 14px 8px; border-bottom:1px solid rgba(255,255,255,.08); }
+  .l1{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .titre{ font-weight:800; font-size:17px; letter-spacing:.2px; }
+  .titre small{ display:block; font-weight:600; font-size:12px; color:var(--mint); margin-top:1px; }
+  .pt{ width:9px; height:9px; border-radius:50%; background:#888; display:inline-block; margin-right:5px; }
+  .pt.on{ background:#3DDC84; box-shadow:0 0 6px #3DDC84; }
+  .outils{ display:flex; gap:6px; }
+  .outils button{ background:rgba(255,255,255,.08); color:#F6F1E4; border:1px solid rgba(255,255,255,.14); border-radius:10px; padding:7px 9px; font-size:15px; cursor:pointer; }
+  .outils button[aria-pressed="true"]{ background:var(--mint); color:#0B3B43; border-color:var(--mint); }
+  .compteurs{ display:flex; gap:6px; margin-top:9px; }
+  .compteurs div{ flex:1; border-radius:10px; padding:6px 4px; text-align:center; font-size:11px; font-weight:700; background:rgba(255,255,255,.06); }
+  .compteurs b{ display:block; font-size:20px; line-height:1.15; }
+  .c-att b{ color:var(--orange); } .c-enc b{ color:var(--jaune); } .c-fin b{ color:#3DDC84; }
+  main{ padding:10px 12px; max-width:640px; margin:0 auto; }
+  h2{ font-size:12.5px; text-transform:uppercase; letter-spacing:.8px; color:var(--mint); margin:16px 2px 8px; }
+  .vide{ text-align:center; color:rgba(246,241,228,.45); font-size:14px; padding:18px 8px; border:1px dashed rgba(255,255,255,.15); border-radius:12px; }
+  .cmd{ background:var(--carte); color:var(--texte); border-radius:14px; padding:12px 13px; margin-bottom:10px; border-left:6px solid var(--orange); box-shadow:0 2px 10px rgba(0,0,0,.18); }
+  .cmd.enc{ border-left-color:var(--jaune); } .cmd.fin{ border-left-color:var(--vert); opacity:.92; } .cmd.ann{ border-left-color:var(--rouge); opacity:.8; }
+  .cmd.neuve{ animation:flash 1.2s ease-in-out 3; }
+  @keyframes flash{ 50%{ box-shadow:0 0 0 4px var(--or); } }
+  .tete{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .num{ font-weight:800; font-size:17px; }
+  .age{ font-size:12px; font-weight:700; color:var(--dim); white-space:nowrap; }
+  .age.retard{ color:var(--rouge); }
+  .client{ font-size:15px; font-weight:700; margin:3px 0 2px; }
+  .client span{ color:var(--dim); font-weight:600; font-size:13px; }
+  .badge{ display:inline-block; font-size:10.5px; font-weight:800; border-radius:5px; padding:1px 6px; margin-left:4px; vertical-align:middle; }
+  .b-ligne{ background:#E3F2FD; color:#1565C0; } .b-borne{ background:#F3E5F5; color:var(--violet); } .b-av{ background:#E8F5E9; color:#2E7D32; }
+  ul.items{ list-style:none; padding:0; margin:7px 0 4px; font-size:15.5px; line-height:1.45; }
+  ul.items li b{ display:inline-block; min-width:30px; color:#0E4A55; }
+  .note{ background:#FFF8E1; border-radius:8px; padding:5px 8px; font-size:13.5px; margin:6px 0; color:#7A4F00; }
+  .pied{ display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px; color:var(--dim); margin-top:6px; flex-wrap:wrap; }
+  .pied .tot{ font-weight:800; color:var(--texte); font-size:14.5px; }
+  .pay{ font-weight:800; }
+  .pay.sortie{ color:#B26A00; } .pay.offert{ color:#2E7D32; } .pay.comptant{ color:#0E4A55; }
+  .trace{ font-size:12.5px; color:#5E35B1; font-weight:600; margin-top:6px; }
+  .bt{ width:100%; margin-top:10px; border:none; border-radius:12px; padding:14px; font-size:17px; font-weight:800; cursor:pointer; background:var(--or); color:#14282C; }
+  .bt:disabled{ opacity:.55; }
+  details{ margin-top:6px; }
+  summary{ cursor:pointer; color:var(--mint); font-weight:700; font-size:13px; padding:6px 2px; }
+  .mini{ font-size:13px; color:rgba(246,241,228,.85); border-bottom:1px solid rgba(255,255,255,.08); padding:7px 2px; line-height:1.4; }
+  .mini b{ color:#fff; }
+  .mini .tr{ color:#B39DDB; font-size:12px; }
+  /* Écran de connexion */
+  .porte{ max-width:380px; margin:12vh auto 0; padding:0 22px; text-align:center; }
+  .porte .logo{ font-size:46px; }
+  .porte h1{ font-size:22px; margin:6px 0 2px; }
+  .porte p{ color:rgba(246,241,228,.7); font-size:14.5px; line-height:1.45; }
+  .porte input{ width:100%; font-size:28px; letter-spacing:10px; text-align:center; padding:14px; border-radius:14px; border:2px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06); color:#fff; margin:14px 0 10px; }
+  .porte input:focus{ outline:none; border-color:var(--mint); }
+  .err{ color:#FF9A9A; font-weight:700; font-size:14px; min-height:20px; }
+  .bloque{ background:#4A1414; border:1px solid #D84343; border-radius:12px; padding:12px; color:#FFD6D6; font-weight:700; margin-top:14px; }
+  .toast{ position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom)); transform:translateX(-50%); background:#14282C; color:#fff; padding:11px 16px; border-radius:12px; font-size:14px; font-weight:700; box-shadow:0 4px 18px rgba(0,0,0,.35); z-index:20; max-width:92vw; text-align:center; }
+  .alerte{ background:#7A2E00; color:#FFE0C2; border-radius:10px; padding:9px 11px; font-size:13.5px; font-weight:700; margin:8px 0 0; }
+</style>
+</head>
+<body>
+
+<!-- Connexion -->
+<section id="v-porte" class="porte">
+  <div class="logo">☕</div>
+  <h1>File DK — Opérateurs</h1>
+  <p>Entrez <b>votre code personnel</b> (6 chiffres), remis par l'administrateur.</p>
+  <input id="i-code" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="••••••">
+  <div class="err" id="e-code"></div>
+  <button class="bt" id="b-entrer">Se connecter</button>
+  <div id="z-bloque"></div>
+  <p style="font-size:12px;margin-top:22px;opacity:.6">Hippocrate Co-Studying Club · chaque geste est enregistré à votre nom.</p>
+</section>
+
+<!-- File -->
+<section id="v-file" class="hide">
+  <header>
+    <div class="l1">
+      <div class="titre"><span class="pt" id="pt"></span>File DK<small id="h-op">—</small></div>
+      <div class="outils">
+        <button id="b-son" aria-pressed="true" title="Sonnerie">🔔</button>
+        <button id="b-ecran" aria-pressed="false" title="Garder l'écran allumé">💡</button>
+        <button id="b-sortir" title="Se déconnecter">⏻</button>
+      </div>
+    </div>
+    <div class="compteurs">
+      <div class="c-att"><b id="n-att">0</b>En attente</div>
+      <div class="c-enc"><b id="n-enc">0</b>En préparation</div>
+      <div class="c-fin"><b id="n-fin">0</b>Servies</div>
+    </div>
+    <div id="z-alerte"></div>
+  </header>
+  <main>
+    <h2>🟠 En attente</h2><div id="l-att"></div>
+    <h2>🟡 En préparation</h2><div id="l-enc"></div>
+    <details id="d-fin"><summary>✅ Terminées aujourd'hui (<span id="n-fin2">0</span>)</summary><div id="l-fin"></div></details>
+  </main>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+(function(){
+  'use strict';
+  const CONFIG = {
+    apiKey: "AIzaSyD1UAodYE2HzrwvNiCS005bpcmuxlplBRw",
+    authDomain: "hippocrate-dk.firebaseapp.com",
+    databaseURL: "https://hippocrate-dk-default-rtdb.firebaseio.com",
+    projectId: "hippocrate-dk",
+    storageBucket: "hippocrate-dk.firebasestorage.app",
+    messagingSenderId: "128544353242",
+    appId: "1:128544353242:web:908fb41ed08533afc82ee3"
+  };
+  const OP_SEL = 'hcc-op-2026|';          // identique à l'application (empreinte des codes)
+  const LS_CLE = 'hcc_dk_mobile_op';
+  const $ = id=>document.getElementById(id);
+  const esc = v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const p2 = n=>String(n).padStart(2,'0');
+  const auj = ()=>{ const d = new Date(); return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); };
+  const hm = d=>p2(d.getHours())+':'+p2(d.getMinutes());
+  const fmt = n=>Number(n||0).toFixed(3).replace('.',',');
+  const cap = s=>String(s||'').toLowerCase().replace(/(^|[\s-])\S/g, m=>m.toUpperCase());
+  const ls = { get(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }, del(k){ try{ localStorage.removeItem(k); }catch(e){} } };
+  function toast(t){ const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(()=>d.remove(), 3200); }
+
+  // SHA-256 (même calcul que l'application)
+  function sha256(ascii){
+    const r = (v,a)=>(v>>>a)|(v<<(32-a)); const m = Math.pow, mx = m(2,32); let res = '', w = [], i, j;
+    const s = unescape(encodeURIComponent(ascii)); const bl = s.length*8;
+    let h = sha256.h = sha256.h || [], k = sha256.k = sha256.k || [], pl = k.length; const ic = {};
+    for(let c=2; pl<64; c++){ if(!ic[c]){ for(i=0;i<313;i+=c) ic[i]=c; h[pl] = (m(c,.5)*mx)|0; k[pl++] = (m(c,1/3)*mx)|0; } }
+    let str = s + '\x80'; while(str.length%64-56) str += '\x00';
+    for(i=0;i<str.length;i++){ j = str.charCodeAt(i); w[i>>2] |= j << ((3-i)%4)*8; }
+    w[w.length] = ((bl/mx)|0); w[w.length] = (bl);
+    h = h.slice(0,8);
+    for(j=0;j<w.length;){
+      const W = w.slice(j, j+=16), oh = h; h = h.slice(0,8);
+      for(i=0;i<64;i++){
+        const w15 = W[i-15], w2 = W[i-2], a = h[0], e = h[4];
+        const t1 = h[7] + (r(e,6)^r(e,11)^r(e,25)) + ((e&h[5])^((~e)&h[6])) + k[i]
+          + (W[i] = (i<16) ? W[i] : (W[i-16] + (r(w15,7)^r(w15,18)^(w15>>>3)) + W[i-7] + (r(w2,17)^r(w2,19)^(w2>>>10)))|0);
+        const t2 = (r(a,2)^r(a,13)^r(a,22)) + ((a&h[1])^(a&h[2])^(h[1]&h[2]));
+        h = [(t1+t2)|0].concat(h); h[4] = (h[4]+t1)|0; h.length = 8;
+      }
+      for(i=0;i<8;i++) h[i] = (h[i]+oh[i])|0;
+    }
+    for(i=0;i<8;i++) for(j=3;j+1;j--){ const b = (h[i]>>(j*8))&255; res += ((b<16)?0:'')+b.toString(16); }
+    return res;
+  }
+  const cleDe = code=>sha256(OP_SEL+String(code||'').replace(/\D/g,'')).slice(0,24);
+
+  // ── Firebase ──
+  let db = null; const prets = [];
+  const pret = ()=>new Promise(ok=>{ if(db) ok(); else prets.push(ok); });
+  function initFB(){
+    try{
+      if(typeof firebase==='undefined' || !firebase.database) return;
+      if(!firebase.apps.length) firebase.initializeApp(CONFIG);
+      const go = ()=>{ if(db) return; db = firebase.database(); prets.splice(0).forEach(f=>f()); };
+      try{ firebase.auth().signInAnonymously().then(go).catch(go); }catch(e){ go(); }
+    }catch(e){ console.warn('Firebase', e); }
+  }
+  function charger(src){ return new Promise((ok,ko)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=ko; document.head.appendChild(s); }); }
+  if(typeof firebase==='undefined'){
+    const base='https://cdn.jsdelivr.net/npm/firebase@9.23.0/';
+    charger(base+'firebase-app-compat.js').then(()=>Promise.all([charger(base+'firebase-database-compat.js'),charger(base+'firebase-auth-compat.js')])).then(initFB).catch(()=>{});
+  } else initFB();
+
+  // ── Son / vibration / écran ──
+  let ctx = null, sonOn = ls.get('hcc_dk_mobile_son')!==false, wake = null;
+  function deverrouillerSon(){ try{ ctx = ctx || new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==='suspended') ctx.resume(); }catch(e){} }
+  function bip(){
+    if(!sonOn) return;
+    try{ deverrouillerSon(); const t0 = ctx.currentTime;
+      [[880,0],[1175,.18],[880,.36],[1175,.54]].forEach(([f,d])=>{ const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t0+d); g.gain.exponentialRampToValueAtTime(0.5, t0+d+0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0+d+0.16);
+        o.connect(g); g.connect(ctx.destination); o.start(t0+d); o.stop(t0+d+0.17); });
+    }catch(e){}
+  }
+  function alerter(cmds){
+    bip(); try{ navigator.vibrate && navigator.vibrate([280,140,280,140,280]); }catch(e){}
+    try{ if(document.hidden && 'Notification' in window && Notification.permission==='granted'){
+      const c = cmds[0]; new Notification('☕ Nouvelle commande DK'+(cmds.length>1?' (+'+(cmds.length-1)+')':''), { body: (c ? cap(c.studentNom||'Visiteur')+' : '+resume(c) : ''), tag:'hcc-dk', renotify:true }); } }catch(e){}
+  }
+  async function ecranAllume(on){
+    try{
+      if(on){ if('wakeLock' in navigator){ wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', ()=>{ wake = null; }); } else { toast('Ce téléphone ne permet pas de garder l\'écran allumé'); on = false; } }
+      else if(wake){ await wake.release(); wake = null; }
+    }catch(e){ on = false; }
+    $('b-ecran').setAttribute('aria-pressed', String(!!on)); ls.set('hcc_dk_mobile_ecran', !!on);
+  }
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && ls.get('hcc_dk_mobile_ecran') && !wake) ecranAllume(true); });
+
+  // ── Connexion par code personnel ──
+  let OP = null, refOp = null, refCmd = null, jourCmd = '';
+  async function entrer(code){
+    $('e-code').textContent = ''; $('z-bloque').innerHTML = '';
+    const c = String(code||'').replace(/\D/g,'');
+    if(c.length<4){ $('e-code').textContent = 'Code à 6 chiffres.'; return; }
+    deverrouillerSon();
+    $('b-entrer').disabled = true; $('b-entrer').textContent = 'Vérification…';
+    try{
+      await pret();
+      const cle = cleDe(c);
+      const v = (await Promise.race([db.ref('operateurs/'+cle).once('value'), new Promise((_,ko)=>setTimeout(()=>ko(new Error('délai')), 12000))])).val();
+      if(!v){ $('e-code').textContent = 'Code inconnu.'; return; }
+      if(v.actif===false){ montrerBloque(); return; }
+      ls.set(LS_CLE, { cle }); ouvrir(cle, v);
+      try{ if('Notification' in window && Notification.permission==='default') Notification.requestPermission(); }catch(e){}
+    }catch(e){ $('e-code').textContent = 'Connexion impossible. Vérifiez Internet et réessayez.'; }
+    finally{ $('b-entrer').disabled = false; $('b-entrer').textContent = 'Se connecter'; }
+  }
+  function montrerBloque(){
+    $('z-bloque').innerHTML = '<div class="bloque">🔒 Accès bloqué par l\'administrateur.</div>';
+  }
+  function fermer(motif){
+    ls.del(LS_CLE); OP = null;
+    try{ refOp && refOp.off(); }catch(e){} try{ refCmd && refCmd.off(); }catch(e){} refOp = refCmd = null;
+    ['l-att','l-enc','l-fin'].forEach(i=>$(i).innerHTML = '');
+    $('v-file').classList.add('hide'); $('v-porte').classList.remove('hide'); $('i-code').value = '';
+    if(motif==='bloque') montrerBloque();
+    if(motif==='supprime') $('z-bloque').innerHTML = '<div class="bloque">Ce code n\'est plus valable. Demandez un nouveau code à l\'administrateur.</div>';
+    document.title = 'File DK · Hippocrate';
+  }
+  function ouvrir(cle, v){
+    OP = { cle, id:v.id||'', nom:v.nom||'Opérateur' };
+    $('h-op').textContent = '👤 '+OP.nom;
+    $('v-porte').classList.add('hide'); $('v-file').classList.remove('hide');
+    $('b-son').setAttribute('aria-pressed', String(sonOn));
+    if(ls.get('hcc_dk_mobile_ecran')) ecranAllume(true);
+    try{ db.ref('operateurs/'+cle).update({ vuLe:new Date().toISOString(), vuVia:'Téléphone' }); }catch(e){}
+    // Blocage / suppression du code par l'administrateur : verrouillage immédiat
+    refOp = db.ref('operateurs/'+cle);
+    refOp.on('value', s=>{ const x = s.val(); if(!x) return fermer('supprime'); if(x.actif===false) return fermer('bloque'); OP.nom = x.nom||OP.nom; $('h-op').textContent = '👤 '+OP.nom; });
+    abonner();
+  }
+  $('b-entrer').addEventListener('click', ()=>entrer($('i-code').value));
+  $('i-code').addEventListener('keydown', e=>{ if(e.key==='Enter') entrer($('i-code').value); });
+  $('b-sortir').addEventListener('click', ()=>{ if(confirm('Se déconnecter de ce téléphone ?')) fermer(); });
+  $('b-son').addEventListener('click', ()=>{ sonOn = !sonOn; ls.set('hcc_dk_mobile_son', sonOn); $('b-son').setAttribute('aria-pressed', String(sonOn)); if(sonOn){ deverrouillerSon(); bip(); } });
+  $('b-ecran').addEventListener('click', ()=>ecranAllume($('b-ecran').getAttribute('aria-pressed')!=='true'));
+  document.addEventListener('click', deverrouillerSon, { passive:true });
+
+  // ── File DK du jour ──
+  let CMDS = {}, vus = null, premier = true;
+  function abonner(){
+    try{ refCmd && refCmd.off(); }catch(e){}
+    jourCmd = auj(); vus = null; premier = true;
+    const minuit = new Date(); minuit.setHours(0,0,0,0);
+    refCmd = db.ref('commandes').orderByChild('createdAt').startAt(minuit.getTime());
+    refCmd.on('value', s=>{
+      const tout = s.val() || {}; CMDS = {};
+      Object.entries(tout).forEach(([k,c])=>{ if(c && typeof c==='object' && (c.date===jourCmd || (c.createdAt||0)>=minuit.getTime())) CMDS[k] = Object.assign({ id:k }, c); });
+      const nouvelles = Object.values(CMDS).filter(c=>c.statut==='nouvelle');
+      if(vus){ const neuves = nouvelles.filter(c=>!vus.has(c.id)); if(neuves.length) alerter(neuves); neuves.forEach(c=>c._neuve = true); }
+      vus = new Set(Object.keys(CMDS));
+      premier = false; rendre();
+    }, ()=>{ $('z-alerte').innerHTML = '<div class="alerte">Lecture impossible pour le moment — vérifiez Internet.</div>'; });
+  }
+  setInterval(()=>{ if(OP && auj()!==jourCmd) abonner(); else if(OP) rendre(); }, 30000);
+  pret().then(()=>{ db.ref('.info/connected').on('value', s=>{ $('pt').classList.toggle('on', !!s.val()); }); });
+
+  function resume(c){ return (c.items||[]).filter(i=>i && i.nom).map(i=>(Number(i.qty)||1)+'× '+i.nom).join(', '); }
+  function origine(c){
+    if(c.source==='en_ligne') return '<span class="badge b-ligne">🌐 EN LIGNE</span>';
+    if(c.typeResid || /^DK-R-/.test(String(c.id||''))) return '<span class="badge b-av">🎁 AVANTAGE</span>';
+    return '<span class="badge b-borne">🖥 BORNE</span>';
+  }
+  function paiement(c){
+    const p = c.paiementFinal || c.paiement;
+    if(p==='offert' || c.typeResid) return '<span class="pay offert">🎁 Offert</span>';
+    if(p==='credit') return '<span class="pay sortie">🚪 À régler à la sortie</span>';
+    return '<span class="pay comptant">💵 Au comptoir</span>';
+  }
+  const LIB = { prise:'✋', soldee:'💰', credit:'📋', annulee:'❌', statut:'↻' };
+  function trace(c){
+    const t = c.trace ? Object.values(c.trace).filter(Boolean).sort((a,b)=>String(a.at).localeCompare(String(b.at))) : [];
+    if(t.length) return t.map(x=>(LIB[x.a]||'•')+' '+(x.par && x.par!==x.via ? esc(x.par)+' '+(x.via==='mobile'?'📱':esc(x.via||'')) : esc(x.via||x.par||'?'))+' '+esc(x.h||'')).join(' · ');
+    const l = []; if(c.prisPar) l.push('✋ '+esc(c.prisPar)); if(c.soldePar) l.push('💰 '+esc(c.soldePar)); return l.join(' · ');
+  }
+  function depuis(c){
+    const t = c.createdAt || 0; if(!t) return { txt:c.heure||'', min:0 };
+    const min = Math.max(0, Math.round((Date.now()-t)/60000));
+    return { txt:(c.heure||hm(new Date(t)))+' · '+(min<1 ? 'à l\'instant' : 'il y a '+min+' min'), min };
+  }
+  function carte(c, cls){
+    const a = depuis(c), tr = trace(c);
+    return '<div class="cmd '+cls+(c._neuve?' neuve':'')+'" data-id="'+esc(c.id)+'">'
+      + '<div class="tete"><span class="num">N°'+esc(c.num||'?')+'</span><span class="age'+(cls!=='fin' && a.min>=10?' retard':'')+'">'+esc(a.txt)+'</span></div>'
+      + '<div class="client">'+esc(cap(c.studentNom||'Visiteur'))+(c.studentNum?' <span>N°'+esc(c.studentNum)+'</span>':'')+origine(c)+'</div>'
+      + '<ul class="items">'+(c.items||[]).filter(i=>i && i.nom).map(i=>'<li><b>'+(Number(i.qty)||1)+'×</b> '+esc(i.nom)+(i.note?' <i style="color:#7A4F00">('+esc(i.note)+')</i>':'')+'</li>').join('')+'</ul>'
+      + (c.note && !c.typeResid ? '<div class="note">📝 '+esc(c.note)+'</div>' : '')
+      + '<div class="pied">'+paiement(c)+'<span class="tot">'+fmt(c.total)+' DT</span></div>'
+      + (tr ? '<div class="trace">'+tr+'</div>' : '')
+      + (c.statut==='nouvelle' ? '<button class="bt" data-prendre="'+esc(c.id)+'">✋ Je prends</button>' : '')
+      + '</div>';
+  }
+  function rendre(){
+    const L = Object.values(CMDS);
+    const att = L.filter(c=>c.statut==='nouvelle').sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+    const enc = L.filter(c=>c.statut==='en_cours').sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+    const fin = L.filter(c=>c.statut==='soldee' || c.statut==='annulee').sort((a,b)=>String(b.soldeAt||b.annuleAt||'').localeCompare(String(a.soldeAt||a.annuleAt||'')));
+    $('n-att').textContent = att.length; $('n-enc').textContent = enc.length; $('n-fin').textContent = fin.filter(c=>c.statut==='soldee').length; $('n-fin2').textContent = fin.length;
+    $('l-att').innerHTML = att.length ? att.map(c=>carte(c,'')).join('') : '<div class="vide">Aucune commande en attente 👍</div>';
+    $('l-enc').innerHTML = enc.length ? enc.map(c=>carte(c,'enc')).join('') : '<div class="vide">Rien en préparation</div>';
+    $('l-fin').innerHTML = fin.length ? fin.slice(0,40).map(c=>'<div class="mini">'+(c.statut==='annulee'?'❌ ':'✅ ')+'<b>N°'+esc(c.num)+'</b> · '+esc(cap(c.studentNom||'Visiteur'))+' · '+esc(c.soldeHeure||c.annuleHeure||'')+'<br>'+esc(resume(c))+(trace(c)?'<div class="tr">'+trace(c)+'</div>':'')+'</div>').join('') : '<div class="vide">—</div>';
+    document.title = (att.length ? '('+att.length+') ' : '')+'File DK · Hippocrate';
+    L.forEach(c=>{ delete c._neuve; });
+    document.querySelectorAll('[data-prendre]').forEach(b=>b.addEventListener('click', ()=>prendre(b.dataset.prendre, b)));
+  }
+
+  // ✋ Je prends : un seul opérateur peut prendre une commande (transaction sur le statut)
+  async function prendre(id, b){
+    if(!OP) return;
+    b.disabled = true; b.textContent = '…';
+    try{
+      await pret();
+      const res = await db.ref('commandes/'+id+'/statut').transaction(cur=>{ if(cur==='nouvelle') return 'en_cours'; return; });
+      if(!res.committed){
+        const c = (await db.ref('commandes/'+id).once('value')).val() || {};
+        toast(c.prisPar ? 'Déjà prise par '+c.prisPar : 'Commande déjà prise ou traitée'); return;
+      }
+      const d = new Date();
+      await db.ref('commandes/'+id).update({ prisPar:OP.nom, prisParId:OP.id, prisVia:'mobile', prisAt:d.toISOString() });
+      await db.ref('commandes/'+id+'/trace').push({ a:'prise', par:OP.nom, parId:OP.id, via:'mobile', at:d.toISOString(), h:hm(d) });
+      toast('✋ Commande prise — à vous de la préparer');
+    }catch(e){ toast('Échec : vérifiez Internet et réessayez'); }
+    finally{ if(b.isConnected){ b.disabled = false; b.textContent = '✋ Je prends'; } }
+  }
+
+  // Reprise de session
+  (async ()=>{
+    const m = ls.get(LS_CLE); if(!m || !m.cle) return;
+    try{ await pret(); const v = (await db.ref('operateurs/'+m.cle).once('value')).val();
+      if(!v){ fermer('supprime'); return; } if(v.actif===false){ fermer('bloque'); return; } ouvrir(m.cle, v); }catch(e){}
+  })();
+})();
+</script>
+</body>
+</html>
