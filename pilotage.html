@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B3B43">
+<meta name="robots" content="noindex,nofollow">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Pilotage · Hippocrate</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B3B43'/%3E%3Ctext x='32' y='43' font-size='34' text-anchor='middle'%3E%F0%9F%93%8A%3C/text%3E%3C/svg%3E">
+<style>
+  :root{ --fond:#0B3B43; --carte:#FFFFFF; --texte:#14282C; --dim:#5E7479; --mint:#5DCAA5; --or:#F2B544; --orange:#FF7A3D; --rouge:#D84343; --vert:#2E9E6A; --violet:#5E35B1; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; background:var(--fond); color:#F6F1E4; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+  body{ min-height:100vh; padding-bottom:30px; }
+  .hide{ display:none !important; }
+  header{ position:sticky; top:0; z-index:5; background:var(--fond); padding:calc(10px + env(safe-area-inset-top)) 14px 8px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .titre{ font-weight:800; font-size:17px; } .titre small{ display:block; font-weight:600; font-size:12px; color:var(--mint); }
+  .pt{ width:9px; height:9px; border-radius:50%; background:#888; display:inline-block; margin-right:5px; } .pt.on{ background:#3DDC84; box-shadow:0 0 6px #3DDC84; }
+  header button{ background:rgba(255,255,255,.08); color:#F6F1E4; border:1px solid rgba(255,255,255,.14); border-radius:10px; padding:7px 10px; font-size:15px; }
+  main{ padding:10px 12px; max-width:680px; margin:0 auto; }
+  .alertes{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+  .al{ border-radius:10px; padding:9px 11px; font-size:13.5px; font-weight:700; background:#7A2E00; color:#FFE0C2; }
+  .al.ok{ background:rgba(61,220,132,.14); color:#B9F5D3; font-weight:600; }
+  .grille{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .k{ background:var(--carte); color:var(--texte); border-radius:14px; padding:10px 12px; border-top:5px solid var(--mint); }
+  .k.or{ border-top-color:var(--or); } .k.or2{ border-top-color:var(--orange); } .k.vi{ border-top-color:var(--violet); } .k.ro{ border-top-color:var(--rouge); }
+  .k .l{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--dim); }
+  .k .v{ font-size:25px; font-weight:800; line-height:1.15; margin-top:2px; font-variant-numeric:tabular-nums; }
+  .k .v small{ font-size:13px; font-weight:700; color:var(--dim); }
+  .k .s{ font-size:12px; color:var(--dim); margin-top:2px; line-height:1.35; }
+  .large{ grid-column:1 / -1; }
+  .barre{ height:8px; border-radius:6px; background:#E6ECEC; overflow:hidden; margin-top:6px; } .barre i{ display:block; height:100%; background:var(--mint); }
+  h2{ font-size:12.5px; text-transform:uppercase; letter-spacing:.8px; color:var(--mint); margin:16px 2px 8px; }
+  details{ background:rgba(255,255,255,.05); border-radius:12px; margin-bottom:8px; }
+  summary{ cursor:pointer; padding:11px 12px; font-weight:700; font-size:14px; list-style:none; display:flex; justify-content:space-between; }
+  summary::-webkit-details-marker{ display:none; }
+  summary span{ color:var(--or); }
+  .lst{ padding:0 12px 10px; }
+  .li{ font-size:13px; border-top:1px solid rgba(255,255,255,.08); padding:7px 0; display:flex; justify-content:space-between; gap:8px; line-height:1.35; }
+  .li b{ color:#fff; } .li em{ color:rgba(246,241,228,.6); font-style:normal; font-size:12px; }
+  .li .m{ white-space:nowrap; font-weight:700; color:var(--or); font-variant-numeric:tabular-nums; }
+  .vide{ color:rgba(246,241,228,.5); font-size:13px; padding:6px 0; }
+  .maj{ text-align:center; font-size:11.5px; color:rgba(246,241,228,.5); margin-top:14px; }
+  .porte{ max-width:380px; margin:12vh auto 0; padding:0 22px; text-align:center; }
+  .porte .logo{ font-size:46px; } .porte h1{ font-size:22px; margin:6px 0 2px; } .porte p{ color:rgba(246,241,228,.7); font-size:14.5px; }
+  .porte input{ width:100%; font-size:28px; letter-spacing:10px; text-align:center; padding:14px; border-radius:14px; border:2px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06); color:#fff; margin:14px 0 10px; }
+  .porte input:focus{ outline:none; border-color:var(--mint); }
+  .err{ color:#FF9A9A; font-weight:700; font-size:14px; min-height:20px; }
+  .bt{ width:100%; border:none; border-radius:12px; padding:14px; font-size:17px; font-weight:800; background:var(--or); color:#14282C; }
+</style>
+</head>
+<body>
+<section id="v-porte" class="porte">
+  <div class="logo">📊</div>
+  <h1>Pilotage — Administrateur</h1>
+  <p>Entrez votre <b>code administrateur</b> (celui de la gestion des opérateurs dans l'app).</p>
+  <input id="i-code" type="password" inputmode="numeric" maxlength="12" placeholder="••••">
+  <div class="err" id="e-code"></div>
+  <button class="bt" id="b-entrer">Ouvrir le tableau de bord</button>
+  <p style="font-size:12px;margin-top:22px;opacity:.6">Lecture seule · Hippocrate Co-Studying Club</p>
+</section>
+
+<section id="v-tdb" class="hide">
+  <header>
+    <div class="titre"><span class="pt" id="pt"></span>Pilotage du jour<small id="h-date">—</small></div>
+    <div><button id="b-sortir" title="Se déconnecter">⏻</button></div>
+  </header>
+  <main>
+    <div class="alertes" id="z-alertes"></div>
+    <div class="grille">
+      <div class="k"><div class="l">👥 Présents</div><div class="v" id="k-pres">—</div><div class="s" id="k-pres-s"></div><div class="barre"><i id="k-pres-b" style="width:0"></i></div></div>
+      <div class="k vi"><div class="l">🆕 Nouveaux inscrits</div><div class="v" id="k-nv">—</div><div class="s" id="k-nv-s"></div></div>
+      <div class="k or"><div class="l">🎟 CA accès + fournitures</div><div class="v" id="k-acc">—</div><div class="s" id="k-acc-s"></div></div>
+      <div class="k or2"><div class="l">☕ CA buvette</div><div class="v" id="k-buv">—</div><div class="s" id="k-buv-s"></div></div>
+      <div class="k large or"><div class="l">💰 Encaissé aujourd'hui</div><div class="v" id="k-tot">—</div><div class="s" id="k-tot-s"></div></div>
+      <div class="k"><div class="l">📋 File DK</div><div class="v" id="k-dk">—</div><div class="s" id="k-dk-s"></div></div>
+      <div class="k ro"><div class="l">💸 Dépenses du jour</div><div class="v" id="k-dep">—</div><div class="s" id="k-dep-s"></div></div>
+    </div>
+    <h2>Détails</h2>
+    <details><summary>🎟 Derniers accès <span id="n-acc">0</span></summary><div class="lst" id="l-acc"></div></details>
+    <details><summary>☕ Dernières ventes buvette <span id="n-buv">0</span></summary><div class="lst" id="l-buv"></div></details>
+    <details><summary>🧑‍💼 Opérateurs (actions DK du jour) <span id="n-op">0</span></summary><div class="lst" id="l-op"></div></details>
+    <details><summary>💸 Dépenses <span id="n-dep">0</span></summary><div class="lst" id="l-dep"></div></details>
+    <details><summary>📝 Réclamations non traitées <span id="n-rec">0</span></summary><div class="lst" id="l-rec"></div></details>
+    <div class="maj" id="maj">—</div>
+  </main>
+</section>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+(function(){
+  'use strict';
+  // Tableau de bord de l'administrateur — LECTURE SEULE (aucune écriture dans Firebase).
+  const CONFIG = {
+    apiKey: "AIzaSyD1UAodYE2HzrwvNiCS005bpcmuxlplBRw",
+    authDomain: "hippocrate-dk.firebaseapp.com",
+    databaseURL: "https://hippocrate-dk-default-rtdb.firebaseio.com",
+    projectId: "hippocrate-dk",
+    storageBucket: "hippocrate-dk.firebasestorage.app",
+    messagingSenderId: "128544353242",
+    appId: "1:128544353242:web:908fb41ed08533afc82ee3"
+  };
+  const OP_SEL = 'hcc-op-2026|';
+  const LS = 'hcc_pilotage_adm';
+  const $ = id=>document.getElementById(id);
+  const esc = v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const p2 = n=>String(n).padStart(2,'0');
+  const auj = ()=>{ const d = new Date(); return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); };
+  const f3 = n=>(Math.round((Number(n)||0)*1000)/1000).toFixed(3).replace('.',',');
+  const f0 = n=>Math.round(Number(n)||0).toLocaleString('fr-FR');
+  const cap = s=>String(s||'').toLowerCase().replace(/(^|[\s-])\S/g, m=>m.toUpperCase());
+  const ls = { get(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }, del(k){ try{ localStorage.removeItem(k); }catch(e){} } };
+  function sha256(ascii){
+    const r = (v,a)=>(v>>>a)|(v<<(32-a)); const m = Math.pow, mx = m(2,32); let res = '', w = [], i, j;
+    const s = unescape(encodeURIComponent(ascii)); const bl = s.length*8;
+    let h = sha256.h = sha256.h || [], k = sha256.k = sha256.k || [], pl = k.length; const ic = {};
+    for(let c=2; pl<64; c++){ if(!ic[c]){ for(i=0;i<313;i+=c) ic[i]=c; h[pl] = (m(c,.5)*mx)|0; k[pl++] = (m(c,1/3)*mx)|0; } }
+    let str = s + '\x80'; while(str.length%64-56) str += '\x00';
+    for(i=0;i<str.length;i++){ j = str.charCodeAt(i); w[i>>2] |= j << ((3-i)%4)*8; }
+    w[w.length] = ((bl/mx)|0); w[w.length] = (bl);
+    h = h.slice(0,8);
+    for(j=0;j<w.length;){
+      const W = w.slice(j, j+=16), oh = h; h = h.slice(0,8);
+      for(i=0;i<64;i++){
+        const w15 = W[i-15], w2 = W[i-2], a = h[0], e = h[4];
+        const t1 = h[7] + (r(e,6)^r(e,11)^r(e,25)) + ((e&h[5])^((~e)&h[6])) + k[i]
+          + (W[i] = (i<16) ? W[i] : (W[i-16] + (r(w15,7)^r(w15,18)^(w15>>>3)) + W[i-7] + (r(w2,17)^r(w2,19)^(w2>>>10)))|0);
+        const t2 = (r(a,2)^r(a,13)^r(a,22)) + ((a&h[1])^(a&h[2])^(h[1]&h[2]));
+        h = [(t1+t2)|0].concat(h); h[4] = (h[4]+t1)|0; h.length = 8;
+      }
+      for(i=0;i<8;i++) h[i] = (h[i]+oh[i])|0;
+    }
+    for(i=0;i<8;i++) for(j=3;j+1;j--){ const b = (h[i]>>(j*8))&255; res += ((b<16)?0:'')+b.toString(16); }
+    return res;
+  }
+  // ── Firebase ──
+  let db = null; const prets = [];
+  const pret = ()=>new Promise(ok=>{ if(db) ok(); else prets.push(ok); });
+  function initFB(){
+    try{
+      if(typeof firebase==='undefined' || !firebase.database) return;
+      if(!firebase.apps.length) firebase.initializeApp(CONFIG);
+      const go = ()=>{ if(db) return; db = firebase.database(); prets.splice(0).forEach(f=>f()); };
+      try{ firebase.auth().signInAnonymously().then(go).catch(go); }catch(e){ go(); }
+    }catch(e){ console.warn('Firebase', e); }
+  }
+  function charger(src){ return new Promise((ok,ko)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=ko; document.head.appendChild(s); }); }
+  if(typeof firebase==='undefined'){
+    const base='https://cdn.jsdelivr.net/npm/firebase@9.23.0/';
+    charger(base+'firebase-app-compat.js').then(()=>Promise.all([charger(base+'firebase-database-compat.js'),charger(base+'firebase-auth-compat.js')])).then(initFB).catch(()=>{});
+  } else initFB();
+
+  // ── Accès administrateur ──
+  let refs = [], refAdm = null, jour = '';
+  async function entrer(code){
+    $('e-code').textContent = '';
+    const c = String(code||'').replace(/\D/g,''); if(c.length<4){ $('e-code').textContent = 'Code administrateur (au moins 4 chiffres).'; return; }
+    $('b-entrer').disabled = true; $('b-entrer').textContent = 'Vérification…';
+    try{
+      await pret();
+      const adm = (await Promise.race([db.ref('operateurs_admin').once('value'), new Promise((_,ko)=>setTimeout(()=>ko(new Error('délai')), 12000))])).val();
+      if(!adm || !adm.hash){ $('e-code').textContent = 'Aucun code administrateur : créez-le d\'abord dans l\'app (bouton 👥 Opérateurs).'; return; }
+      const h = sha256(OP_SEL+'admin|'+c);
+      if(h!==adm.hash){ $('e-code').textContent = 'Code incorrect.'; return; }
+      ls.set(LS, { h }); ouvrir(h);
+    }catch(e){ $('e-code').textContent = 'Connexion impossible. Vérifiez Internet.'; }
+    finally{ $('b-entrer').disabled = false; $('b-entrer').textContent = 'Ouvrir le tableau de bord'; }
+  }
+  function fermer(){
+    ls.del(LS); refs.forEach(r=>{ try{ r.off(); }catch(e){} }); refs = []; try{ refAdm && refAdm.off(); }catch(e){}
+    $('v-tdb').classList.add('hide'); $('v-porte').classList.remove('hide'); $('i-code').value = '';
+  }
+  function ouvrir(h){
+    $('v-porte').classList.add('hide'); $('v-tdb').classList.remove('hide');
+    // Si le code administrateur change dans l'app, ce téléphone se déconnecte.
+    refAdm = db.ref('operateurs_admin'); refAdm.on('value', s=>{ const a = s.val(); if(!a || a.hash!==h){ fermer(); $('e-code').textContent = 'Code administrateur modifié : reconnectez-vous.'; } });
+    abonner();
+  }
+  $('b-entrer').addEventListener('click', ()=>entrer($('i-code').value));
+  $('i-code').addEventListener('keydown', e=>{ if(e.key==='Enter') entrer($('i-code').value); });
+  $('b-sortir').addEventListener('click', ()=>{ if(confirm('Se déconnecter de ce téléphone ?')) fermer(); });
+
+  // ── Données du jour, en direct ──
+  const D = {};
+  function ecouter(cle, ref){ refs.push(ref); ref.on('value', s=>{ D[cle] = s.val(); planifier(); }, ()=>{}); }
+  function abonner(){
+    refs.forEach(r=>{ try{ r.off(); }catch(e){} }); refs = [];
+    Object.keys(D).forEach(k=>delete D[k]);
+    jour = auj();
+    $('h-date').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long', day:'numeric', month:'long'});
+    const depuis = new Date(); depuis.setHours(0,0,0,0);
+    ecouter('presents', db.ref('presents/'+jour));
+    ecouter('sorties', db.ref('sorties/'+jour));
+    ecouter('live', db.ref('affichage_live'));
+    ecouter('nouveaux', db.ref('nouveaux_etudiants_'+jour));
+    ecouter('demandes', db.ref('demandes_acces').orderByChild('date').equalTo(jour));
+    ecouter('journal', db.ref('journal_'+jour));
+    ecouter('vd', db.ref('ventes_directes/'+jour));
+    ecouter('cmd', db.ref('commandes').orderByChild('createdAt').startAt(depuis.getTime() - 36*3600e3));
+    ecouter('dep', db.ref('depenses_'+jour));
+    ecouter('recl', db.ref('reclamations').orderByChild('ts').limitToLast(150));
+  }
+  let tPlan = null;
+  function planifier(){ clearTimeout(tPlan); tPlan = setTimeout(rendre, 250); }
+  setInterval(()=>{ if(!$('v-tdb').classList.contains('hide')){ if(auj()!==jour) abonner(); else rendre(); } }, 60000);
+  pret().then(()=>{ db.ref('.info/connected').on('value', s=>{ $('pt').classList.toggle('on', !!s.val()); planifier(); }); });
+
+  const val = o=>Object.values(o||{}).filter(x=>x && typeof x==='object');
+  const mn = h=>{ const m = String(h||'').match(/(\d{1,2})\D(\d{2})/); return m ? (+m[1])*60+(+m[2]) : null; };
+  function li(a, b, m){ return '<div class="li"><div>'+a+(b?'<br><em>'+b+'</em>':'')+'</div>'+(m!=null?'<div class="m">'+m+'</div>':'')+'</div>'; }
+
+  function rendre(){
+    const T = jour;
+    // Présences
+    const pres = D.presents || {}, sort = D.sorties || {};
+    const nPres = Object.keys(pres).length;
+    const partis = Object.keys(sort).filter(n=>{ const ms = mn(sort[n] && sort[n].heure), mp = mn(pres[n] && pres[n].heure); return pres[n] && (ms==null || mp==null || ms>=mp); }).length;
+    const live = D.live && D.live.date===T ? D.live : null;
+    const capa = live ? Number(live.capacite)||0 : 0;
+    const surPlace = Math.max(0, nPres - partis);
+    $('k-pres').innerHTML = surPlace+(capa?' <small>/ '+capa+'</small>':'');
+    $('k-pres-s').textContent = nPres+' passé(s) aujourd\'hui'+(partis?' · '+partis+' parti(s)':'')+(live && live.libres!=null?' · '+live.libres+' place(s) libre(s)':'');
+    $('k-pres-b').style.width = capa ? Math.min(100, Math.round(surPlace/capa*100))+'%' : '0';
+    $('k-pres-b').style.background = capa && surPlace/capa>=.9 ? 'var(--rouge)' : (capa && surPlace/capa>=.7 ? 'var(--or)' : 'var(--mint)');
+    // Nouveaux / demandes
+    const nNv = Object.keys(D.nouveaux||{}).length;
+    const dems = val(D.demandes).filter(d=>d.date===T);
+    const demAtt = dems.filter(d=>d.statut==='en_attente');
+    $('k-nv').textContent = nNv;
+    $('k-nv-s').textContent = dems.length+' demande(s) d\'accès en ligne/borne'+(demAtt.length?' · '+demAtt.length+' en attente':'');
+    // Accès + fournitures (journal du jour)
+    const J = val(D.journal).filter(e=>!e.cancelled);
+    let caAcc = 0, caFrt = 0, nPay = 0, nGrat = 0, credit = 0; const accL = [];
+    J.forEach(e=>{
+      if(e.type==='fourniture'){ caFrt += Number(e.montant)||0; return; }
+      if(e.type!=='acces') return;
+      const m = (e.montantPaye!=null ? Number(e.montantPaye) : Number(e.montant)) || 0;
+      caAcc += m; caFrt += Number(e.montantFni)||0;
+      if(e.formule!=='COMPLEMENT'){ if(m>0) nPay++; else nGrat++; }
+      if(e.credit && (Number(e.soldeRestant)||0)>0) credit += Number(e.soldeRestant)||0;
+      accL.push(e);
+    });
+    $('k-acc').innerHTML = f3(caAcc+caFrt)+' <small>DT</small>';
+    $('k-acc-s').textContent = nPay+' payant(s) · '+nGrat+' abonné(s)/offert(s)'+(caFrt?' · fourn. '+f3(caFrt):'')+(credit?' · crédit '+f3(credit):'');
+    // Buvette : ventes directes + commandes DK soldées aujourd'hui
+    const VD = val(D.vd).filter(v=>!v.cancelled);
+    const caVD = VD.reduce((s,v)=>s+(Number(v.montant)||0)+(Number(v.creditFideliteUtilise)||0),0);
+    const CM = Object.entries(D.cmd||{}).map(([k,c])=>Object.assign({id:k}, c)).filter(c=>c && typeof c==='object');
+    const sold = CM.filter(c=>c.statut==='soldee' && (c.soldeDate===T || (!c.soldeDate && c.date===T)));
+    const caDK = sold.reduce((s,c)=>s+(Number(c.total)||0),0);
+    const dkCredit = sold.filter(c=>c.paiementFinal==='credit').reduce((s,c)=>s+(Number(c.total)||0),0);
+    const fid = sold.reduce((s,c)=>s+(Number(c.montantRegleFidelite)||0),0) + VD.reduce((s,v)=>s+(Number(v.creditFideliteUtilise)||0),0);
+    $('k-buv').innerHTML = f3(caVD+caDK)+' <small>DT</small>';
+    $('k-buv-s').textContent = 'DK '+f3(caDK)+' ('+sold.length+') · comptoir '+f3(caVD)+' ('+VD.length+')'+(dkCredit?' · à crédit '+f3(dkCredit):'')+(fid>0.0005?' · fidélité '+f3(fid):'');
+    // Total
+    const buvEnc = caVD + caDK - dkCredit;
+    $('k-tot').innerHTML = f3(caAcc+caFrt+buvEnc)+' <small>DT</small>';
+    $('k-tot-s').textContent = 'Accès '+f3(caAcc)+' · Fournitures '+f3(caFrt)+' · Buvette '+f3(buvEnc)+(fid>0.0005?' (dont fidélité '+f3(fid)+')':'')
+      + ((credit+dkCredit)>0.0005 ? ' — en plus, laissé à crédit : '+f3(credit+dkCredit)+(credit&&dkCredit?' (accès '+f3(credit)+', buvette '+f3(dkCredit)+')':'') : '');
+    // File DK
+    const today = CM.filter(c=>c.date===T || (c.createdAt||0)>=new Date(T+'T00:00').getTime());
+    const att = today.filter(c=>c.statut==='nouvelle'), enc = today.filter(c=>c.statut==='en_cours');
+    const plusVieux = att.reduce((m,c)=>Math.max(m, c.createdAt ? Math.round((Date.now()-c.createdAt)/60000) : 0), 0);
+    const delais = sold.filter(c=>c.createdAt && c.soldeAt).map(c=>(Date.parse(c.soldeAt)-c.createdAt)/60000).filter(x=>x>0 && x<240);
+    const moy = delais.length ? Math.round(delais.reduce((a,b)=>a+b,0)/delais.length) : null;
+    $('k-dk').innerHTML = att.length+' <small>en attente</small>';
+    $('k-dk-s').textContent = enc.length+' en préparation'+(att.length?' · la plus ancienne : '+plusVieux+' min':'')+(moy!=null?' · délai moyen '+moy+' min':'');
+    // Dépenses
+    const DEP = (Array.isArray(D.dep) ? D.dep : val(D.dep)).filter(d=>d && (Number(d.montant)||0)!==0);
+    const totDep = DEP.reduce((s,d)=>s+Math.abs(Number(d.montant)||0),0);
+    $('k-dep').innerHTML = f3(totDep)+' <small>DT</small>';
+    $('k-dep-s').textContent = DEP.length+' dépense(s) saisie(s)';
+    // Réclamations
+    const REC = val(D.recl).filter(r=>r.statut!=='traitee').sort((a,b)=>(b.ts||0)-(a.ts||0));
+    const recN = REC.filter(r=>r.statut==='nouvelle');
+
+    // Alertes
+    const al = [];
+    if(!$('pt').classList.contains('on')) al.push('<div class="al">📡 Connexion perdue — chiffres figés au dernier état reçu.</div>');
+    if(demAtt.length) al.push('<div class="al">⏳ '+demAtt.length+' demande(s) d\'accès en attente à l\'accueil</div>');
+    if(att.length && plusVieux>=10) al.push('<div class="al">☕ Commande DK en attente depuis '+plusVieux+' min</div>');
+    if(recN.length) al.push('<div class="al">📝 '+recN.length+' nouvelle(s) réclamation(s) non lue(s)</div>');
+    if(live && capa && Number(live.libres)<=3) al.push('<div class="al">🪑 Presque complet : '+live.libres+' place(s) libre(s)</div>');
+    $('z-alertes').innerHTML = al.length ? al.join('') : '<div class="al ok">✓ Rien à signaler pour le moment</div>';
+
+    // Détails
+    accL.sort((a,b)=>String(b.heure||'').localeCompare(String(a.heure||'')));
+    $('n-acc').textContent = accL.length;
+    $('l-acc').innerHTML = accL.length ? accL.slice(0,25).map(e=>li('<b>'+esc(cap(e.nom||'N°'+e.num))+'</b> · '+esc(e.heure||''), esc(String(e.label||e.formule||'').replace(/ \(.*\)$/,''))+(e.poste?' · '+esc(e.poste):''), f3(e.montantPaye!=null?e.montantPaye:e.montant)+(e.credit&&e.soldeRestant>0?' <em>(+'+f3(e.soldeRestant)+' crédit)</em>':''))).join('') : '<div class="vide">Aucun accès enregistré.</div>';
+    const ventes = VD.map(v=>({h:v.heure||'', t:'Comptoir · '+(v.libelle||''), q:(v.etudiantNom||v.personnelNom||''), m:(Number(v.montant)||0)+(Number(v.creditFideliteUtilise)||0)}))
+      .concat(sold.map(c=>({h:c.soldeHeure||c.heure||'', t:'DK N°'+(c.num||'?')+' · '+(c.items||[]).map(i=>(i.qty||1)+'× '+i.nom).join(', '), q:cap(c.studentNom||'')+(c.soldePar?' — encaissé : '+c.soldePar:''), m:Number(c.total)||0, cr:c.paiementFinal==='credit'})))
+      .sort((a,b)=>String(b.h).localeCompare(String(a.h)));
+    $('n-buv').textContent = ventes.length;
+    $('l-buv').innerHTML = ventes.length ? ventes.slice(0,25).map(v=>li('<b>'+esc(v.h)+'</b> · '+esc(v.t), esc(v.q), f3(v.m)+(v.cr?' <em>crédit</em>':''))).join('') : '<div class="vide">Aucune vente.</div>';
+    const ops = {};
+    CM.forEach(c=>Object.values(c.trace||{}).forEach(x=>{ if(!x || !String(x.at||'').length) return; const d = new Date(x.at); if(isNaN(d) || auj()!==d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())) return;
+      const k = (x.par && x.par!==x.via) ? x.par : (x.via||'?'); const o = ops[k] = ops[k] || {prise:0, soldee:0, credit:0, annulee:0, der:''}; o[x.a] = (o[x.a]||0)+1; if(String(x.h)>o.der) o.der = x.h||''; }));
+    const opk = Object.keys(ops);
+    $('n-op').textContent = opk.length;
+    $('l-op').innerHTML = opk.length ? opk.map(k=>{ const o = ops[k]; return li('<b>'+esc(k)+'</b>', '✋ '+o.prise+' prises · 💰 '+(o.soldee||0)+' encaissées · 📋 '+(o.credit||0)+' à la sortie'+(o.annulee?' · ❌ '+o.annulee+' annulées':''), o.der ? 'dernier '+esc(o.der) : null); }).join('') : '<div class="vide">Aucune action tracée aujourd\'hui.</div>';
+    $('n-dep').textContent = DEP.length;
+    $('l-dep').innerHTML = DEP.length ? DEP.map(d=>li('<b>'+esc(d.libelle||d.famille||d.code||'Dépense')+'</b>', esc([d.origine, d.code].filter(Boolean).join(' · ')), f3(Math.abs(Number(d.montant)||0)))).join('') : '<div class="vide">Aucune dépense.</div>';
+    $('n-rec').textContent = REC.length;
+    $('l-rec').innerHTML = REC.length ? REC.slice(0,15).map(r=>li('<b>'+esc(cap(r.nom||'N°'+r.num))+'</b> · '+esc(r.motif||''), esc(String(r.message||'').slice(0,140)), esc((r.date||'').split('-').reverse().slice(0,2).join('/')+' '+(r.heure||'')))).join('') : '<div class="vide">Aucune.</div>';
+    $('maj').textContent = 'Mis à jour à '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · en direct · lecture seule';
+  }
+
+  // Reprise de session
+  (async ()=>{
+    const m = ls.get(LS); if(!m || !m.h) return;
+    try{ await pret(); const a = (await db.ref('operateurs_admin').once('value')).val(); if(a && a.hash===m.h) ouvrir(m.h); else ls.del(LS); }catch(e){}
+  })();
+})();
+</script>
+</body>
+</html>
