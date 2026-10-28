@@ -44,6 +44,12 @@
   .st{ display:inline-block; font-size:10.5px; font-weight:800; border-radius:5px; padding:1px 6px; margin-left:4px; }
   .st-ep{ background:#FFCDD2; color:#B71C1C; } .st-et{ background:#FFE0B2; color:#E65100; } .st-ba{ background:#FFF59D; color:#795548; } .st-ok{ background:rgba(61,220,132,.18); color:#B9F5D3; }
   .grp{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--mint); padding:9px 0 2px; }
+  .sw{ display:flex; gap:6px; margin:4px 0 8px; } .sw button{ flex:1; border:1px solid rgba(255,255,255,.2); background:transparent; color:#F6F1E4; border-radius:8px; padding:6px; font-weight:700; font-size:12.5px; }
+  .sw button[aria-pressed="true"]{ background:var(--mint); color:#0B3B43; border-color:var(--mint); }
+  .fg{ border-top:1px solid rgba(255,255,255,.1); padding:7px 0; } .fh{ display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:5px; } .fh span{ color:var(--or); font-weight:700; white-space:nowrap; }
+  .pl{ display:flex; flex-wrap:wrap; gap:5px; } .pu{ font-size:12px; background:rgba(93,202,165,.18); border:1px solid rgba(93,202,165,.45); border-radius:7px; padding:2px 6px; color:#E8FFF5; }
+  .pu b{ font-variant-numeric:tabular-nums; } .pu.g{ background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.2); color:rgba(246,241,228,.75); } .pu.c{ border-color:#F2B544; box-shadow:inset 0 0 0 1px #F2B544; }
+  .lg{ display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; font-size:11px; opacity:.85; } .lg .pu{ font-size:10.5px; }
   .vide{ color:rgba(246,241,228,.5); font-size:13px; padding:6px 0; }
   .maj{ text-align:center; font-size:11.5px; color:rgba(246,241,228,.5); margin-top:14px; }
   .porte{ max-width:380px; margin:12vh auto 0; padding:0 22px; text-align:center; }
@@ -414,7 +420,27 @@
     // Détails
     accL.sort((a,b)=>String(b.heure||'').localeCompare(String(a.heure||'')));
     $('n-acc').textContent = accL.length;
-    $('l-acc').innerHTML = accL.length ? accL.slice(0,25).map(e=>li('<b>'+esc(cap(e.nom||'N°'+e.num))+'</b> · '+esc(e.heure||''), esc(String(e.label||e.formule||'').replace(/ \(.*\)$/,''))+(e.poste?' · '+esc(e.poste):''), f3(e.montantPaye!=null?e.montantPaye:e.montant)+(e.credit&&e.soldeRestant>0?' <em>(+'+f3(e.soldeRestant)+' crédit)</em>':''))).join('') : '<div class="vide">Aucun accès enregistré.</div>';
+    // (28/10/2026) Dispatching par formule (N° d'inscription) pour un pointage rapide avec l'accueil
+    const cleF = e=>{ const l = String(e.label||e.formule||'—');
+      if(/^💰 Règlement crédit/.test(l)) return '💰 Règlements de crédits';
+      if(e.formule==='COMPLEMENT' || /Complément crédit/.test(l)) return '💳 Compléments de crédit';
+      return l.replace(/ \((Demandé|Confirmé) (en ligne|à la borne)\)$/,'').trim() || '—'; };
+    const grp = {};
+    accL.forEach(e=>{ const k = cleF(e); const g = grp[k] = grp[k] || { n:0, ca:0, l:[] };
+      g.n++; g.ca += (e.montantPaye!=null ? Number(e.montantPaye) : Number(e.montant)) || 0; g.l.push(e); });
+    const ordreG = Object.keys(grp).sort((a,b)=>(/^(💰|💳)/.test(a)-/^(💰|💳)/.test(b)) || grp[b].n-grp[a].n || a.localeCompare(b,'fr'));
+    const crOuvert = D.credits ? new Set(val(D.credits).filter(cr=>cr.source!=='buvette' && !cr.acquitte && Number(cr.soldeRestant)>0).map(cr=>String(cr.num))) : null;
+    const resteCr = e=>e.credit && e.soldeRestant>0 && (!crOuvert || crOuvert.has(String(e.num)));
+    const puce = e=>{ const ms = Array.isArray(e.membres) && e.membres.length>1 ? e.membres : null; const pr = String(e.nom||'').trim().split(/\s+/)[0];
+      return '<span class="pu'+(Number(e.montantPaye!=null?e.montantPaye:e.montant)>0?'':' g')+(resteCr(e)?' c':'')+'" title="'+esc(cap(e.nom||'')+' · '+(e.heure||''))+'"><b>'+esc(ms ? ms.join('+') : (e.num||'?'))+'</b>'+(pr?' '+esc(cap(pr)):'')+'</span>'; };
+    const vueF = ordreG.map(k=>{ const g = grp[k]; g.l.sort((a,b)=>Number(a.num)-Number(b.num));
+      return '<div class="fg"><div class="fh"><b>'+esc(k)+'</b><span>'+g.n+' · '+f3(g.ca)+'</span></div><div class="pl">'+g.l.map(puce).join('')+'</div></div>'; }).join('');
+    const vueC = accL.slice(0,40).map(e=>li('<b>'+esc(cap(e.nom||'N°'+e.num))+'</b> <em>N°'+esc(e.num||'')+'</em> · '+esc(e.heure||''), esc(String(e.label||e.formule||'').replace(/ \(.*\)$/,''))+(e.poste?' · '+esc(e.poste):''), f3(e.montantPaye!=null?e.montantPaye:e.montant)+(e.credit&&e.soldeRestant>0?' <em>(+'+f3(e.soldeRestant)+' crédit)</em>':''))).join('');
+    const vueAcc = window._vueAcc || 'f';
+    $('l-acc').innerHTML = accL.length ? '<div class="sw"><button data-va="f" aria-pressed="'+(vueAcc==='f')+'">Par formule</button><button data-va="c" aria-pressed="'+(vueAcc==='c')+'">Par heure</button></div>'
+      + (vueAcc==='f' ? vueF + '<div class="lg"><span class="pu"><b>N°</b> payé</span><span class="pu g"><b>N°</b> abonné / offert</span><span class="pu c"><b>N°</b> reste à crédit</span></div>' : vueC)
+      : '<div class="vide">Aucun accès enregistré.</div>';
+    $('l-acc').querySelectorAll('[data-va]').forEach(b=>b.onclick = ev=>{ ev.stopPropagation(); window._vueAcc = b.dataset.va; rendre(); });
     const ventes = VD.map(v=>({h:v.heure||'', t:'Comptoir · '+(v.libelle||''), q:(v.etudiantNom||v.personnelNom||''), m:(Number(v.montant)||0)+(Number(v.creditFideliteUtilise)||0)}))
       .concat(sold.map(c=>({h:c.soldeHeure||c.heure||'', t:'DK N°'+(c.num||'?')+' · '+(c.items||[]).map(i=>(i.qty||1)+'× '+i.nom).join(', '), q:cap(c.studentNom||'')+(c.soldePar?' — encaissé : '+c.soldePar:''), m:Number(c.total)||0, cr:c.paiementFinal==='credit'})))
       .sort((a,b)=>String(b.h).localeCompare(String(a.h)));
