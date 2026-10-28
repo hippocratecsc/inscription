@@ -41,6 +41,9 @@
   .li{ font-size:13px; border-top:1px solid rgba(255,255,255,.08); padding:7px 0; display:flex; justify-content:space-between; gap:8px; line-height:1.35; }
   .li b{ color:#fff; } .li em{ color:rgba(246,241,228,.6); font-style:normal; font-size:12px; }
   .li .m{ white-space:nowrap; font-weight:700; color:var(--or); font-variant-numeric:tabular-nums; }
+  .st{ display:inline-block; font-size:10.5px; font-weight:800; border-radius:5px; padding:1px 6px; margin-left:4px; }
+  .st-ep{ background:#FFCDD2; color:#B71C1C; } .st-et{ background:#FFE0B2; color:#E65100; } .st-ba{ background:#FFF59D; color:#795548; } .st-ok{ background:rgba(61,220,132,.18); color:#B9F5D3; }
+  .grp{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--mint); padding:9px 0 2px; }
   .vide{ color:rgba(246,241,228,.5); font-size:13px; padding:6px 0; }
   .maj{ text-align:center; font-size:11.5px; color:rgba(246,241,228,.5); margin-top:14px; }
   .porte{ max-width:380px; margin:12vh auto 0; padding:0 22px; text-align:center; }
@@ -77,8 +80,11 @@
       <div class="k large or"><div class="l">💰 Encaissé aujourd'hui</div><div class="v" id="k-tot">—</div><div class="s" id="k-tot-s"></div></div>
       <div class="k"><div class="l">📋 File DK</div><div class="v" id="k-dk">—</div><div class="s" id="k-dk-s"></div></div>
       <div class="k ro"><div class="l">💸 Dépenses du jour</div><div class="v" id="k-dep">—</div><div class="s" id="k-dep-s"></div></div>
+      <div class="k large vi"><div class="l">📦 Stock buvette (étalage + réserve)</div><div class="v" id="k-stk">—</div><div class="s" id="k-stk-s"></div></div>
     </div>
     <h2>Détails</h2>
+    <details><summary>📦 Articles vendables <span id="n-art">0</span></summary><div class="lst" id="l-art"></div></details>
+    <details><summary>🧪 Matières (transformables) <span id="n-mat">0</span></summary><div class="lst" id="l-mat"></div></details>
     <details><summary>🎟 Derniers accès <span id="n-acc">0</span></summary><div class="lst" id="l-acc"></div></details>
     <details><summary>☕ Dernières ventes buvette <span id="n-buv">0</span></summary><div class="lst" id="l-buv"></div></details>
     <details><summary>💳 Crédits encaissés aujourd'hui <span id="n-cre">0</span></summary><div class="lst" id="l-cre"></div></details>
@@ -205,6 +211,68 @@
     ecouter('recl', db.ref('reclamations').orderByChild('ts').limitToLast(150));
     ecouter('credits', db.ref('credits_generaux'));
     ecouter('creditsBuv', db.ref('credits_buvette'));
+    ecouter('arts', db.ref('catalogue_articles_buvette'));
+    ecouter('mat', db.ref('stock_matieres'));
+    refs.push(db.ref('stock_inv')); db.ref('stock_inv').on('value', s=>{ D.inv = s.val() || {}; brancherMvts(); planifier(); });
+  }
+  // Mouvements de stock depuis le dernier inventaire de départ (même source que l'app)
+  let qMvt = null, debutMvt = null;
+  function departInv(){ const deps = Object.values(D.inv||{}).filter(x=>x && x.type==='depart').sort((a,b)=>a.ts<b.ts?1:-1); return deps[0] || null; }
+  function jourDe(d){ return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); }
+  function brancherMvts(){
+    const d = departInv(); const deb = d ? jourDe(new Date(d.ts)) : null;
+    if(deb===debutMvt) return; debutMvt = deb;
+    if(qMvt){ try{ qMvt.off(); }catch(e){} qMvt = null; } D.mvts = {};
+    if(!deb) return;
+    qMvt = db.ref('stock_mvt').orderByKey().startAt(deb); refs.push(qMvt);
+    qMvt.on('value', s=>{ D.mvts = s.val() || {}; planifier(); });
+  }
+  // Calcul identique à l'inventaire étalage / réserve de l'app (seSituation) — lecture seule
+  const SEUIL_BAS = 3;
+  function situationStock(){
+    const dep = departInv(); if(!dep) return null;
+    const inv = D.inv || {};
+    const invs = Object.values(inv).filter(x=>x && x.ts>=dep.ts && (x.type==='depart' || x.recale)).sort((a,b)=>a.ts<b.ts?-1:1);
+    const evts = []; Object.values(D.mvts||{}).forEach(j=>Object.values(j||{}).forEach(e=>{ if(e && e.ts>=dep.ts) evts.push(e); }));
+    const today = auj();
+    const mats = Object.entries(D.mat||{}).map(([id,m])=>Object.assign({id}, m)).filter(m=>m && m.nom && m.actif!==false);
+    const liens = {}; mats.forEach(m=>Object.entries(m.produits||{}).forEach(([aid,c])=>{ (liens[aid]=liens[aid]||[]).push({m, coef:Number(c)||1}); }));
+    const arts = (Array.isArray(D.arts) ? D.arts : val(D.arts)).filter(a=>a && a.id!=null && a.actif!==false);
+    const base = (r, id)=>{ invs.forEach(iv=>{ const l = iv.lignes && iv.lignes[id]; if(!l) return;
+      if(l.E!=null && l.E!==''){ r.E = Number(l.E); r.tsE = iv.ts; } if(l.R!=null && l.R!==''){ r.R = Number(l.R); r.tsR = iv.ts; } });
+      if(r.R==null && r.E!=null){ r.R = 0; r.tsR = ''; } };
+    const actifs = new Set(); evts.forEach(e=>{ if(e.a) actifs.add(e.a); });
+    const A = [];
+    arts.forEach(a=>{
+      if(liens[a.id]) return;   // préparé à partir d'une matière : suivi dans les matières
+      const r = { E:null, R:null, tsE:null, tsR:null, vendu:0, entrees:0 }; base(r, a.id);
+      if(r.E==null) return;     // jamais inventorié : pas suivi
+      evts.forEach(e=>{ if(e.a!==a.id) return; const j = jourDe(new Date(e.ts));
+        if(e.src==='transfert'){ if(e.ts>r.tsE) r.E += e.q; if(e.ts>r.tsR) r.R -= e.q; }
+        else if(e.lieu==='R'){ if(e.ts>r.tsR) r.R += e.q; if(j===today && e.src==='entree') r.entrees += e.q; }
+        else { if(e.ts>r.tsE) r.E += e.q; if(j===today && (e.src==='vente'||e.src==='dk')) r.vendu += -e.q; if(j===today && e.src==='annul') r.vendu -= e.q; } });
+      const tot = r.E + r.R;
+      const statut = tot<=0 ? (actifs.has(a.id) ? 'epuise' : 'jamais') : (r.E<=0 && r.R>0 ? 'etalage' : (tot<=SEUIL_BAS ? 'bas' : 'ok'));
+      if(statut==='jamais') return;
+      A.push({ nom:String(a.label||a.nom||'').trim(), cat:String(a.cat||'Autres').trim()||'Autres', E:r.E, R:r.R, tot, vendu:r.vendu, statut, auj: statut==='epuise' && (tot + r.vendu - r.entrees) > 0 && r.vendu > 0 });
+    });
+    const M = [];
+    mats.forEach(m=>{
+      const pu = Number(m.parUnite)||0;
+      const r = { E:null, R:null, tsE:null, tsR:null, conso:0, portions:0 }; base(r, m.id);
+      if(r.R==null && r.E==null){ const b = (m.cree && m.cree > dep.ts) ? m.cree : ''; r.E = 0; r.R = 0; r.tsE = b; r.tsR = b; }
+      evts.forEach(e=>{ const j = jourDe(new Date(e.ts));
+        if(e.a===m.id){
+          if(e.src==='transfert'){ if(e.ts>r.tsE) r.E += e.q; if(e.ts>r.tsR) r.R -= e.q; }
+          else if(e.lieu==='R'){ if(e.ts>r.tsR) r.R += e.q; } else { if(e.ts>r.tsE) r.E += e.q; }
+          return; }
+        if(e.src!=='vente' && e.src!=='dk' && e.src!=='annul') return;
+        const lk = (liens[e.a]||[]).find(x=>x.m.id===m.id); if(!lk) return;
+        const portions = -e.q * lk.coef; if(j===today) r.portions += portions;
+        if(!pu) return; const qm = portions / pu; if(e.ts>r.tsE) r.E -= qm; if(j===today) r.conso += qm; });
+      M.push({ nom:m.nom, u:m.unite==='pce' ? 'pce' : 'kg', E:r.E, R:r.R, tot:r.E+r.R, pu, portions:r.portions, conso:r.conso });
+    });
+    return { A, M };
   }
   let tPlan = null;
   function planifier(){ clearTimeout(tPlan); tPlan = setTimeout(rendre, 250); }
@@ -307,6 +375,28 @@
     const totDep = DEP.reduce((s,d)=>s+Math.abs(Number(d.montant)||0),0);
     $('k-dep').innerHTML = f3(totDep)+' <small>DT</small>';
     $('k-dep-s').textContent = DEP.length+' dépense(s) saisie(s)';
+    // Stock buvette
+    const ST = situationStock(); let nEp = 0, nAujEp = 0;
+    const q = x=>{ const r = Math.round((Number(x)||0)*100)/100; return (Number.isInteger(r) ? String(r) : String(r).replace('.',',')); };
+    if(ST){
+      const A = ST.A; nEp = A.filter(x=>x.statut==='epuise').length; nAujEp = A.filter(x=>x.auj).length;
+      const nEt = A.filter(x=>x.statut==='etalage').length, nBa = A.filter(x=>x.statut==='bas').length;
+      const negM = ST.M.filter(m=>m.tot<0).length;
+      $('k-stk').innerHTML = (nEp ? '<span style="color:var(--rouge)">'+nEp+' épuisé(s)</span>' : '✓ 0 rupture')+' <small>sur '+A.length+' articles</small>';
+      $('k-stk-s').textContent = nEt+' à remettre en étalage (réserve dispo) · '+nBa+' stock bas (≤ '+SEUIL_BAS+') · '+ST.M.length+' matières suivies'+(negM?' · '+negM+' matière(s) en négatif':'');
+      const ordre = { epuise:0, etalage:1, bas:2, ok:3 }, LIB = { epuise:['ÉPUISÉ','st-ep'], etalage:['ÉTALAGE VIDE','st-et'], bas:['BAS','st-ba'], ok:['','st-ok'] };
+      const cats = {}; A.slice().sort((a,b)=>ordre[a.statut]-ordre[b.statut] || a.tot-b.tot || a.nom.localeCompare(b.nom,'fr')).forEach(x=>{ (cats[x.statut==='ok'?x.cat:'⚠ À surveiller'] = cats[x.statut==='ok'?x.cat:'⚠ À surveiller'] || []).push(x); });
+      const ordCats = Object.keys(cats).sort((a,b)=>(a.startsWith('⚠')?-1:b.startsWith('⚠')?1:a.localeCompare(b,'fr')));
+      $('n-art').textContent = A.length;
+      $('l-art').innerHTML = A.length ? ordCats.map(c=>'<div class="grp">'+esc(c)+'</div>'+cats[c].map(x=>li('<b>'+esc(x.nom)+'</b>'+(LIB[x.statut][0]?'<span class="st '+LIB[x.statut][1]+'">'+LIB[x.statut][0]+(x.auj?' AUJ.':'')+'</span>':''),
+          'étalage '+q(x.E)+' · réserve '+q(x.R)+(x.vendu?' · vendus aujourd\'hui '+q(x.vendu):''), q(x.tot))).join('')).join('') : '<div class="vide">Aucun article inventorié.</div>';
+      $('n-mat').textContent = ST.M.length;
+      $('l-mat').innerHTML = ST.M.length ? ST.M.slice().sort((a,b)=>a.nom.localeCompare(b.nom,'fr')).map(m=>li('<b>'+esc(m.nom)+'</b>'+(m.tot<0?'<span class="st st-ep">NÉGATIF</span>':''),
+          'étalage '+q(m.E)+' · réserve '+q(m.R)+' '+m.u+(m.pu && m.tot>0?' · ≈ '+Math.floor(m.tot*m.pu)+' portions':'')+(m.portions?' · aujourd\'hui '+q(m.portions)+' portion(s)'+(m.conso?' = '+q(m.conso)+' '+m.u:''):''), q(m.tot)+' '+m.u)).join('') : '<div class="vide">Aucune matière.</div>';
+    } else {
+      $('k-stk').textContent = '—'; $('k-stk-s').textContent = 'Pas d\'inventaire de départ enregistré dans l\'app.';
+      $('n-art').textContent = 0; $('n-mat').textContent = 0; $('l-art').innerHTML = $('l-mat').innerHTML = '<div class="vide">—</div>';
+    }
     // Réclamations
     const REC = val(D.recl).filter(r=>r.statut!=='traitee').sort((a,b)=>(b.ts||0)-(a.ts||0));
     const recN = REC.filter(r=>r.statut==='nouvelle');
@@ -317,6 +407,7 @@
     if(demAtt.length) al.push('<div class="al">⏳ '+demAtt.length+' demande(s) d\'accès en attente à l\'accueil</div>');
     if(att.length && plusVieux>=10) al.push('<div class="al">☕ Commande DK en attente depuis '+plusVieux+' min</div>');
     if(recN.length) al.push('<div class="al">📝 '+recN.length+' nouvelle(s) réclamation(s) non lue(s)</div>');
+    if(nAujEp) al.push('<div class="al">📦 '+nAujEp+' article(s) tombé(s) en rupture aujourd\'hui</div>');
     if(live && capa && Number(live.libres)<=3) al.push('<div class="al">🪑 Presque complet : '+live.libres+' place(s) libre(s)</div>');
     $('z-alertes').innerHTML = al.length ? al.join('') : '<div class="al ok">✓ Rien à signaler pour le moment</div>';
 
