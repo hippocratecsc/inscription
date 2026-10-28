@@ -81,6 +81,7 @@
     <h2>Détails</h2>
     <details><summary>🎟 Derniers accès <span id="n-acc">0</span></summary><div class="lst" id="l-acc"></div></details>
     <details><summary>☕ Dernières ventes buvette <span id="n-buv">0</span></summary><div class="lst" id="l-buv"></div></details>
+    <details><summary>💳 Crédits encaissés aujourd'hui <span id="n-cre">0</span></summary><div class="lst" id="l-cre"></div></details>
     <details><summary>🧑‍💼 Opérateurs (actions DK du jour) <span id="n-op">0</span></summary><div class="lst" id="l-op"></div></details>
     <details><summary>💸 Dépenses <span id="n-dep">0</span></summary><div class="lst" id="l-dep"></div></details>
     <details><summary>📝 Réclamations non traitées <span id="n-rec">0</span></summary><div class="lst" id="l-rec"></div></details>
@@ -202,6 +203,8 @@
     ecouter('cmd', db.ref('commandes').orderByChild('createdAt').startAt(depuis.getTime() - 36*3600e3));
     ecouter('dep', db.ref('depenses_'+jour));
     ecouter('recl', db.ref('reclamations').orderByChild('ts').limitToLast(150));
+    ecouter('credits', db.ref('credits_generaux'));
+    ecouter('creditsBuv', db.ref('credits_buvette'));
   }
   let tPlan = null;
   function planifier(){ clearTimeout(tPlan); tPlan = setTimeout(rendre, 250); }
@@ -243,22 +246,53 @@
       if(e.credit && (Number(e.soldeRestant)||0)>0) credit += Number(e.soldeRestant)||0;
       accL.push(e);
     });
+    // Crédits d'accès : un crédit soldé d'un coup (« ✓ Soldé ») n'est noté que dans sa fiche crédit,
+    // pas dans le journal → on ajoute ces règlements du jour. Les versements partiels, eux, sont déjà
+    // reportés au journal par l'app (sur la ligne d'origine ou en ligne « Complément crédit »).
+    let regl = 0; const reglL = [];
+    if(D.credits){
+      let creditJour = 0;
+      val(D.credits).filter(cr=>cr.source!=='buvette').forEach(cr=>{
+        (cr.historique||[]).forEach(h=>{ if(h && h.date===T && h.type==='solde' && Number(h.versement)>0){ regl += Number(h.versement); reglL.push({ nom:cr.nom, num:cr.num, label:'💰 Règlement crédit — '+(cr.formule||''), heure:(h.heure&&h.heure!=='—')?h.heure:'', montantPaye:Number(h.versement), poste:'' }); } });
+        if(cr.date===T && !cr.acquitte && Number(cr.soldeRestant)>0) creditJour += Number(cr.soldeRestant);
+      });
+      credit = creditJour;   // reste dû réel (les crédits soldés depuis ne comptent plus)
+    }
+    caAcc += regl; accL.push(...reglL);
     $('k-acc').innerHTML = f3(caAcc+caFrt)+' <small>DT</small>';
-    $('k-acc-s').textContent = nPay+' payant(s) · '+nGrat+' abonné(s)/offert(s)'+(caFrt?' · fourn. '+f3(caFrt):'')+(credit?' · crédit '+f3(credit):'');
+    $('k-acc-s').textContent = nPay+' payant(s) · '+nGrat+' abonné(s)/offert(s)'+(regl?' · dont crédits réglés '+f3(regl):'')+(caFrt?' · fourn. '+f3(caFrt):'')+(credit?' · reste à crédit '+f3(credit):'');
     // Buvette : ventes directes + commandes DK soldées aujourd'hui
     const VD = val(D.vd).filter(v=>!v.cancelled);
     const caVD = VD.reduce((s,v)=>s+(Number(v.montant)||0)+(Number(v.creditFideliteUtilise)||0),0);
     const CM = Object.entries(D.cmd||{}).map(([k,c])=>Object.assign({id:k}, c)).filter(c=>c && typeof c==='object');
-    const sold = CM.filter(c=>c.statut==='soldee' && (c.soldeDate===T || (!c.soldeDate && c.date===T)));
-    const caDK = sold.reduce((s,c)=>s+(Number(c.total)||0),0);
-    const dkCredit = sold.filter(c=>c.paiementFinal==='credit').reduce((s,c)=>s+(Number(c.total)||0),0);
-    const fid = sold.reduce((s,c)=>s+(Number(c.montantRegleFidelite)||0),0) + VD.reduce((s,v)=>s+(Number(v.creditFideliteUtilise)||0),0);
+    // Même règle que l'Arrêté caisse : une commande « à la sortie » réglée ensuite (creditRegleLe) n'est
+    // pas une vente comptant — son argent arrive par l'encaissement du crédit buvette (du jour ou ancien).
+    const soldTout = CM.filter(c=>c.statut==='soldee' && (c.soldeDate===T || (!c.soldeDate && c.date===T)));
+    const dkComptant = soldTout.filter(c=>c.paiementFinal!=='credit' && !c.creditRegleLe);
+    const dkCr = soldTout.filter(c=>c.paiementFinal==='credit');
+    const dkCrRegle = soldTout.filter(c=>c.paiementFinal!=='credit' && c.creditRegleLe);
+    const debutJ = new Date(T+'T00:00').getTime();
+    const dkCrRegleDuJour = dkCrRegle.filter(c=>(c.createdAt||0)>=debutJ || c.date===T);
+    const sold = dkComptant.concat(dkCr, dkCrRegleDuJour);
+    const tot = l=>l.reduce((s,c)=>s+(Number(c.total)||0),0);
+    const caDK = tot(sold), dkCredit = tot(dkCr);
+    const fid = dkComptant.reduce((s,c)=>s+(Number(c.montantRegleFidelite)||0),0) + VD.reduce((s,v)=>s+(Number(v.creditFideliteUtilise)||0),0);
+    // Encaissements de crédits buvette aujourd'hui : (2) crédits nés aujourd'hui, (3) anciens crédits
+    let cb2 = 0, cb3 = 0, cbFid = 0; const creL = [];
+    val(D.creditsBuv).forEach(cr=>{ (cr.historique||[]).forEach(h=>{
+      if(!h || h.date!==T || h.type==='initial') return;
+      const esp = Number(h.versement)||0, fi = Number(h.fidelite)||0; if(esp<=0 && fi<=0) return;
+      const duJour = cr.date===T; if(duJour) cb2 += esp; else cb3 += esp; cbFid += fi;
+      creL.push({ h:(h.heure&&h.heure!=='—')?h.heure:'', t:'☕ Buvette — '+(duJour?'crédit du jour':'ancien crédit du '+String(cr.date||'?').split('-').reverse().join('/')), q:cap(cr.nom||'N°'+cr.num), m:esp, fi });
+    }); });
     $('k-buv').innerHTML = f3(caVD+caDK)+' <small>DT</small>';
-    $('k-buv-s').textContent = 'DK '+f3(caDK)+' ('+sold.length+') · comptoir '+f3(caVD)+' ('+VD.length+')'+(dkCredit?' · à crédit '+f3(dkCredit):'')+(fid>0.0005?' · fidélité '+f3(fid):'');
+    $('k-buv-s').textContent = 'DK '+f3(caDK)+' ('+sold.length+') · comptoir '+f3(caVD)+' ('+VD.length+')'+(dkCredit?' · à crédit '+f3(dkCredit):'')+(fid>0.0005?' · fidélité '+f3(fid):'')
+      + ((cb2+cb3)>0.0005 ? ' · crédits encaissés : du jour '+f3(cb2)+', anciens '+f3(cb3) : '');
     // Total
-    const buvEnc = caVD + caDK - dkCredit;
+    // Espèces buvette = ventes comptant − part fidélité + crédits buvette encaissés (comme « Espèces attendues »)
+    const buvEnc = caVD + tot(dkComptant) - fid + cb2 + cb3;
     $('k-tot').innerHTML = f3(caAcc+caFrt+buvEnc)+' <small>DT</small>';
-    $('k-tot-s').textContent = 'Accès '+f3(caAcc)+' · Fournitures '+f3(caFrt)+' · Buvette '+f3(buvEnc)+(fid>0.0005?' (dont fidélité '+f3(fid)+')':'')
+    $('k-tot-s').textContent = 'Accès '+f3(caAcc)+' · Fournitures '+f3(caFrt)+' · Buvette '+f3(buvEnc)+((cb2+cb3)>0.0005?' (dont crédits buvette '+f3(cb2+cb3)+')':'')+(fid>0.0005?' · réglé par fidélité '+f3(fid)+' (sans espèces)':'')
       + ((credit+dkCredit)>0.0005 ? ' — en plus, laissé à crédit : '+f3(credit+dkCredit)+(credit&&dkCredit?' (accès '+f3(credit)+', buvette '+f3(dkCredit)+')':'') : '');
     // File DK
     const today = CM.filter(c=>c.date===T || (c.createdAt||0)>=new Date(T+'T00:00').getTime());
@@ -301,6 +335,10 @@
     const opk = Object.keys(ops);
     $('n-op').textContent = opk.length;
     $('l-op').innerHTML = opk.length ? opk.map(k=>{ const o = ops[k]; return li('<b>'+esc(k)+'</b>', '✋ '+o.prise+' prises · 💰 '+(o.soldee||0)+' encaissées · 📋 '+(o.credit||0)+' à la sortie'+(o.annulee?' · ❌ '+o.annulee+' annulées':''), o.der ? 'dernier '+esc(o.der) : null); }).join('') : '<div class="vide">Aucune action tracée aujourd\'hui.</div>';
+    const creAll = reglL.map(r=>({ h:r.heure, t:'🎟 Accès — '+String(r.label||'').replace('💰 Règlement crédit — ','')+' (soldé)', q:cap(r.nom||'N°'+r.num), m:r.montantPaye })).concat(creL).sort((a,b)=>String(b.h).localeCompare(String(a.h)));
+    $('n-cre').textContent = creAll.length;
+    $('l-cre').innerHTML = creAll.length ? '<div class="li"><div><em>Buvette : du jour '+f3(cb2)+' · anciens '+f3(cb3)+(cbFid>0.0005?' · + fidélité '+f3(cbFid):'')+' — Accès soldés : '+f3(regl)+'</em></div></div>'
+      + creAll.map(x=>li('<b>'+esc(x.q)+'</b>'+(x.h?' · '+esc(x.h):''), esc(x.t), f3(x.m)+(x.fi>0.0005?' <em>+'+f3(x.fi)+' fid.</em>':''))).join('') : '<div class="vide">Aucun crédit encaissé aujourd\'hui.</div>';
     $('n-dep').textContent = DEP.length;
     $('l-dep').innerHTML = DEP.length ? DEP.map(d=>li('<b>'+esc(d.libelle||d.famille||d.code||'Dépense')+'</b>', esc([d.origine, d.code].filter(Boolean).join(' · ')), f3(Math.abs(Number(d.montant)||0)))).join('') : '<div class="vide">Aucune dépense.</div>';
     $('n-rec').textContent = REC.length;
