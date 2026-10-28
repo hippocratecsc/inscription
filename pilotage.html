@@ -49,6 +49,11 @@
   .fg{ border-top:1px solid rgba(255,255,255,.1); padding:7px 0; } .fh{ display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:5px; } .fh span{ color:var(--or); font-weight:700; white-space:nowrap; }
   .pl{ display:flex; flex-wrap:wrap; gap:5px; } .pu{ font-size:12px; background:rgba(93,202,165,.18); border:1px solid rgba(93,202,165,.45); border-radius:7px; padding:2px 6px; color:#E8FFF5; }
   .pu b{ font-variant-numeric:tabular-nums; } .pu.g{ background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.2); color:rgba(246,241,228,.75); } .pu.c{ border-color:#F2B544; box-shadow:inset 0 0 0 1px #F2B544; }
+  .pls{ display:flex; flex-direction:column; gap:3px; }
+  .pn{ display:flex; align-items:baseline; gap:8px; font-size:13px; padding:4px 8px; border-radius:7px; background:rgba(93,202,165,.14); border-left:4px solid var(--mint); }
+  .pn b{ font-variant-numeric:tabular-nums; min-width:44px; color:#fff; } .pn .nm{ flex:1; color:#E8FFF5; } .pn .nm em{ font-style:normal; font-size:11px; opacity:.7; } .pn .hm{ font-size:11.5px; color:rgba(246,241,228,.6); font-variant-numeric:tabular-nums; }
+  .pn.g{ background:rgba(255,255,255,.05); border-left-color:rgba(255,255,255,.35); } .pn.g .nm{ color:rgba(246,241,228,.75); } .pn.c{ border-left-color:var(--or); background:rgba(242,181,68,.12); }
+  .lg .pn{ font-size:11px; padding:2px 7px; gap:4px; } .lg .pn b{ min-width:0; }
   .lg{ display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; font-size:11px; opacity:.85; } .lg .pu{ font-size:10.5px; }
   .vide{ color:rgba(246,241,228,.5); font-size:13px; padding:6px 0; }
   .maj{ text-align:center; font-size:11.5px; color:rgba(246,241,228,.5); margin-top:14px; }
@@ -431,14 +436,15 @@
     const ordreG = Object.keys(grp).sort((a,b)=>(/^(💰|💳)/.test(a)-/^(💰|💳)/.test(b)) || grp[b].n-grp[a].n || a.localeCompare(b,'fr'));
     const crOuvert = D.credits ? new Set(val(D.credits).filter(cr=>cr.source!=='buvette' && !cr.acquitte && Number(cr.soldeRestant)>0).map(cr=>String(cr.num))) : null;
     const resteCr = e=>e.credit && e.soldeRestant>0 && (!crOuvert || crOuvert.has(String(e.num)));
-    const puce = e=>{ const ms = Array.isArray(e.membres) && e.membres.length>1 ? e.membres : null; const pr = String(e.nom||'').trim().split(/\s+/)[0];
-      return '<span class="pu'+(Number(e.montantPaye!=null?e.montantPaye:e.montant)>0?'':' g')+(resteCr(e)?' c':'')+'" title="'+esc(cap(e.nom||'')+' · '+(e.heure||''))+'"><b>'+esc(ms ? ms.join('+') : (e.num||'?'))+'</b>'+(pr?' '+esc(cap(pr)):'')+'</span>'; };
+    const puce = e=>{ const ms = Array.isArray(e.membres) && e.membres.length>1 ? e.membres : null;
+      const m = (e.montantPaye!=null ? Number(e.montantPaye) : Number(e.montant)) || 0;
+      return '<div class="pn'+(m>0?'':' g')+(resteCr(e)?' c':'')+'"><b>'+esc(ms ? ms.join(' + ') : (e.num||'?'))+'</b><span class="nm">'+esc(cap(e.nom||''))+(ms?' <em>(groupe de '+ms.length+')</em>':'')+'</span><span class="hm">'+esc(e.heure||'')+'</span></div>'; };
     const vueF = ordreG.map(k=>{ const g = grp[k]; g.l.sort((a,b)=>Number(a.num)-Number(b.num));
-      return '<div class="fg"><div class="fh"><b>'+esc(k)+'</b><span>'+g.n+' · '+f3(g.ca)+'</span></div><div class="pl">'+g.l.map(puce).join('')+'</div></div>'; }).join('');
+      return '<div class="fg"><div class="fh"><b>'+esc(k)+'</b><span>'+g.n+' · '+f3(g.ca)+'</span></div><div class="pls">'+g.l.map(puce).join('')+'</div></div>'; }).join('');
     const vueC = accL.slice(0,40).map(e=>li('<b>'+esc(cap(e.nom||'N°'+e.num))+'</b> <em>N°'+esc(e.num||'')+'</em> · '+esc(e.heure||''), esc(String(e.label||e.formule||'').replace(/ \(.*\)$/,''))+(e.poste?' · '+esc(e.poste):''), f3(e.montantPaye!=null?e.montantPaye:e.montant)+(e.credit&&e.soldeRestant>0?' <em>(+'+f3(e.soldeRestant)+' crédit)</em>':''))).join('');
     const vueAcc = window._vueAcc || 'f';
     $('l-acc').innerHTML = accL.length ? '<div class="sw"><button data-va="f" aria-pressed="'+(vueAcc==='f')+'">Par formule</button><button data-va="c" aria-pressed="'+(vueAcc==='c')+'">Par heure</button></div>'
-      + (vueAcc==='f' ? vueF + '<div class="lg"><span class="pu"><b>N°</b> payé</span><span class="pu g"><b>N°</b> abonné / offert</span><span class="pu c"><b>N°</b> reste à crédit</span></div>' : vueC)
+      + (vueAcc==='f' ? vueF + '<div class="lg"><span class="pn"><b>N°</b>payé</span><span class="pn g"><b>N°</b>abonné / offert</span><span class="pn c"><b>N°</b>reste à crédit</span></div>' : vueC)
       : '<div class="vide">Aucun accès enregistré.</div>';
     $('l-acc').querySelectorAll('[data-va]').forEach(b=>b.onclick = ev=>{ ev.stopPropagation(); window._vueAcc = b.dataset.va; rendre(); });
     const ventes = VD.map(v=>({h:v.heure||'', t:'Comptoir · '+(v.libelle||''), q:(v.etudiantNom||v.personnelNom||''), m:(Number(v.montant)||0)+(Number(v.creditFideliteUtilise)||0)}))
