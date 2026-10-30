@@ -78,8 +78,8 @@
 
 <section id="v-tdb" class="hide">
   <header>
-    <div class="titre"><span class="pt" id="pt"></span>Pilotage du jour<small id="h-date">—</small></div>
-    <div><button id="b-sortir" title="Se déconnecter">⏻</button></div>
+    <div class="titre"><span class="pt" id="pt"></span><span id="h-titre">Pilotage du jour</span><small id="h-date">—</small></div>
+    <div style="display:flex;gap:6px;align-items:center"><input type="date" id="i-jour" title="Consulter une autre journée (lecture seule)" style="background:rgba(255,255,255,.08);color:#F6F1E4;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px;font-size:13px;color-scheme:dark;max-width:140px"><button id="b-auj" class="hide" title="Revenir à aujourd'hui (en direct)">⟲</button><button id="b-sortir" title="Se déconnecter">⏻</button></div>
   </header>
   <main>
     <div class="alertes" id="z-alertes"></div>
@@ -88,20 +88,21 @@
       <div class="k vi"><div class="l">🆕 Nouveaux inscrits</div><div class="v" id="k-nv">—</div><div class="s" id="k-nv-s"></div></div>
       <div class="k or"><div class="l">🎟 CA accès + fournitures</div><div class="v" id="k-acc">—</div><div class="s" id="k-acc-s"></div></div>
       <div class="k or2"><div class="l">☕ CA buvette</div><div class="v" id="k-buv">—</div><div class="s" id="k-buv-s"></div></div>
-      <div class="k large or"><div class="l">💰 Encaissé aujourd'hui</div><div class="v" id="k-tot">—</div><div class="s" id="k-tot-s"></div></div>
+      <div class="k large or"><div class="l" id="l-tot">💰 Encaissé aujourd'hui</div><div class="v" id="k-tot">—</div><div class="s" id="k-tot-s"></div></div>
       <div class="k"><div class="l">📋 File DK</div><div class="v" id="k-dk">—</div><div class="s" id="k-dk-s"></div></div>
       <div class="k ro"><div class="l">💸 Dépenses du jour</div><div class="v" id="k-dep">—</div><div class="s" id="k-dep-s"></div></div>
       <div class="k large vi"><div class="l">📦 Stock buvette (étalage + réserve)</div><div class="v" id="k-stk">—</div><div class="s" id="k-stk-s"></div></div>
     </div>
     <h2>Détails</h2>
+    <details id="d-clot" class="hide"><summary>🏦 Clôture(s) de la journée <span id="n-clot">0</span></summary><div class="lst" id="l-clot"></div></details>
     <details><summary>📦 Articles vendables <span id="n-art">0</span></summary><div class="lst" id="l-art"></div></details>
     <details><summary>🧪 Matières (transformables) <span id="n-mat">0</span></summary><div class="lst" id="l-mat"></div></details>
     <details><summary>🎟 Derniers accès <span id="n-acc">0</span></summary><div class="lst" id="l-acc"></div></details>
     <details><summary>☕ Dernières ventes buvette <span id="n-buv">0</span></summary><div class="lst" id="l-buv"></div></details>
-    <details><summary>💳 Crédits encaissés aujourd'hui <span id="n-cre">0</span></summary><div class="lst" id="l-cre"></div></details>
+    <details><summary><span id="t-cre">💳 Crédits encaissés aujourd'hui</span> <span id="n-cre">0</span></summary><div class="lst" id="l-cre"></div></details>
     <details><summary>🧑‍💼 Opérateurs (actions DK du jour) <span id="n-op">0</span></summary><div class="lst" id="l-op"></div></details>
     <details><summary>💸 Dépenses <span id="n-dep">0</span></summary><div class="lst" id="l-dep"></div></details>
-    <details><summary>📝 Réclamations non traitées <span id="n-rec">0</span></summary><div class="lst" id="l-rec"></div></details>
+    <details><summary><span id="t-rec">📝 Réclamations non traitées</span> <span id="n-rec">0</span></summary><div class="lst" id="l-rec"></div></details>
     <div class="maj" id="maj">—</div>
   </main>
 </section>
@@ -204,12 +205,21 @@
   // ── Données du jour, en direct ──
   const D = {};
   function ecouter(cle, ref){ refs.push(ref); ref.on('value', s=>{ D[cle] = s.val(); planifier(); }, ()=>{}); }
+  // (30/10/2026) Consultation d'une journée passée (lecture seule) : jourVue = 'AAAA-MM-JJ', null = aujourd'hui en direct
+  let jourVue = null;
+  const enDirect = ()=>!jourVue || jourVue===auj();
   function abonner(){
     refs.forEach(r=>{ try{ r.off(); }catch(e){} }); refs = [];
     Object.keys(D).forEach(k=>delete D[k]);
-    jour = auj();
-    $('h-date').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long', day:'numeric', month:'long'});
-    const depuis = new Date(); depuis.setHours(0,0,0,0);
+    qMvt = null; debutMvt = null;
+    jour = enDirect() ? auj() : jourVue;
+    const dJ = new Date(jour+'T12:00');
+    $('h-date').textContent = dJ.toLocaleDateString('fr-FR',{weekday:'long', day:'numeric', month:'long', year: enDirect() ? undefined : 'numeric'});
+    $('h-titre').textContent = enDirect() ? 'Pilotage du jour' : 'Consultation · lecture seule';
+    $('i-jour').value = jour; $('i-jour').max = auj();
+    $('b-auj').classList.toggle('hide', enDirect());
+    $('d-clot').classList.toggle('hide', enDirect());
+    const depuis = new Date(jour+'T00:00');
     ecouter('presents', db.ref('presents/'+jour));
     ecouter('sorties', db.ref('sorties/'+jour));
     ecouter('live', db.ref('affichage_live'));
@@ -217,15 +227,21 @@
     ecouter('demandes', db.ref('demandes_acces').orderByChild('date').equalTo(jour));
     ecouter('journal', db.ref('journal_'+jour));
     ecouter('vd', db.ref('ventes_directes/'+jour));
-    ecouter('cmd', db.ref('commandes').orderByChild('createdAt').startAt(depuis.getTime() - 36*3600e3));
+    ecouter('cmd', enDirect() ? db.ref('commandes').orderByChild('createdAt').startAt(depuis.getTime() - 36*3600e3)
+                              : db.ref('commandes').orderByChild('createdAt').startAt(depuis.getTime() - 36*3600e3).endAt(depuis.getTime() + 24*3600e3));
+    ecouter('archj', db.ref('archives_jour/'+jour+'/tranches'));
     ecouter('dep', db.ref('depenses_'+jour));
     ecouter('recl', db.ref('reclamations').orderByChild('ts').limitToLast(150));
     ecouter('credits', db.ref('credits_generaux'));
     ecouter('creditsBuv', db.ref('credits_buvette'));
-    ecouter('arts', db.ref('catalogue_articles_buvette'));
-    ecouter('mat', db.ref('stock_matieres'));
-    refs.push(db.ref('stock_inv')); db.ref('stock_inv').on('value', s=>{ D.inv = s.val() || {}; brancherMvts(); planifier(); });
+    if(enDirect()){
+      ecouter('arts', db.ref('catalogue_articles_buvette'));
+      ecouter('mat', db.ref('stock_matieres'));
+      const ri = db.ref('stock_inv'); refs.push(ri); ri.on('value', s=>{ D.inv = s.val() || {}; brancherMvts(); planifier(); });
+    } else ecouter('treso', db.ref('treso_histo'));
   }
+  $('i-jour').addEventListener('change', ()=>{ const v = $('i-jour').value; if(!v || v>auj()){ $('i-jour').value = jour; return; } jourVue = (v===auj()) ? null : v; abonner(); planifier(); });
+  $('b-auj').addEventListener('click', ()=>{ jourVue = null; abonner(); planifier(); });
   // Mouvements de stock depuis le dernier inventaire de départ (même source que l'app)
   let qMvt = null, debutMvt = null;
   function departInv(){ const deps = Object.values(D.inv||{}).filter(x=>x && x.type==='depart').sort((a,b)=>a.ts<b.ts?1:-1); return deps[0] || null; }
@@ -287,7 +303,7 @@
   }
   let tPlan = null;
   function planifier(){ clearTimeout(tPlan); tPlan = setTimeout(rendre, 250); }
-  setInterval(()=>{ if(!$('v-tdb').classList.contains('hide')){ if(auj()!==jour) abonner(); else rendre(); } }, 60000);
+  setInterval(()=>{ if(!$('v-tdb').classList.contains('hide') && enDirect()){ if(auj()!==jour) abonner(); else rendre(); } }, 60000);
   pret().then(()=>{ db.ref('.info/connected').on('value', s=>{ $('pt').classList.toggle('on', !!s.val()); planifier(); }); });
 
   const val = o=>Object.values(o||{}).filter(x=>x && typeof x==='object');
@@ -295,7 +311,11 @@
   function li(a, b, m){ return '<div class="li"><div>'+a+(b?'<br><em>'+b+'</em>':'')+'</div>'+(m!=null?'<div class="m">'+m+'</div>':'')+'</div>'; }
 
   function rendre(){
-    const T = jour;
+    const T = jour, direct = enDirect();
+    // Tranches archivées (relais / clôtures) de la journée : journal, ventes directes, dépenses
+    const TR = val(D.archj);
+    const fusion = (base, extra, cle)=>{ const m = new Map(); base.concat(extra).forEach(x=>{ if(!x || typeof x!=='object') return; const k = cle(x); if(!m.has(k)) m.set(k, x); }); return [...m.values()]; };
+    const cleJ = e=>e.id || [e.type,e.num,e.formule,e.heure,e.montant,e.date].join('|');
     // Présences
     const pres = D.presents || {}, sort = D.sorties || {};
     const nPres = Object.keys(pres).length;
@@ -303,10 +323,11 @@
     const live = D.live && D.live.date===T ? D.live : null;
     const capa = live ? Number(live.capacite)||0 : 0;
     const surPlace = Math.max(0, nPres - partis);
-    $('k-pres').innerHTML = surPlace+(capa?' <small>/ '+capa+'</small>':'');
+    if(!direct){ $('k-pres').innerHTML = nPres+' <small>passé(s)</small>'; $('k-pres-s').textContent = (partis?partis+' départ(s) signalé(s)':'liste des présents de la journée'); $('k-pres-b').style.width = '0'; }
+    else { $('k-pres').innerHTML = surPlace+(capa?' <small>/ '+capa+'</small>':'');
     $('k-pres-s').textContent = nPres+' passé(s) aujourd\'hui'+(partis?' · '+partis+' parti(s)':'')+(live && live.libres!=null?' · '+live.libres+' place(s) libre(s)':'');
     $('k-pres-b').style.width = capa ? Math.min(100, Math.round(surPlace/capa*100))+'%' : '0';
-    $('k-pres-b').style.background = capa && surPlace/capa>=.9 ? 'var(--rouge)' : (capa && surPlace/capa>=.7 ? 'var(--or)' : 'var(--mint)');
+    $('k-pres-b').style.background = capa && surPlace/capa>=.9 ? 'var(--rouge)' : (capa && surPlace/capa>=.7 ? 'var(--or)' : 'var(--mint)'); }
     // Nouveaux / demandes
     const nNv = Object.keys(D.nouveaux||{}).length;
     const dems = val(D.demandes).filter(d=>d.date===T);
@@ -314,7 +335,7 @@
     $('k-nv').textContent = nNv;
     $('k-nv-s').textContent = dems.length+' demande(s) d\'accès en ligne/borne'+(demAtt.length?' · '+demAtt.length+' en attente':'');
     // Accès + fournitures (journal du jour)
-    const J = val(D.journal).filter(e=>!e.cancelled);
+    const J = fusion(val(D.journal), TR.flatMap(t=>val(t.journal)), cleJ).filter(e=>!e.cancelled && (!e.date || e.date===T));
     let caAcc = 0, caFrt = 0, nPay = 0, nGrat = 0, credit = 0; const accL = [];
     J.forEach(e=>{
       if(e.type==='fourniture'){ caFrt += Number(e.montant)||0; return; }
@@ -341,7 +362,7 @@
     $('k-acc').innerHTML = f3(caAcc+caFrt)+' <small>DT</small>';
     $('k-acc-s').textContent = nPay+' payant(s) · '+nGrat+' abonné(s)/offert(s)'+(regl?' · dont crédits réglés '+f3(regl):'')+(caFrt?' · fourn. '+f3(caFrt):'')+(credit?' · reste à crédit '+f3(credit):'');
     // Buvette : ventes directes + commandes DK soldées aujourd'hui
-    const VD = val(D.vd).filter(v=>!v.cancelled);
+    const VD = fusion(val(D.vd), TR.flatMap(t=>val(t.buvetteData)), v=>v.id!=null ? String(v.id) : [v.heure,v.libelle,v.montant].join('|')).filter(v=>!v.cancelled);
     const caVD = VD.reduce((s,v)=>s+(Number(v.montant)||0)+(Number(v.creditFideliteUtilise)||0),0);
     const CM = Object.entries(D.cmd||{}).map(([k,c])=>Object.assign({id:k}, c)).filter(c=>c && typeof c==='object');
     // Même règle que l'Arrêté caisse : une commande « à la sortie » réglée ensuite (creditRegleLe) n'est
@@ -370,6 +391,7 @@
     // Total
     // Espèces buvette = ventes comptant − part fidélité + crédits buvette encaissés (comme « Espèces attendues »)
     const buvEnc = caVD + tot(dkComptant) - fid + cb2 + cb3;
+    $('l-tot').textContent = direct ? '💰 Encaissé aujourd\'hui' : '💰 Encaissé ce jour-là';
     $('k-tot').innerHTML = f3(caAcc+caFrt+buvEnc)+' <small>DT</small>';
     $('k-tot-s').textContent = 'Accès '+f3(caAcc)+' · Fournitures '+f3(caFrt)+' · Buvette '+f3(buvEnc)+((cb2+cb3)>0.0005?' (dont crédits buvette '+f3(cb2+cb3)+')':'')+(fid>0.0005?' · réglé par fidélité '+f3(fid)+' (sans espèces)':'')
       + ((credit+dkCredit)>0.0005 ? ' — en plus, laissé à crédit : '+f3(credit+dkCredit)+(credit&&dkCredit?' (accès '+f3(credit)+', buvette '+f3(dkCredit)+')':'') : '');
@@ -379,10 +401,11 @@
     const plusVieux = att.reduce((m,c)=>Math.max(m, c.createdAt ? Math.round((Date.now()-c.createdAt)/60000) : 0), 0);
     const delais = sold.filter(c=>c.createdAt && c.soldeAt).map(c=>(Date.parse(c.soldeAt)-c.createdAt)/60000).filter(x=>x>0 && x<240);
     const moy = delais.length ? Math.round(delais.reduce((a,b)=>a+b,0)/delais.length) : null;
-    $('k-dk').innerHTML = att.length+' <small>en attente</small>';
-    $('k-dk-s').textContent = enc.length+' en préparation'+(att.length?' · la plus ancienne : '+plusVieux+' min':'')+(moy!=null?' · délai moyen '+moy+' min':'');
+    if(!direct){ $('k-dk').innerHTML = sold.length+' <small>servie(s)</small>'; $('k-dk-s').textContent = (moy!=null?'délai moyen '+moy+' min':'')+(today.filter(c=>c.statut==='annulee').length?' · '+today.filter(c=>c.statut==='annulee').length+' annulée(s)':''); }
+    else { $('k-dk').innerHTML = att.length+' <small>en attente</small>';
+    $('k-dk-s').textContent = enc.length+' en préparation'+(att.length?' · la plus ancienne : '+plusVieux+' min':'')+(moy!=null?' · délai moyen '+moy+' min':''); }
     // Dépenses
-    const DEP = (Array.isArray(D.dep) ? D.dep : val(D.dep)).filter(d=>d && (Number(d.montant)||0)!==0);
+    const DEP = fusion(Array.isArray(D.dep) ? D.dep : val(D.dep), TR.flatMap(t=>val(t.depenses)), d=>d.horodatage || [d.heure,d.libelle,d.montant,d.origine].join('|')).filter(d=>d && (Number(d.montant)||0)!==0);
     const totDep = DEP.reduce((s,d)=>s+Math.abs(Number(d.montant)||0),0);
     $('k-dep').innerHTML = f3(totDep)+' <small>DT</small>';
     $('k-dep-s').textContent = DEP.length+' dépense(s) saisie(s)';
@@ -405,23 +428,51 @@
       $('l-mat').innerHTML = ST.M.length ? ST.M.slice().sort((a,b)=>a.nom.localeCompare(b.nom,'fr')).map(m=>li('<b>'+esc(m.nom)+'</b>'+(m.tot<0?'<span class="st st-ep">NÉGATIF</span>':''),
           'étalage '+q(m.E)+' · réserve '+q(m.R)+' '+m.u+(m.pu && m.tot>0?' · ≈ '+Math.floor(m.tot*m.pu)+' portions':'')+(m.portions?' · aujourd\'hui '+q(m.portions)+' portion(s)'+(m.conso?' = '+q(m.conso)+' '+m.u:''):''), q(m.tot)+' '+m.u)).join('') : '<div class="vide">Aucune matière.</div>';
     } else {
-      $('k-stk').textContent = '—'; $('k-stk-s').textContent = 'Pas d\'inventaire de départ enregistré dans l\'app.';
+      $('k-stk').textContent = '—'; $('k-stk-s').textContent = direct ? 'Pas d\'inventaire de départ enregistré dans l\'app.' : 'Le stock s\'affiche seulement pour aujourd\'hui (situation en direct).';
       $('n-art').textContent = 0; $('n-mat').textContent = 0; $('l-art').innerHTML = $('l-mat').innerHTML = '<div class="vide">—</div>';
     }
     // Réclamations
-    const REC = val(D.recl).filter(r=>r.statut!=='traitee').sort((a,b)=>(b.ts||0)-(a.ts||0));
+    const REC = val(D.recl).filter(r=>direct ? r.statut!=='traitee' : r.date===T).sort((a,b)=>(b.ts||0)-(a.ts||0));
     const recN = REC.filter(r=>r.statut==='nouvelle');
 
+    // (28/10/2026) Règle de service : prise de la commande sur le téléphone (📱 File DK), paiement au P2C ou à l'accueil.
+    // Suivi des écarts seulement — rien n'est bloqué.
+    const conf = { mobile:0, hors:{}, sans:{}, nHors:0, nSans:0 };
+    const estAuj = iso=>{ const d = new Date(iso); return !isNaN(d) && T===jourDe(d); };
+    const qui = x=>(x.par && x.par!==x.via) ? x.par : (x.via||'?');
+    CM.forEach(c=>{
+      const tous = Object.values(c.trace||{}).filter(Boolean);
+      tous.filter(x=>x.a==='prise' && x.at && estAuj(x.at)).forEach(x=>{ if(x.via==='mobile') conf.mobile++; else { (conf.hors[qui(x)] = conf.hors[qui(x)] || []).push({c, x}); conf.nHors++; } });
+      const enc = tous.find(x=>(x.a==='soldee' || x.a==='credit') && x.at && estAuj(x.at));
+      if(enc && !tous.some(x=>x.a==='prise')){ (conf.sans[qui(enc)] = conf.sans[qui(enc)] || []).push({c, x:enc}); conf.nSans++; }
+    });
     // Alertes
     const al = [];
+    if(!direct){
+      const nT = TR.length;
+      al.push('<div class="al ok">📅 Consultation du '+esc(new Date(T+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}))+' — lecture seule'
+        + (nT ? ' · '+nT+' tranche(s) archivée(s)' : ' · <b>aucune copie archivée</b> : le détail des accès et des ventes au comptoir n\'est disponible que pour les journées clôturées avec l\'app v20261030 ou plus')+'</div>');
+    } else {
     if(!$('pt').classList.contains('on')) al.push('<div class="al">📡 Connexion perdue — chiffres figés au dernier état reçu.</div>');
     if(demAtt.length) al.push('<div class="al">⏳ '+demAtt.length+' demande(s) d\'accès en attente à l\'accueil</div>');
     if(att.length && plusVieux>=10) al.push('<div class="al">☕ Commande DK en attente depuis '+plusVieux+' min</div>');
+    if(conf.nHors + conf.nSans) al.push('<div class="al">📱 Règle de prise non respectée : '+(conf.nHors?conf.nHors+' prise(s) hors téléphone':'')+(conf.nHors&&conf.nSans?' · ':'')+(conf.nSans?conf.nSans+' encaissée(s) sans prise':'')+' — voir « Opérateurs »</div>');
     if(recN.length) al.push('<div class="al">📝 '+recN.length+' nouvelle(s) réclamation(s) non lue(s)</div>');
     if(nAujEp) al.push('<div class="al">📦 '+nAujEp+' article(s) tombé(s) en rupture aujourd\'hui</div>');
     if(live && capa && Number(live.libres)<=3) al.push('<div class="al">🪑 Presque complet : '+live.libres+' place(s) libre(s)</div>');
+    }
     $('z-alertes').innerHTML = al.length ? al.join('') : '<div class="al ok">✓ Rien à signaler pour le moment</div>';
 
+    // Clôture(s) de la journée consultée (treso_histo)
+    if(!direct){
+      const CL = val(D.treso).filter(h=>String(h.dateCalendrier||h.date||'').slice(0,10)===T).sort((a,b)=>String(a.closedAt||'').localeCompare(String(b.closedAt||'')));
+      $('n-clot').textContent = CL.length;
+      $('l-clot').innerHTML = CL.length ? CL.map(h=>'<div class="grp">Clôture '+esc(h.closedAt ? new Date(h.closedAt).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '')+'</div>'
+          + li('CA accès + fournitures', null, f3(h.caAcces)) + li('Dépenses caisse accès', null, f3(h.depAcc)) + li('Solde clôture accès', null, f3(h.soldAcc))
+          + li('CA buvette', null, f3(h.caBuv)) + li('Dépenses caisse buvette', null, f3(h.depBuv)) + li('Solde clôture buvette', null, f3(h.soldBuv))
+          + li('Dépenses hors caisses', null, f3(h.depHC)) + li('<b>Trésorerie nette globale</b>', null, '<b>'+f3(h.netGlobal)+'</b>')).join('')
+        : '<div class="vide">Aucune clôture enregistrée pour cette date.</div>';
+    }
     // Détails
     accL.sort((a,b)=>String(b.heure||'').localeCompare(String(a.heure||'')));
     $('n-acc').textContent = accL.length;
@@ -453,11 +504,15 @@
     $('n-buv').textContent = ventes.length;
     $('l-buv').innerHTML = ventes.length ? ventes.slice(0,25).map(v=>li('<b>'+esc(v.h)+'</b> · '+esc(v.t), esc(v.q), f3(v.m)+(v.cr?' <em>crédit</em>':''))).join('') : '<div class="vide">Aucune vente.</div>';
     const ops = {};
-    CM.forEach(c=>Object.values(c.trace||{}).forEach(x=>{ if(!x || !String(x.at||'').length) return; const d = new Date(x.at); if(isNaN(d) || auj()!==d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())) return;
-      const k = (x.par && x.par!==x.via) ? x.par : (x.via||'?'); const o = ops[k] = ops[k] || {prise:0, soldee:0, credit:0, annulee:0, der:''}; o[x.a] = (o[x.a]||0)+1; if(String(x.h)>o.der) o.der = x.h||''; }));
+    CM.forEach(c=>Object.values(c.trace||{}).forEach(x=>{ if(!x || !String(x.at||'').length) return; const d = new Date(x.at); if(isNaN(d) || T!==d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())) return;
+      const k = (x.par && x.par!==x.via) ? x.par : (x.via||'?'); const o = ops[k] = ops[k] || {prise:0, soldee:0, credit:0, annulee:0, der:'', pm:0, ph:0}; o[x.a] = (o[x.a]||0)+1; if(x.a==='prise'){ if(x.via==='mobile') o.pm++; else o.ph++; } if(String(x.h)>o.der) o.der = x.h||''; }));
     const opk = Object.keys(ops);
     $('n-op').textContent = opk.length;
-    $('l-op').innerHTML = opk.length ? opk.map(k=>{ const o = ops[k]; return li('<b>'+esc(k)+'</b>', '✋ '+o.prise+' prises · 💰 '+(o.soldee||0)+' encaissées · 📋 '+(o.credit||0)+' à la sortie'+(o.annulee?' · ❌ '+o.annulee+' annulées':''), o.der ? 'dernier '+esc(o.der) : null); }).join('') : '<div class="vide">Aucune action tracée aujourd\'hui.</div>';
+    const totPr = conf.mobile + conf.nHors;
+    const ecartsHtml = (titre, M)=>Object.keys(M).length ? '<div class="grp">'+titre+'</div>'+Object.keys(M).map(k=>li('<b>'+esc(k)+'</b> · '+M[k].length, M[k].sort((a,b)=>String(a.x.h).localeCompare(String(b.x.h))).map(o=>'N°'+esc(o.c.num||'?')+' '+esc(o.x.h||'')+(o.x.via&&o.x.via!==k?' ('+esc(o.x.via)+')':'')).join(' · '), null)).join('') : '';
+    $('l-op').innerHTML = (totPr ? '<div class="li"><div><b>Règle : prise sur 📱, paiement au P2C / accueil</b><br><em>'+conf.mobile+' prise(s) sur téléphone sur '+totPr+' ('+Math.round(conf.mobile/totPr*100)+' %)'+(conf.nSans?' · '+conf.nSans+' encaissée(s) sans aucune prise':'')+'</em></div></div>' : '')
+      + (opk.length ? opk.map(k=>{ const o = ops[k]; return li('<b>'+esc(k)+'</b>', '✋ '+o.prise+' prises'+(o.prise?' (📱 '+o.pm+(o.ph?' · <span style="color:#FFB74D">hors 📱 '+o.ph+'</span>':'')+')':'')+' · 💰 '+(o.soldee||0)+' encaissées · 📋 '+(o.credit||0)+' à la sortie'+(o.annulee?' · ❌ '+o.annulee+' annulées':''), o.der ? 'dernier '+esc(o.der) : null); }).join('') : '<div class="vide">Aucune action tracée aujourd\'hui.</div>')
+      + ecartsHtml('⚠ Prises hors téléphone', conf.hors) + ecartsHtml('⚠ Encaissées sans prise', conf.sans);
     const creAll = reglL.map(r=>({ h:r.heure, t:'🎟 Accès — '+String(r.label||'').replace('💰 Règlement crédit — ','')+' (soldé)', q:cap(r.nom||'N°'+r.num), m:r.montantPaye })).concat(creL).sort((a,b)=>String(b.h).localeCompare(String(a.h)));
     $('n-cre').textContent = creAll.length;
     $('l-cre').innerHTML = creAll.length ? '<div class="li"><div><em>Buvette : du jour '+f3(cb2)+' · anciens '+f3(cb3)+(cbFid>0.0005?' · + fidélité '+f3(cbFid):'')+' — Accès soldés : '+f3(regl)+'</em></div></div>'
@@ -466,7 +521,11 @@
     $('l-dep').innerHTML = DEP.length ? DEP.map(d=>li('<b>'+esc(d.libelle||d.famille||d.code||'Dépense')+'</b>', esc([d.origine, d.code].filter(Boolean).join(' · ')), f3(Math.abs(Number(d.montant)||0)))).join('') : '<div class="vide">Aucune dépense.</div>';
     $('n-rec').textContent = REC.length;
     $('l-rec').innerHTML = REC.length ? REC.slice(0,15).map(r=>li('<b>'+esc(cap(r.nom||'N°'+r.num))+'</b> · '+esc(r.motif||''), esc(String(r.message||'').slice(0,140)), esc((r.date||'').split('-').reverse().slice(0,2).join('/')+' '+(r.heure||'')))).join('') : '<div class="vide">Aucune.</div>';
-    $('maj').textContent = 'Mis à jour à '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · en direct · lecture seule';
+    $('maj').textContent = direct ? 'Mis à jour à '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · en direct · lecture seule' : 'Journée du '+T.split('-').reverse().join('/')+' · lecture seule';
+    $('t-cre').textContent = direct ? '💳 Crédits encaissés aujourd\'hui' : '💳 Crédits encaissés ce jour-là';
+    $('t-rec').textContent = direct ? '📝 Réclamations non traitées' : '📝 Réclamations du jour';
+    $('k-stk').closest('.k').classList.toggle('hide', !direct);
+    ['l-art','l-mat'].forEach(i=>$(i).closest('details').classList.toggle('hide', !direct));
   }
 
   // Reprise de session
