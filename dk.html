@@ -286,7 +286,7 @@
     if(p==='credit') return '<span class="pay sortie">🚪 À régler à la sortie</span>';
     return '<span class="pay comptant">💵 Au comptoir</span>';
   }
-  const LIB = { prise:'✋', soldee:'💰', credit:'📋', annulee:'❌', statut:'↻' };
+  const LIB = { prise:'✋', soldee:'💰', credit:'📋', annulee:'❌', statut:'↻', correction:'✏' };
   function trace(c){
     const t = c.trace ? Object.values(c.trace).filter(Boolean).sort((a,b)=>String(a.at).localeCompare(String(b.at))) : [];
     if(t.length) return t.map(x=>(LIB[x.a]||'•')+' '+(x.par && x.par!==x.via ? esc(x.par)+' '+(x.via==='mobile'?'📱':esc(x.via||'')) : esc(x.via||x.par||'?'))+' '+esc(x.h||'')).join(' · ');
