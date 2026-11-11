@@ -255,7 +255,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
     erreur('e-id'); const ok = await connecter(r.n, ddn, 'e-id');
     if(ok) montrerInfo('Bonjour '+esc(cap(r.p))+' ! Votre numéro est <b style="font-size:20px">'+r.n+'</b> — notez-le.');
   });
-  $('b-sortir').addEventListener('click', ()=>{ couperEcoutes(); ls.del('hcc_espace_moi'); ls.del('hcc_espace_cmd'); moi = null; $('i-num').value=''; $('i-ddn').value=''; voir('v-id'); });
+  $('b-sortir').addEventListener('click', ()=>{ couperEcoutes(); try{ if(window.hccOffres) window.hccOffres.oublier(); }catch(e){} ls.del('hcc_espace_moi'); ls.del('hcc_espace_cmd'); moi = null; $('i-num').value=''; $('i-ddn').value=''; voir('v-id'); });
 
   function montrerInfo(html){ const z = $('z-acces'); z.classList.remove('hide'); $('z-buv').classList.add('hide'); $('z-recl').classList.add('hide'); z.innerHTML = '<div class="ok">'+html+'</div>'; }
 
@@ -265,6 +265,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
     couperEcoutes();
     $('q-nom').textContent = cap(moi.p)+' '+String(moi.f||'').toUpperCase();
     $('q-num').textContent = moi.n;
+    try{ if(window.hccOffres) window.hccOffres.identifier({ n:moi.n, nom:cap(moi.p)+' '+String(moi.f||'').toUpperCase() }); }catch(e){}
     voir('v-menu');
     $('z-acces').classList.add('hide'); $('z-buv').classList.add('hide'); $('z-recl').classList.add('hide');
     ['t-acces','t-buv','t-recl'].forEach(t=>$(t).setAttribute('aria-pressed','false'));
@@ -735,5 +736,6 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
 })();
 </script>
 <script src="fonds.js?v=20261101"></script>
+<script src="offres.js?v=20261111"></script>
 </body>
 </html>
