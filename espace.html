@@ -36,6 +36,7 @@ button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
 .tuile[aria-pressed="true"]{background:rgba(93,202,165,.25);border-color:var(--mint)}
 .tuile-l{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 10px;background:rgba(242,181,68,.10);border-color:rgba(242,181,68,.4)}
 .tuile-l i{display:inline;font-size:22px;margin:0}
+.rappel-cr{margin:0 0 12px;padding:11px 13px;border-radius:12px;border:2px solid var(--saffron);background:rgba(242,181,68,.12);color:var(--cream);font-size:14px;line-height:1.45;animation:crBlink 1.6s ease-in-out infinite}.rappel-cr b{color:var(--saffron)}@keyframes crBlink{50%{background:rgba(242,181,68,.32)}}@media (prefers-reduced-motion:reduce){.rappel-cr{animation:none}}.pay button[disabled]{opacity:.4;cursor:not-allowed}
 .tuile-l[aria-pressed="true"]{background:rgba(242,181,68,.22);border-color:var(--saffron)}
 select{background-image:linear-gradient(45deg,transparent 50%,var(--mint) 50%),linear-gradient(135deg,var(--mint) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 12px) 55%;background-size:6px 6px;background-repeat:no-repeat}
 select option{color:#14282C}
@@ -147,6 +148,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
   <!-- 2. Accueil connecté -->
   <section id="v-menu" class="hide">
     <div class="qui"><span>👤 <b id="q-nom"></b> · N°<span id="q-num"></span></span><button class="lien" style="margin:0;padding:0" id="b-sortir">Ce n'est pas moi</button></div>
+    <div id="z-rappel-cr" class="rappel-cr hide" role="status"></div>
     <div class="tuiles">
       <button class="tuile" id="t-acces"><i>🎫</i>Mon accès<br>aujourd'hui</button>
       <button class="tuile" id="t-buv"><i>☕</i>Commander<br>à la buvette</button>
@@ -261,8 +263,26 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
 
   let gen = 0;
   function couperEcoutes(){ gen++; [ecouteDem, ecouteCmd].forEach(r=>{ try{ if(r) r.off(); }catch(e){} }); ecouteDem = null; ecouteCmd = null; choixF = null; panier = {}; window._noteCmd = '';  typeA = 'IND'; membresA = []; nbH = 1; aboJour = null; monGroupe = null; }
+  // (14/11/2026) Crédit buvette de l'étudiant : rappel courtois + limite (au-delà, plus de commande « à la sortie »).
+  // Montant publié par l'application de l'accueil dans soldes_buvette/<N°> (montant seul, aucun détail).
+  let DETTE = null;
+  const creditBloque = ()=>!!(DETTE && DETTE.du > DETTE.limite + 0.0005);
+  function afficherRappel(){
+    const z = $('z-rappel-cr'); if(!z) return;
+    if(DETTE && DETTE.du > 0.0005){
+      z.innerHTML = '💳 Ton crédit buvette a atteint <b>'+fmt(DETTE.du)+' dinars</b> : il y a lieu, s\'il te plaît, de le liquider au plus tard dans les 24 h. Merci 🙏'
+        + (creditBloque() ? '<br><small>Au-delà de '+fmt(DETTE.limite)+' TND, les nouvelles commandes se règlent au comptoir.</small>' : '');
+      z.classList.remove('hide');
+    } else { z.classList.add('hide'); z.innerHTML = ''; }
+  }
+  async function chargerDette(){
+    const n = moi && moi.n; if(!n) return;
+    try{ const v = await lire('soldes_buvette/'+n); if(!moi || moi.n!==n) return; DETTE = { du:(v && +v.du)||0, limite:(v && +v.limite)||30 }; }catch(e){ DETTE = null; }
+    afficherRappel();
+  }
   function entrer(){
     couperEcoutes();
+    DETTE = null; afficherRappel(); chargerDette();
     $('q-nom').textContent = cap(moi.p)+' '+String(moi.f||'').toUpperCase();
     $('q-num').textContent = moi.n;
     try{ if(window.hccOffres) window.hccOffres.identifier({ n:moi.n, nom:cap(moi.p)+' '+String(moi.f||'').toUpperCase() }); }catch(e){}
@@ -605,10 +625,12 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
       h += '</div>';
     });
     const items = Object.values(panier).filter(x=>x.q>0), total = items.reduce((s,x)=>s+x.q*x.a.prix,0);
+    if(creditBloque() && payB==='credit') payB = 'immediat';
     if(items.length){
       h += '<div class="panier"><div class="tot"><span>🛒 '+items.reduce((s,x)=>s+x.q,0)+' article(s)</span><span class="px">'+fmt(total)+' TND</span></div>'
         + '<div class="f"><label for="c-note">Précision (facultatif)</label><input id="c-note" placeholder="Ex. sans sucre, sandwich sans harissa…" value="'+esc(window._noteCmd||'')+'"></div>'
-        + '<label>Paiement</label><div class="pay"><button data-pb="immediat" aria-pressed="'+(payB==='immediat')+'">💵 Au comptoir</button><button data-pb="credit" aria-pressed="'+(payB==='credit')+'">🚪 À la sortie</button></div>'
+        + '<label>Paiement</label><div class="pay"><button data-pb="immediat" aria-pressed="'+(payB==='immediat')+'">💵 Au comptoir</button><button data-pb="credit" aria-pressed="'+(payB==='credit')+'"'+(creditBloque()?' disabled':'')+'>🚪 À la sortie</button></div>'
+        + (creditBloque() ? '<div class="avert-sb">💳 Ton crédit buvette dépasse '+fmt(DETTE.limite)+' TND : cette commande se règle au comptoir. Merci de ta compréhension 🙂</div>' : '')
         + (items.some(x=>x.a.alerte) ? '<div class="avert-sb">⚠ '+items.filter(x=>x.a.alerte).map(x=>esc(x.a.nom)).join(', ')+' : article presque épuisé — vérifiez sur l\'étalage avant validation.</div>' : '')
         + '<div class="err" id="e-cmd"></div><button class="btn" id="b-cmd">Envoyer ma commande</button></div>';
     }
@@ -624,6 +646,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
   async function envoyerCommande(){
     const items = Object.values(panier).filter(x=>x.q>0); if(!items.length) return;
     const b = $('b-cmd'); b.disabled = true; b.textContent = 'Envoi…';
+    if(payB==='credit'){ await chargerDette(); if(creditBloque()){ payB = 'immediat'; rendreMenu(); erreur('e-cmd', 'Ton crédit buvette dépasse '+fmt(DETTE.limite)+' TND : choisis « Au comptoir ». Merci 🙂'); return; } }
     const total = Math.round(items.reduce((s,x)=>s+x.q*x.a.prix,0)*1000)/1000;
     const cmd = { id:'CMD-'+Date.now(), num:Math.floor(Math.random()*9000)+1000, statut:'nouvelle',
       studentNum:Number(moi.n), studentNom:cap(moi.p)+' '+String(moi.f||'').toUpperCase(), studentTel:'',
