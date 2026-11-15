@@ -361,16 +361,21 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 #fete.on .banderole{transform:translateX(-50%) rotate(-1.5deg) scale(1);opacity:1}
 #fete .equipe{position:absolute;z-index:3;left:50%;top:25.5vh;transform:translateX(-50%);font-size:min(1.5vw,2.6vh);font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:#5DCAA5;opacity:0;transition:opacity .6s 1s}
 #fete.on .equipe{opacity:1}
-#fete .hippie{position:absolute;z-index:2;left:50%;bottom:6vh;height:56vh;width:28vh;transform:translateX(-142%)}
+#fete .hippie{position:absolute;z-index:2;left:50%;bottom:6vh;height:56vh;width:28vh;transform:translateX(-118%);transform-origin:50% 96%}
 #fete .hippie svg{width:100%;height:100%;overflow:visible}
 #fete .hippie .haut{transform-box:view-box;transform-origin:150px 428px}
-#fete .hippie .tete{transform-box:view-box;transform-origin:150px 428px}
+#fete .hippie .tete{transform-box:view-box;transform-origin:150px 250px}
 #fete.salue .hippie .haut{animation:ojHaut 2.8s ease-in-out 3}
 #fete.salue .hippie .tete{animation:ojTete 2.8s ease-in-out 3}
-/* Révérence japonaise vue DE PROFIL : buste + tête plient d'un bloc aux hanches (≈ 42°), bras le long du corps,
-   jambes droites ; temps d'arrêt incliné, puis redressement — trois fois. */
-@keyframes ojHaut{0%,12%,88%,100%{transform:none}35%,65%{transform:rotate(42deg)}}
-@keyframes ojTete{0%,12%,88%,100%{transform:none}35%,65%{transform:rotate(42deg)}}
+#fete.salue .hippie{animation:ojVers 2.8s ease-in-out 3}
+/* Révérence japonaise vue DE FACE, avec effet de profondeur : le buste se plie aux hanches (raccourci),
+   la tête plonge vers l'avant et GROSSIT comme si elle sortait de l'écran, ombre qui s'élargit ; trois fois. */
+@keyframes ojHaut{0%,10%,90%,100%{transform:none}38%,62%{transform:scale(1.14,.6)}}
+@keyframes ojTete{0%,10%,90%,100%{transform:none}38%,62%{transform:translateY(122px) scale(1.55,1.22)}}
+#fete .hippie .crane{opacity:0}
+#fete.salue .hippie .crane{animation:ojCrane 2.8s ease-in-out 3}
+@keyframes ojCrane{0%,14%,86%,100%{opacity:0}38%,62%{opacity:1}}
+@keyframes ojVers{0%,10%,90%,100%{transform:translateX(-118%) scale(1);filter:drop-shadow(0 0 0 rgba(0,0,0,0))}38%,62%{transform:translateX(-118%) scale(1.1);filter:drop-shadow(0 2.2vh 2.4vh rgba(0,0,0,.45))}}
 #fete .hippie .bras{transform-box:view-box;transform-origin:212px 282px;transform:rotate(8deg)}
 #fete .texte{position:absolute;z-index:3;left:50%;top:31vh;width:46vw;transform:translateY(3vh);opacity:0;transition:transform .8s cubic-bezier(.2,1.3,.4,1) .9s,opacity .6s .9s}
 #fete.on .texte{transform:none;opacity:1}
@@ -386,7 +391,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 #fete .ballon:before{content:'';position:absolute;left:calc(50% - .6vh);top:calc(100% - .2vh);border:.6vh solid transparent;border-bottom:.9vh solid currentColor;transform:rotate(180deg)}
 @keyframes monte{0%{transform:translate(0,0) rotate(-4deg)}50%{transform:translate(var(--dx),-70vh) rotate(5deg)}100%{transform:translate(calc(var(--dx)*-.6),-135vh) rotate(-3deg)}}
 #fete .barre{position:absolute;left:0;bottom:0;height:.7vh;width:100%;background:#F2B544;transform-origin:left;transform:scaleX(1)}
-@media (prefers-reduced-motion:reduce){#fete .ballon{display:none}#fete.salue .hippie .haut,#fete.salue .hippie .tete{animation:none}#fete.nouveau .nom{animation:none}}`;
+@media (prefers-reduced-motion:reduce){#fete .ballon{display:none}#fete.salue .hippie,#fete.salue .hippie .haut,#fete.salue .hippie .tete,#fete.salue .hippie .crane{animation:none}#fete.nouveau .nom{animation:none}}`;
   document.head.appendChild(css);
   const ov = document.createElement('div'); ov.id = 'fete'; ov.setAttribute('role','status'); ov.setAttribute('aria-live','polite');
   document.body.appendChild(ov);
@@ -462,7 +467,6 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── File d'attente : une fête à la fois ──
   const file = []; let enCours = false, aRepris = false;
-  const HIPPIE_PROFIL = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 600"><ellipse cx="160" cy="590" rx="80" ry="9" fill="rgba(0,0,0,.18)"/><g class="jambes"><rect x="126" y="408" width="34" height="156" rx="15" fill="#163238"/><ellipse cx="158" cy="569" rx="30" ry="12" fill="#E4DCC8" stroke="#14282C" stroke-width="3"/><rect x="140" y="408" width="34" height="156" rx="15" fill="#1D3F47"/><ellipse cx="176" cy="568" rx="32" ry="13" fill="#F6F1E4" stroke="#14282C" stroke-width="3"/></g><g class="haut"><ellipse cx="124" cy="262" rx="28" ry="20" fill="#D9962A"/><path d="M118 262 Q150 246 180 260 Q198 296 196 360 L194 430 Q152 444 110 430 L108 340 Q106 290 118 262 Z" fill="#F2B544"/><path d="M114 300 L112 424" stroke="#0E4A55" stroke-width="9" stroke-linecap="round"/><path d="M152 384 H194 L192 414 H152 Z" fill="#E3A43A"/><rect x="166" y="304" width="24" height="30" rx="6" fill="#0E4A55"/><path d="M172 311v16M184 311v16M172 319h12" stroke="#F2B544" stroke-width="3.5" stroke-linecap="round"/><path d="M182 266v30" stroke="#0E4A55" stroke-width="3" stroke-linecap="round"/><g transform="rotate(-8 152 276)"><rect x="138" y="272" width="30" height="112" rx="15" fill="#E3A43A"/><path d="M140 300 Q152 304 166 300" stroke="#D9962A" stroke-width="3" fill="none"/></g><circle cx="168" cy="390" r="14" fill="#EDC6A4"/></g><g class="tete"><rect x="140" y="228" width="24" height="36" rx="8" fill="#DDB18E"/><ellipse cx="146" cy="172" rx="58" ry="58" fill="#3A2418"/><g fill="#3A2418"><circle cx="118" cy="106" r="22"/><circle cx="102" cy="118" r="14"/><circle cx="132" cy="90" r="14"/><circle cx="112" cy="88" r="13"/><circle cx="128" cy="120" r="13"/></g><g transform="rotate(-24 118 104)"><rect x="70" y="100.5" width="104" height="7" rx="1.5" fill="#F2B544" stroke="#14282C" stroke-width="2"/><rect x="74" y="100.5" width="6" height="7" fill="#0E4A55"/><rect x="64" y="100.5" width="8" height="7" rx="2.5" fill="#E98A8A" stroke="#14282C" stroke-width="2"/><path d="M174 100.5 L186 104 L174 107.5 Z" fill="#F1D3A8" stroke="#14282C" stroke-width="2" stroke-linejoin="round"/><path d="M182.5 103 L186 104 L182.5 105 Z" fill="#14282C"/></g><g stroke="#65544A" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"><path d="M106 96 q6 -7 11 0 q-2 6 -7 4"/><path d="M122 110 q6 -7 11 0 q-2 6 -7 4"/></g><path d="M134 140 Q168 120 196 140 Q208 156 206 176 L216 198 Q212 204 204 205 Q208 214 204 221 Q206 229 199 235 Q193 251 172 253 Q150 255 140 240 Q130 222 132 192 Q132 160 134 140 Z" fill="#EDC6A4"/><path d="M126 196 Q118 140 156 124 Q192 116 206 150 Q192 140 172 140 Q152 142 146 160 Q140 182 142 210 Z" fill="#3A2418"/><g stroke="#3A2418" stroke-width="5" fill="none" stroke-linecap="round"><path d="M140 176 q-8 5 -3 12 q7 6 0 12 q-8 6 -2 13"/></g><ellipse cx="150" cy="200" rx="10" ry="14" fill="#EDC6A4" stroke="#C99F7E" stroke-width="2"/><path d="M147 194 q5 5 0 12" stroke="#C99F7E" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M178 172 Q190 165 202 172" stroke="#3A2418" stroke-width="4.2" fill="none" stroke-linecap="round"/><path d="M181 193 Q190 183 199 193" stroke="#14282C" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M182 192 q-5 -2 -7 -7" stroke="#14282C" stroke-width="2.3" fill="none" stroke-linecap="round"/><ellipse cx="190" cy="191" rx="12" ry="17" fill="none" stroke="#14282C" stroke-width="2.6"/><path d="M178 189 L160 192" stroke="#14282C" stroke-width="2.6" stroke-linecap="round"/><ellipse cx="186" cy="218" rx="9" ry="5.5" fill="#F08C78" opacity=".42"/><path d="M198 226 Q204 233 209 226" stroke="#8C3B3B" stroke-width="3" fill="none" stroke-linecap="round"/></g></svg>';
   function feter(ev){ file.push(ev); if(!enCours) suivante(); }
   function suivante(){
     const ev = file.shift(); if(!ev) return;
@@ -470,8 +474,8 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
     enCours = true;
     msgDemo('hcc-fete-pause'); aRepris = true;
     const nouveau = !!ev.nouveau, ld = !nouveau && !!ev.ld, niv = nouveau ? 2 : ld ? 1 : 0, duree = nouveau ? 24 : ld ? 18 : 15;
-    // Hippie DE PROFIL (tourné vers le nom) : la révérence se voit nettement (buste et tête plient aux hanches)
-    const svg = HIPPIE_PROFIL;
+    const av = document.querySelector('.hpw:not(.salut):not(.montre) svg') || document.querySelector('.hpw svg');
+    const svg = av ? av.outerHTML : '';
     const grp = ev.groupe && GROUPES[ev.groupe] ? '<div class="grp">et '+GROUPES[ev.groupe]+' 🎉</div>' : '';
     ov.className = nouveau ? 'nouveau' : ld ? 'ld' : '';
     ov.innerHTML = '<canvas></canvas>' + fanionsSVG()
@@ -489,6 +493,20 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
       for(let i=0;i<n;i++){ const b = document.createElement('div'); b.className = 'ballon'; const c = C[i%C.length];
         b.style.cssText = 'left:'+(3+Math.random()*94)+'vw;background:'+c+';color:'+c+';--dx:'+((Math.random()-.5)*14)+'vw;animation-duration:'+(6+Math.random()*5)+'s;animation-delay:'+(Math.random()*(nouveau?6:3.5))+'s;transform:scale('+(.75+Math.random()*.55)+')';
         ov.appendChild(b); } }
+    // Séparer jambes / buste / tête : la révérence plie le corps aux hanches, la tête vient vers l'écran
+    try{ const corps = ov.querySelector('.hippie .corps');
+      if(corps){ const NS = 'http://www.w3.org/2000/svg', haut = document.createElementNS(NS,'g'), tete = document.createElementNS(NS,'g');
+        haut.setAttribute('class','haut'); tete.setAttribute('class','tete'); let modeTete = false;
+        [...corps.children].forEach(el=>{ const c = el.getAttribute('class')||'';
+          if(/\b(jg|jd)\b/.test(c)) return;
+          if(el.tagName.toLowerCase()==='rect' && el.getAttribute('y')==='232') modeTete = true;
+          (modeTete ? tete : haut).appendChild(el); });
+        // Dessus du crâne : apparaît quand la tête plonge (on voit le haut de la tête plutôt que le front)
+        const crane = document.createElementNS(NS,'g'); crane.setAttribute('class','crane');
+        crane.innerHTML = '<path d="M90 194 Q88 110 150 104 Q212 110 210 194 Q196 176 150 174 Q104 176 90 194 Z" fill="#3A2418"/>'
+          + '<g stroke="#65544A" stroke-width="3" fill="none" stroke-linecap="round" opacity=".55"><path d="M112 140 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2"/><path d="M106 160 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2"/><path d="M126 122 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2"/></g>';
+        tete.appendChild(crane);
+        corps.appendChild(haut); corps.appendChild(tete); } }catch(e){}
     ov.classList.add('vis'); void ov.offsetWidth; ov.classList.add('on');
     setTimeout(()=>ov.classList.add('salue'), 1300);
     if(!reduit) feuArtifice(ov.querySelector('canvas'), (duree-2)*1000, niv);
@@ -509,7 +527,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
   // version sur GitHub et se recharge tout seul (jamais pendant une fête).
-  const VERSION_ECRAN = 'ecran-20261115-2350';
+  const VERSION_ECRAN = 'ecran-20261116-0000';
   setInterval(async ()=>{
     if(enCours || file.length) return;
     try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
