@@ -365,15 +365,15 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 #fete .hippie svg{width:100%;height:100%;overflow:visible}
 #fete .hippie .brasG{transform-box:view-box;transform-origin:88px 296px}
 #fete .hippie .pompon{transform-box:fill-box;transform-origin:center}
-#fete.salue .hippie{animation:ppSaut .8s ease-in-out infinite}
-#fete.salue .hippie .bras{animation:ppBrasD 1.6s ease-in-out infinite}
-#fete.salue .hippie .brasG{animation:ppBrasG 1.6s ease-in-out infinite}
-#fete.salue .hippie .pompon{animation:ppSecoue .4s ease-in-out infinite alternate}
+#fete.salue .hippie{animation:ppSaut 1.15s ease-in-out infinite}
+#fete.salue .hippie .bras{animation:ppBrasD 2.3s ease-in-out infinite}
+#fete.salue .hippie .brasG{animation:ppBrasG 2.3s ease-in-out infinite}
+#fete.salue .hippie .pompon{animation:ppSecoue .55s ease-in-out infinite alternate}
 /* Salut « pom-pom girl » : Hippie sautille, lève les bras en V, agite les pompons (en alternance haut / diagonale) */
-@keyframes ppSaut{0%,100%{transform:translateX(-118%) translateY(0) scale(1,1)}18%{transform:translateX(-118%) translateY(0) scale(1.05,.94)}50%{transform:translateX(-118%) translateY(-5vh) scale(.97,1.04)}82%{transform:translateX(-118%) translateY(0) scale(1.03,.97)}}
+@keyframes ppSaut{0%,100%{transform:translateX(-118%) translateY(0) scale(1,1)}18%{transform:translateX(-118%) translateY(0) scale(1.02,.975)}50%{transform:translateX(-118%) translateY(-2.4vh) scale(.99,1.015)}82%{transform:translateX(-118%) translateY(0) scale(1.012,.988)}}
 @keyframes ppBrasD{0%,100%{transform:rotate(-150deg)}25%{transform:rotate(-115deg)}50%{transform:rotate(-165deg)}75%{transform:rotate(-125deg)}}
 @keyframes ppBrasG{0%,100%{transform:rotate(-14deg)}6%{transform:rotate(150deg)}25%{transform:rotate(165deg)}50%{transform:rotate(118deg)}75%{transform:rotate(160deg)}}
-@keyframes ppSecoue{from{transform:rotate(-14deg) scale(1)}to{transform:rotate(14deg) scale(1.12)}}
+@keyframes ppSecoue{from{transform:rotate(-10deg) scale(1)}to{transform:rotate(10deg) scale(1.07)}}
 #fete .hippie .bras{transform-box:view-box;transform-origin:212px 282px;transform:rotate(8deg)}
 #fete .texte{position:absolute;z-index:3;left:50%;top:31vh;width:46vw;transform:translateY(3vh);opacity:0;transition:transform .8s cubic-bezier(.2,1.3,.4,1) .9s,opacity .6s .9s}
 #fete.on .texte{transform:none;opacity:1}
@@ -496,13 +496,13 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
       if(corps){ const NS = 'http://www.w3.org/2000/svg';
         const pompon = (cx, cy, c1, c2)=>{ let h = ''; for(let k=0;k<12;k++){ const a = k*Math.PI/6, r = 19;
             h += '<circle cx="'+(cx+r*Math.cos(a)).toFixed(1)+'" cy="'+(cy+r*Math.sin(a)).toFixed(1)+'" r="14" fill="'+(k%2?c1:c2)+'"/>'; }
-          return '<g class="pompon">'+h+'<circle cx="'+cx+'" cy="'+cy+'" r="16" fill="'+c1+'"/></g>'; };
+          return '<g class="pompon">'+h+'<circle cx="'+cx+'" cy="'+cy+'" r="16" fill="'+c2+'"/><circle cx="'+cx+'" cy="'+cy+'" r="7" fill="#D9962A"/></g>'; };
         const plateau = corps.querySelector('.main-g'); if(plateau) plateau.style.display = 'none';
         const brasGOrig = [...corps.children].find(el=>el.tagName.toLowerCase()==='rect' && /rotate\(14/.test(el.getAttribute('transform')||''));
         if(brasGOrig){ const g = document.createElementNS(NS,'g'); g.setAttribute('class','brasG');
           brasGOrig.parentNode.insertBefore(g, brasGOrig); g.appendChild(brasGOrig);
-          g.insertAdjacentHTML('beforeend', '<circle cx="66" cy="394" r="14" fill="#EDC6A4"/>' + pompon(64, 404, '#2EC4B6', '#F6F1E4')); }
-        const brasD = corps.querySelector('.bras'); if(brasD) brasD.insertAdjacentHTML('beforeend', pompon(212, 400, '#FF7A59', '#F2B544'));
+          g.insertAdjacentHTML('beforeend', '<circle cx="66" cy="394" r="14" fill="#EDC6A4"/>' + pompon(64, 404, '#F6F1E4', '#F2B544')); }
+        const brasD = corps.querySelector('.bras'); if(brasD) brasD.insertAdjacentHTML('beforeend', pompon(212, 400, '#F6F1E4', '#F2B544'));
       } }catch(e){}
     ov.classList.add('vis'); void ov.offsetWidth; ov.classList.add('on');
     setTimeout(()=>ov.classList.add('salue'), 1300);
@@ -524,7 +524,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
   // version sur GitHub et se recharge tout seul (jamais pendant une fête).
-  const VERSION_ECRAN = 'ecran-20261116-0015';
+  const VERSION_ECRAN = 'ecran-20261116-0030';
   setInterval(async ()=>{
     if(enCours || file.length) return;
     try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
