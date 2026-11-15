@@ -2370,6 +2370,18 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
 // ═══════════════════════════════════════════════════════════════════
 (function(){
   const Q = new URLSearchParams(location.search);
+  // Dans l'écran d'affichage (cadre), c'est l'écran qui fait la fête : la démo se met seulement en pause.
+  let dansCadre = false; try{ dansCadre = window.self !== window.top; }catch(e){ dansCadre = true; }
+  if(dansCadre && !Q.get('test_fete')){
+    let pauseParFete = false;
+    addEventListener('message', e=>{
+      const b = document.getElementById('b-pause'); if(!b) return;
+      const enPause = /Reprendre/.test(b.textContent);
+      if(e.data==='hcc-fete-pause'){ if(!enPause){ b.click(); pauseParFete = true; } try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(err){} }
+      if(e.data==='hcc-fete-reprise'){ if(pauseParFete && enPause) b.click(); pauseParFete = false; }
+    });
+    return;
+  }
   const CONFIG = { apiKey:"AIzaSyD1UAodYE2HzrwvNiCS005bpcmuxlplBRw", authDomain:"hippocrate-dk.firebaseapp.com",
     databaseURL:"https://hippocrate-dk-default-rtdb.firebaseio.com", projectId:"hippocrate-dk",
     storageBucket:"hippocrate-dk.firebasestorage.app", messagingSenderId:"128544353242", appId:"1:128544353242:web:908fb41ed08533afc82ee3" };
