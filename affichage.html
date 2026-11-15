@@ -502,7 +502,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
   // version sur GitHub et se recharge tout seul (jamais pendant une fête).
-  const VERSION_ECRAN = 'ecran-20261115-1600';
+  const VERSION_ECRAN = 'ecran-20261115-2230';
   setInterval(async ()=>{
     if(enCours || file.length) return;
     try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
@@ -568,7 +568,10 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   const pret = ()=>{ try{ if(!firebase.apps.length) firebase.initializeApp(CONFIG); const go = ()=>ecouter(firebase.database()); try{ firebase.auth().signInAnonymously().then(go).catch(go); }catch(e){ go(); } }catch(e){ console.warn('Fête', e); } };
   const attendreFirebase = (n)=>{ if(typeof firebase!=='undefined' && firebase.database) pret(); else if((n||0) < 40) setTimeout(()=>attendreFirebase((n||0)+1), 1500); };
   if(Q.get('test_fete')){ const m = Q.get('test_fete'), nv = m==='nouveau', ab = m==='ld';
-    setTimeout(()=>feter({ nom:nomPublic(nv?'Mohamed Saif Allah KHOUALDI':ab?'Ahmed YAHYAOUI':'Sanad BEN SLIMENE'), num:nv?11694:ab?7706:8997, groupe:(nv||ab)?null:'TRI', nouveau:nv, ld:ab, formule:ab?'Mois JC':(nv?'Journée complète':'') }), 4000); }
+    // Cas fictifs (démonstration) — un nom au choix avec &nom=Prénom%20Nom ; &groupe=1 pour un trinôme
+    const nomT = Q.get('nom') || (nv ? 'Yasmine BEN SALAH' : ab ? 'Karim TRABELSI' : 'Salma GHARBI');
+    const grT = Q.get('groupe') ? 'TRI' : null;
+    setTimeout(()=>feter({ nom:nomPublic(nomT), num:nv?99001:ab?99002:99003, groupe:grT, nouveau:nv, ld:ab, formule:ab?'Mois JC':(nv?'Journée complète':'') }), 4000); }
   else attendreFirebase(0);
 })();
 </script>
