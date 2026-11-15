@@ -495,6 +495,20 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   }
   window.hccFete = feter;
 
+  // ── (15/11) Déblocage du son : certains navigateurs refusent le son tant qu'on n'a pas touché
+  // l'écran une fois. Un appui (télécommande, clic, toucher) le débloque pour toute la journée.
+  const debloquer = ()=>{ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); const a = new Audio(SONS.simple); a.volume = 0; const pr = a.play(); if(pr && pr.then) pr.then(()=>{ a.pause(); }).catch(()=>{}); }catch(e){} };
+  ['click','keydown','touchstart','pointerdown'].forEach(t=>addEventListener(t, debloquer, {passive:true}));
+
+  // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
+  // version sur GitHub et se recharge tout seul (jamais pendant une fête).
+  const VERSION_ECRAN = 'ecran-20261115-1600';
+  setInterval(async ()=>{
+    if(enCours || file.length) return;
+    try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
+      if(t.length > 10000 && t.indexOf(VERSION_ECRAN) < 0) location.reload(); }catch(e){}
+  }, 5*60000);
+
   // ── Firebase ──
   let nouveaux = new Set();
   const vus = new Set(); const cleVus = ()=>'hcc_fete_vus_'+auj();
