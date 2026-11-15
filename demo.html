@@ -2356,3 +2356,204 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
 })();
 
 </script>
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// (15/11/2026) FÊTE DE BIENVENUE — chaque accès confirmé EN LIGNE interrompt la démo :
+// Hippie salue (révérence à la japonaise) devant la banderole de l'équipe, ballons qui
+// s'envolent ; le nom de l'étudiant (ou du chef de groupe) est mis à l'honneur.
+// Tout nouvel inscrit du jour : version « grande fête » avec feu d'artifice et confettis.
+// Sources (Firebase) : journal_etudiant_auto/<jour> (abonnés « Confirmé en ligne ») et
+// demandes_acces (demande en ligne passée à « soldée » = confirmée par l'accueil).
+// Nom affiché : prénom + initiale du nom (écran public). Test : ?test_fete=1 ou ?test_fete=nouveau
+// ═══════════════════════════════════════════════════════════════════
+(function(){
+  const Q = new URLSearchParams(location.search);
+  const CONFIG = { apiKey:"AIzaSyD1UAodYE2HzrwvNiCS005bpcmuxlplBRw", authDomain:"hippocrate-dk.firebaseapp.com",
+    databaseURL:"https://hippocrate-dk-default-rtdb.firebaseio.com", projectId:"hippocrate-dk",
+    storageBucket:"hippocrate-dk.firebasestorage.app", messagingSenderId:"128544353242", appId:"1:128544353242:web:908fb41ed08533afc82ee3" };
+  const p2 = n=>String(n).padStart(2,'0');
+  const auj = ()=>{ const d = new Date(); return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); };
+  const esc = v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const reduit = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const T0 = Date.now();
+
+  // Nom public : prénom(s) + initiale du nom de famille (mots tout en majuscules en fin de nom)
+  function nomPublic(nom){
+    const mots = String(nom||'').trim().split(/\s+/).filter(Boolean); if(!mots.length) return '';
+    let i = mots.length; while(i>1 && mots[i-1]===mots[i-1].toUpperCase() && /[A-ZÀ-Ý]/.test(mots[i-1])) i--;
+    if(i===mots.length) i = Math.max(1, mots.length-1);
+    const cap = s=>s.toLowerCase().replace(/(^|[-'])\S/g, m=>m.toUpperCase());
+    return mots.slice(0,i).map(cap).join(' ') + (mots[i] ? ' '+mots[i].charAt(0).toUpperCase()+'.' : '');
+  }
+  const GROUPES = { BIN:'son binôme', TRI:'son trinôme', PACK:'son groupe' };
+
+  // ── Styles ──
+  const css = document.createElement('style');
+  css.textContent = `
+#fete{position:fixed;inset:0;z-index:2147483000;display:none;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#13606B 0%,#0B3A45 70%);font-family:'Bricolage Grotesque','Instrument Sans','Segoe UI',system-ui,sans-serif;color:#F6F1E4;opacity:0;transition:opacity .6s}
+#fete.vis{display:block}#fete.on{opacity:1}
+#fete.nouveau{background:radial-gradient(ellipse at 50% 30%,#1B4F72 0%,#061C24 72%)}
+#fete canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#fete .fanions{position:absolute;z-index:2;left:-2vw;right:-2vw;top:-1vh;height:16vh;pointer-events:none}
+#fete .banderole{position:absolute;z-index:3;left:50%;top:13vh;transform:translateX(-50%) rotate(-1.5deg) scale(.6);opacity:0;transition:transform .9s cubic-bezier(.2,1.5,.4,1) .3s,opacity .5s .3s;background:#F2B544;color:#0B3A45;font-weight:800;font-size:min(3.2vw,5.4vh);padding:1.6vh 4vw;border-radius:1vh;box-shadow:0 1.2vh 3vh rgba(0,0,0,.35);white-space:nowrap}
+#fete .banderole:before,#fete .banderole:after{content:'';position:absolute;top:25%;width:3vw;height:100%;background:#D99A2B;z-index:-1}
+#fete .banderole:before{left:-2.2vw;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,35% 50%)}
+#fete .banderole:after{right:-2.2vw;clip-path:polygon(0 0,100% 0,65% 50%,100% 100%,0 100%)}
+#fete.on .banderole{transform:translateX(-50%) rotate(-1.5deg) scale(1);opacity:1}
+#fete .equipe{position:absolute;z-index:3;left:50%;top:25.5vh;transform:translateX(-50%);font-size:min(1.5vw,2.6vh);font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:#5DCAA5;opacity:0;transition:opacity .6s 1s}
+#fete.on .equipe{opacity:1}
+#fete .hippie{position:absolute;z-index:2;left:50%;bottom:6vh;height:56vh;transform:translateX(-118%) perspective(1400px) rotateX(0);transform-origin:50% 96%;aspect-ratio:1/2}
+#fete .hippie svg{width:100%;height:100%;overflow:visible}
+#fete.salue .hippie{animation:ojigi 2.8s ease-in-out 2}
+@keyframes ojigi{0%,100%{transform:translateX(-118%) perspective(1400px) rotateX(0)}32%,64%{transform:translateX(-118%) perspective(1400px) rotateX(-34deg) translateY(1.5vh)}}
+#fete .hippie .bras{transform-box:view-box;transform-origin:212px 282px;transform:rotate(8deg)}
+#fete .texte{position:absolute;z-index:3;left:50%;top:31vh;width:46vw;transform:translateY(3vh);opacity:0;transition:transform .8s cubic-bezier(.2,1.3,.4,1) .9s,opacity .6s .9s}
+#fete.on .texte{transform:none;opacity:1}
+#fete .bienv{font-size:min(2.6vw,4.4vh);font-weight:600;color:#D7ECEA}
+#fete .nom{font-size:min(6.2vw,10.5vh);font-weight:800;line-height:1.02;margin:.6vh 0 1vh;color:#fff;text-shadow:0 .6vh 3vh rgba(0,0,0,.35)}
+#fete.nouveau .nom{background:linear-gradient(90deg,#F2B544,#FFE29A,#F2B544);-webkit-background-clip:text;background-clip:text;color:transparent;animation:brille 2.4s linear infinite;background-size:200% 100%}
+@keyframes brille{to{background-position:-200% 0}}
+#fete .grp{font-size:min(2.2vw,3.8vh);color:#5DCAA5;font-weight:700}
+#fete .msg{margin-top:2.4vh;font-size:min(1.9vw,3.2vh);line-height:1.4;color:#F6F1E4;max-width:40vw}
+#fete .badge{display:inline-block;margin-top:2.4vh;padding:1vh 2vw;border-radius:99vh;background:#F2B544;color:#0B3A45;font-weight:800;font-size:min(2vw,3.4vh)}
+#fete .ballon{position:absolute;z-index:1;bottom:-22vh;width:6.5vh;height:8.2vh;border-radius:50% 50% 47% 47%;box-shadow:inset -1vh -1.2vh 0 rgba(0,0,0,.14),inset .8vh .8vh 0 rgba(255,255,255,.25);animation:monte linear forwards}
+#fete .ballon:after{content:'';position:absolute;left:50%;top:100%;width:1px;height:9vh;background:rgba(255,255,255,.55)}
+#fete .ballon:before{content:'';position:absolute;left:calc(50% - .6vh);top:calc(100% - .2vh);border:.6vh solid transparent;border-bottom:.9vh solid currentColor;transform:rotate(180deg)}
+@keyframes monte{0%{transform:translate(0,0) rotate(-4deg)}50%{transform:translate(var(--dx),-70vh) rotate(5deg)}100%{transform:translate(calc(var(--dx)*-.6),-135vh) rotate(-3deg)}}
+#fete .barre{position:absolute;left:0;bottom:0;height:.7vh;width:100%;background:#F2B544;transform-origin:left;transform:scaleX(1)}
+@media (prefers-reduced-motion:reduce){#fete .ballon{display:none}#fete.salue .hippie{animation:none}#fete.nouveau .nom{animation:none}}`;
+  document.head.appendChild(css);
+  const ov = document.createElement('div'); ov.id = 'fete'; ov.setAttribute('role','status'); ov.setAttribute('aria-live','polite');
+  document.body.appendChild(ov);
+
+  const bPause = ()=>document.getElementById('b-pause');
+  const enPause = ()=>{ const b = bPause(); return !!(b && /Reprendre/.test(b.textContent)); };
+  const voixActive = ()=>{ const b = document.getElementById('b-voix'); return !!(b && /Couper/.test(b.textContent)); };
+  const priereEnCours = ()=>{ const p = document.getElementById('priere'); return !!(p && p.classList.contains('vis')); };
+
+  // ── Fanfare (synthétisée, seulement si la voix de la démo est activée) ──
+  let actx = null;
+  function son(nouveau){
+    if(!voixActive()) return;
+    try{
+      actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+      const notes = nouveau ? [523.25,659.25,783.99,1046.5,783.99,1046.5,1318.5] : [523.25,659.25,783.99,1046.5];
+      notes.forEach((f,i)=>{ const o = actx.createOscillator(), g = actx.createGain(); o.type = 'triangle'; o.frequency.value = f;
+        const t = actx.currentTime + 0.25 + i*0.16; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.18,t+0.03); g.gain.exponentialRampToValueAtTime(0.0001,t+0.45);
+        o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+0.5); });
+    }catch(e){}
+  }
+  function pop(){ if(!voixActive() || !actx) return; try{ const n = actx.createBufferSource(), b = actx.createBuffer(1, actx.sampleRate*0.25, actx.sampleRate), d = b.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1)*Math.pow(1-i/d.length,3); n.buffer = b; const g = actx.createGain(); g.gain.value = 0.12; n.connect(g); g.connect(actx.destination); n.start(); }catch(e){} }
+
+  // ── Feu d'artifice + confettis (canvas) ──
+  function feuArtifice(cv, dureeMs, intense){
+    const ctx = cv.getContext('2d'); let W, H; const dpr = Math.min(2, window.devicePixelRatio||1);
+    const taille = ()=>{ W = cv.width = innerWidth*dpr; H = cv.height = innerHeight*dpr; }; taille();
+    const COUL = ['#F2B544','#5DCAA5','#FFFFFF','#FF7A59','#7FD1FF','#FFE29A','#C77DFF'];
+    const parts = [], fusees = [], conf = [];
+    const t0 = performance.now(); let dernier = 0;
+    function lancer(){ fusees.push({ x:W*(.15+Math.random()*.7), y:H, vx:(Math.random()-.5)*2*dpr, vy:-(H*(.012+Math.random()*.004)), c:COUL[Math.random()*COUL.length|0] }); }
+    function eclater(f){ const n = intense ? 90 : 60; for(let i=0;i<n;i++){ const a = Math.PI*2*i/n, v = (2+Math.random()*4)*dpr; parts.push({x:f.x,y:f.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,v:1,c:Math.random()<.3?'#fff':f.c}); } pop(); }
+    for(let i=0;i<(intense?160:90);i++) conf.push({x:Math.random()*W,y:-Math.random()*H,vy:(1+Math.random()*2.5)*dpr,vx:(Math.random()-.5)*dpr,r:Math.random()*6.28,vr:(Math.random()-.5)*.2,c:COUL[Math.random()*COUL.length|0],w:(5+Math.random()*6)*dpr});
+    function frame(now){
+      const t = now - t0; if(t > dureeMs + 2500){ ctx.clearRect(0,0,W,H); return; }
+      if(intense && t < dureeMs && now - dernier > 650){ dernier = now; lancer(); if(Math.random()<.5) lancer(); }
+      ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.fillRect(0,0,W,H); ctx.globalCompositeOperation = 'lighter';
+      for(let i=fusees.length-1;i>=0;i--){ const f = fusees[i]; f.x += f.vx; f.y += f.vy; f.vy += .12*dpr; ctx.fillStyle = f.c; ctx.fillRect(f.x,f.y,3*dpr,6*dpr); if(f.vy >= -1*dpr){ eclater(f); fusees.splice(i,1); } }
+      for(let i=parts.length-1;i>=0;i--){ const p = parts[i]; p.x += p.vx; p.y += p.vy; p.vy += .05*dpr; p.vx *= .985; p.vy *= .985; p.v -= .012; if(p.v<=0){ parts.splice(i,1); continue; } ctx.globalAlpha = p.v; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x,p.y,2.2*dpr,0,6.28); ctx.fill(); }
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+      conf.forEach(c=>{ c.y += c.vy; c.x += c.vx + Math.sin((t/400)+c.r)*.6*dpr; c.r += c.vr; if(c.y > H+20 && t < dureeMs){ c.y = -20; c.x = Math.random()*W; }
+        ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.r); ctx.fillStyle = c.c; ctx.fillRect(-c.w/2,-c.w/4,c.w,c.w/2); ctx.restore(); });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function fanionsSVG(){
+    const C = ['#F2B544','#5DCAA5','#F6F1E4','#FF7A59','#2EC4B6'], n = 22; let s = '<svg class="fanions" viewBox="0 0 1000 120" preserveAspectRatio="none"><path d="M0 18 Q500 70 1000 18" stroke="#F6F1E4" stroke-width="2" fill="none" opacity=".7"/>';
+    for(let i=0;i<n;i++){ const x = 15+i*(970/(n-1)), y = 18 + 52*Math.sin(Math.PI*(x/1000)) * 0.98; s += '<path d="M'+(x-16)+' '+(y-2)+' L'+(x+16)+' '+(y-2)+' L'+x+' '+(y+44)+'Z" fill="'+C[i%C.length]+'"/>'; }
+    return s+'</svg>';
+  }
+
+  // ── File d'attente : une fête à la fois ──
+  const file = []; let enCours = false, aRepris = false;
+  function feter(ev){ file.push(ev); if(!enCours) suivante(); }
+  function suivante(){
+    const ev = file.shift(); if(!ev) return;
+    if(priereEnCours() || document.visibilityState==='hidden'){ file.unshift(ev); setTimeout(suivante, 5000); return; }
+    enCours = true; aRepris = false;
+    if(!enPause() && bPause()){ bPause().click(); aRepris = true; }
+    try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
+    const nouveau = !!ev.nouveau, duree = nouveau ? 15 : 10;
+    const av = document.querySelector('#avatar svg');
+    const svg = av ? av.outerHTML : '';
+    const grp = ev.groupe && GROUPES[ev.groupe] ? '<div class="grp">et '+GROUPES[ev.groupe]+' 🎉</div>' : '';
+    ov.className = nouveau ? 'nouveau' : '';
+    ov.innerHTML = '<canvas></canvas>' + fanionsSVG()
+      + '<div class="banderole">'+(nouveau ? 'Bienvenue dans la famille Hippo !' : 'Bienvenue chez Hippo !')+'</div>'
+      + '<div class="equipe">Toute l\'équipe Hippo vous salue</div>'
+      + '<div class="hippie">'+svg+'</div>'
+      + '<div class="texte"><div class="bienv">'+(nouveau ? '✨ Notre tout nouveau membre ✨' : (ev.groupe ? 'Bonne séance au chef de groupe' : 'Bonne séance de travail'))+'</div>'
+      + '<div class="nom">'+esc(ev.nom||'Bienvenue !')+'</div>'+grp
+      + '<div class="msg">'+(nouveau ? 'Ton aventure commence aujourd\'hui. On est ravis de t\'accueillir : installe-toi, l\'équipe est là pour toi.' : 'Ton accès est confirmé. Installe-toi et bon courage !')+'</div>'
+      + (nouveau && ev.num ? '<div class="badge">Ton N° Hippo : '+esc(ev.num)+'</div>' : '')
+      + '</div><div class="barre"></div>';
+    // Ballons
+    if(!reduit){ const C = ['#F2B544','#5DCAA5','#FF7A59','#7FD1FF','#F6F1E4','#C77DFF','#2EC4B6']; const n = nouveau ? 26 : 16;
+      for(let i=0;i<n;i++){ const b = document.createElement('div'); b.className = 'ballon'; const c = C[i%C.length];
+        b.style.cssText = 'left:'+(3+Math.random()*94)+'vw;background:'+c+';color:'+c+';--dx:'+((Math.random()-.5)*14)+'vw;animation-duration:'+(6+Math.random()*5)+'s;animation-delay:'+(Math.random()*(nouveau?6:3.5))+'s;transform:scale('+(.75+Math.random()*.55)+')';
+        ov.appendChild(b); } }
+    ov.classList.add('vis'); void ov.offsetWidth; ov.classList.add('on');
+    setTimeout(()=>ov.classList.add('salue'), 1300);
+    if(!reduit) feuArtifice(ov.querySelector('canvas'), (duree-2)*1000, nouveau);
+    son(nouveau);
+    const bar = ov.querySelector('.barre'); bar.style.transition = 'transform '+duree+'s linear'; void bar.offsetWidth; bar.style.transform = 'scaleX(0)';
+    setTimeout(()=>{
+      ov.classList.remove('on');
+      setTimeout(()=>{ ov.className = ''; ov.innerHTML = ''; enCours = false;
+        if(file.length) suivante(); else if(aRepris && enPause() && bPause()) bPause().click(); }, 700);
+    }, duree*1000);
+  }
+  window.hccFete = feter;
+
+  // ── Firebase ──
+  let nouveaux = new Set();
+  const vus = new Set(); const cleVus = ()=>'hcc_fete_vus_'+auj();
+  try{ (JSON.parse(localStorage.getItem(cleVus())||'[]')||[]).forEach(x=>vus.add(x)); }catch(e){}
+  const marquer = id=>{ vus.add(id); try{ localStorage.setItem(cleVus(), JSON.stringify([...vus].slice(-300))); }catch(e){} };
+  function charger(src){ return new Promise((ok,ko)=>{ const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = ko; document.head.appendChild(s); }); }
+  function ecouter(db){
+    const J = auj();
+    db.ref('nouveaux_etudiants_'+J).on('value', s=>{ nouveaux = new Set(Object.keys(s.val()||{}).map(String)); });
+    // Abonnés : présence confirmée en ligne
+    db.ref('journal_etudiant_auto/'+J).on('child_added', s=>{
+      const e = s.val()||{}, k = s.key; const ts = parseInt(String(k).split('_')[0],10);
+      if(!e.enLigne || e.cancelled || vus.has('j'+k) || !(ts > T0 - 60000)) return;
+      marquer('j'+k);
+      feter({ nom:nomPublic(e.nom), num:e.num, nouveau:nouveaux.has(String(e.num)) });
+    });
+    // Demandes faites en ligne, confirmées par l'accueil (statut « soldée »)
+    const deja = {};
+    const ref = db.ref('demandes_acces').orderByChild('date').equalTo(J);
+    ref.once('value', s=>{ const v = s.val()||{}; Object.keys(v).forEach(k=>{ deja[k] = v[k] && v[k].statut; });
+      const traiter = sn=>{ const d = sn.val()||{}, k = sn.key; const avant = deja[k]; deja[k] = d.statut;
+        if(d.statut!=='soldee' || avant==='soldee' || d.source!=='en_ligne' || vus.has('d'+k)) return;
+        marquer('d'+k);
+        const membres = Array.isArray(d.membres) ? d.membres.map(String) : [String(d.num)];
+        feter({ nom:nomPublic(d.nom), num:d.num, groupe:(d.typeAcces && d.typeAcces!=='IND') ? d.typeAcces : null, nouveau:membres.some(m=>nouveaux.has(m)) });
+      };
+      ref.on('child_changed', traiter);
+      ref.on('child_added', sn=>{ if(!(sn.key in deja)) { deja[sn.key] = (sn.val()||{}).statut; } });
+    });
+    // Changement de jour : recharger les écoutes
+    setTimeout(()=>{ try{ db.ref('nouveaux_etudiants_'+J).off(); db.ref('journal_etudiant_auto/'+J).off(); ref.off(); }catch(e){} ecouter(db); },
+      (()=>{ const d = new Date(); d.setHours(24,0,30,0); return d - new Date(); })());
+  }
+  const base = 'https://www.gstatic.com/firebasejs/9.23.0/';
+  const pret = ()=>{ try{ if(!firebase.apps.length) firebase.initializeApp(CONFIG); const go = ()=>ecouter(firebase.database()); try{ firebase.auth().signInAnonymously().then(go).catch(go); }catch(e){ go(); } }catch(e){ console.warn('Fête', e); } };
+  if(Q.get('test_fete')){ const nv = Q.get('test_fete')==='nouveau';
+    setTimeout(()=>feter({ nom:nomPublic(nv?'Mohamed Saif Allah KHOUALDI':'Sanad BEN SLIMENE'), num:nv?11694:8997, groupe:nv?null:'TRI', nouveau:nv }), 4000); }
+  else charger(base+'firebase-app-compat.js').then(()=>Promise.all([charger(base+'firebase-database-compat.js'), charger(base+'firebase-auth-compat.js')])).then(pret).catch(()=>{});
+})();
+</script>
