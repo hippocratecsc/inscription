@@ -361,10 +361,16 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 #fete.on .banderole{transform:translateX(-50%) rotate(-1.5deg) scale(1);opacity:1}
 #fete .equipe{position:absolute;z-index:3;left:50%;top:25.5vh;transform:translateX(-50%);font-size:min(1.5vw,2.6vh);font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:#5DCAA5;opacity:0;transition:opacity .6s 1s}
 #fete.on .equipe{opacity:1}
-#fete .hippie{position:absolute;z-index:2;left:50%;bottom:6vh;height:56vh;width:28vh;transform:translateX(-118%) perspective(1400px) rotateX(0);transform-origin:50% 96%}
+#fete .hippie{position:absolute;z-index:2;left:50%;bottom:6vh;height:56vh;width:28vh;transform:translateX(-118%)}
 #fete .hippie svg{width:100%;height:100%;overflow:visible}
-#fete.salue .hippie{animation:ojigi 2.8s ease-in-out 3}
-@keyframes ojigi{0%,100%{transform:translateX(-118%) perspective(1400px) rotateX(0)}32%,64%{transform:translateX(-118%) perspective(1400px) rotateX(-34deg) translateY(1.5vh)}}
+#fete .hippie .haut{transform-box:view-box;transform-origin:150px 428px}
+#fete .hippie .tete{transform-box:view-box;transform-origin:150px 428px}
+#fete.salue .hippie .haut{animation:ojHaut 2.8s ease-in-out 3}
+#fete.salue .hippie .tete{animation:ojTete 2.8s ease-in-out 3}
+/* Révérence japonaise vue de face : tout le haut du corps (buste + tête) se plie vers l'avant depuis les hanches,
+   les jambes restent droites ; le buste se raccourcit, la tête descend devant la poitrine, puis tout se redresse. */
+@keyframes ojHaut{0%,12%,88%,100%{transform:none}35%,65%{transform:rotate(30deg)}}
+@keyframes ojTete{0%,12%,88%,100%{transform:none}35%,65%{transform:rotate(30deg)}}
 #fete .hippie .bras{transform-box:view-box;transform-origin:212px 282px;transform:rotate(8deg)}
 #fete .texte{position:absolute;z-index:3;left:50%;top:31vh;width:46vw;transform:translateY(3vh);opacity:0;transition:transform .8s cubic-bezier(.2,1.3,.4,1) .9s,opacity .6s .9s}
 #fete.on .texte{transform:none;opacity:1}
@@ -380,7 +386,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 #fete .ballon:before{content:'';position:absolute;left:calc(50% - .6vh);top:calc(100% - .2vh);border:.6vh solid transparent;border-bottom:.9vh solid currentColor;transform:rotate(180deg)}
 @keyframes monte{0%{transform:translate(0,0) rotate(-4deg)}50%{transform:translate(var(--dx),-70vh) rotate(5deg)}100%{transform:translate(calc(var(--dx)*-.6),-135vh) rotate(-3deg)}}
 #fete .barre{position:absolute;left:0;bottom:0;height:.7vh;width:100%;background:#F2B544;transform-origin:left;transform:scaleX(1)}
-@media (prefers-reduced-motion:reduce){#fete .ballon{display:none}#fete.salue .hippie{animation:none}#fete.nouveau .nom{animation:none}}`;
+@media (prefers-reduced-motion:reduce){#fete .ballon{display:none}#fete.salue .hippie .haut,#fete.salue .hippie .tete{animation:none}#fete.nouveau .nom{animation:none}}`;
   document.head.appendChild(css);
   const ov = document.createElement('div'); ov.id = 'fete'; ov.setAttribute('role','status'); ov.setAttribute('aria-live','polite');
   document.body.appendChild(ov);
@@ -482,6 +488,15 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
       for(let i=0;i<n;i++){ const b = document.createElement('div'); b.className = 'ballon'; const c = C[i%C.length];
         b.style.cssText = 'left:'+(3+Math.random()*94)+'vw;background:'+c+';color:'+c+';--dx:'+((Math.random()-.5)*14)+'vw;animation-duration:'+(6+Math.random()*5)+'s;animation-delay:'+(Math.random()*(nouveau?6:3.5))+'s;transform:scale('+(.75+Math.random()*.55)+')';
         ov.appendChild(b); } }
+    // Séparer jambes / buste / tête pour que la révérence plie le corps aux hanches
+    try{ const corps = ov.querySelector('.hippie .corps');
+      if(corps){ const NS = 'http://www.w3.org/2000/svg', haut = document.createElementNS(NS,'g'), tete = document.createElementNS(NS,'g');
+        haut.setAttribute('class','haut'); tete.setAttribute('class','tete'); let modeTete = false;
+        [...corps.children].forEach(el=>{ const c = el.getAttribute('class')||'';
+          if(/\b(jg|jd)\b/.test(c)) return;
+          if(el.tagName.toLowerCase()==='rect' && el.getAttribute('y')==='232') modeTete = true;
+          (modeTete ? tete : haut).appendChild(el); });
+        corps.appendChild(haut); corps.appendChild(tete); } }catch(e){}
     ov.classList.add('vis'); void ov.offsetWidth; ov.classList.add('on');
     setTimeout(()=>ov.classList.add('salue'), 1300);
     if(!reduit) feuArtifice(ov.querySelector('canvas'), (duree-2)*1000, niv);
@@ -502,7 +517,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
   // version sur GitHub et se recharge tout seul (jamais pendant une fête).
-  const VERSION_ECRAN = 'ecran-20261115-2230';
+  const VERSION_ECRAN = 'ecran-20261115-2300';
   setInterval(async ()=>{
     if(enCours || file.length) return;
     try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
