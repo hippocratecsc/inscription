@@ -346,13 +346,13 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   // ── Styles ──
   const css = document.createElement('style');
   css.textContent = `
-#fete{position:fixed;inset:0;z-index:2147483000;display:none;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#13606B 0%,#0B3A45 70%);font-family:'Bricolage Grotesque','Instrument Sans','Segoe UI',system-ui,sans-serif;color:#F6F1E4;opacity:0;transition:opacity .6s}
+#fete{position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;z-index:2147483000;display:none;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#13606B 0%,#0B3A45 70%);font-family:'Bricolage Grotesque','Instrument Sans','Segoe UI',system-ui,sans-serif;color:#F6F1E4;opacity:0;transition:opacity .6s}
 #fete.vis{display:block}#fete.on{opacity:1}
 #fete.nouveau{background:radial-gradient(ellipse at 50% 30%,#1B4F72 0%,#061C24 72%)}
 #fete.ld{background:radial-gradient(ellipse at 50% 30%,#1E6B5C 0%,#0A2E33 72%)}
 #fete.ld .banderole{background:linear-gradient(90deg,#F2B544,#FFE29A,#F2B544)}
 #fete .formule{display:inline-block;margin-top:2vh;padding:.9vh 1.8vw;border-radius:99vh;border:.3vh solid #F2B544;background:#0A2E33;color:#FFE29A;font-weight:800;font-size:min(1.9vw,3.2vh)}
-#fete canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#fete canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
 #fete .fanions{position:absolute;z-index:2;left:-2vw;right:-2vw;top:-1vh;height:16vh;pointer-events:none}
 #fete .banderole{position:absolute;z-index:3;left:50%;top:13vh;transform:translateX(-50%) rotate(-1.5deg) scale(.6);opacity:0;transition:transform .9s cubic-bezier(.2,1.5,.4,1) .3s,opacity .5s .3s;background:#F2B544;color:#0B3A45;font-weight:800;font-size:min(3.2vw,5.4vh);padding:1.6vh 4vw;border-radius:1vh;box-shadow:0 1.2vh 3vh rgba(0,0,0,.35);white-space:nowrap}
 #fete .banderole:before,#fete .banderole:after{content:'';position:absolute;top:25%;width:3vw;height:100%;background:#D99A2B;z-index:-1}
@@ -361,7 +361,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 #fete.on .banderole{transform:translateX(-50%) rotate(-1.5deg) scale(1);opacity:1}
 #fete .equipe{position:absolute;z-index:3;left:50%;top:25.5vh;transform:translateX(-50%);font-size:min(1.5vw,2.6vh);font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:#5DCAA5;opacity:0;transition:opacity .6s 1s}
 #fete.on .equipe{opacity:1}
-#fete .hippie{position:absolute;z-index:2;left:50%;bottom:6vh;height:56vh;transform:translateX(-118%) perspective(1400px) rotateX(0);transform-origin:50% 96%;aspect-ratio:1/2}
+#fete .hippie{position:absolute;z-index:2;left:50%;bottom:6vh;height:56vh;width:28vh;transform:translateX(-118%) perspective(1400px) rotateX(0);transform-origin:50% 96%}
 #fete .hippie svg{width:100%;height:100%;overflow:visible}
 #fete.salue .hippie{animation:ojigi 2.8s ease-in-out 2}
 @keyframes ojigi{0%,100%{transform:translateX(-118%) perspective(1400px) rotateX(0)}32%,64%{transform:translateX(-118%) perspective(1400px) rotateX(-34deg) translateY(1.5vh)}}
