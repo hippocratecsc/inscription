@@ -262,6 +262,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   let nuit = false;
   const hm = v=>{ const m = String(v||'').match(/^(\d{1,2}):(\d{2})/); return m ? (+m[1])*60 + (+m[2]) : null; };
   function enVeille(){
+    if(/[?&]test_fete=/.test(location.search)) return false; // démonstration : jamais de veille de nuit
     const v = hm(CFG.veille || '00:00'), r = hm(CFG.reveil || '08:00');
     if(v==null || r==null || v===r) return false;
     const d = new Date(), n = d.getHours()*60 + d.getMinutes();
@@ -524,7 +525,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
   // version sur GitHub et se recharge tout seul (jamais pendant une fête).
-  const VERSION_ECRAN = 'ecran-20261116-0030';
+  const VERSION_ECRAN = 'ecran-20261116-0045';
   setInterval(async ()=>{
     if(enCours || file.length) return;
     try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
