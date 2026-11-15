@@ -2361,6 +2361,8 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
 // (15/11/2026) FÊTE DE BIENVENUE — chaque accès confirmé EN LIGNE interrompt la démo :
 // Hippie salue (révérence à la japonaise) devant la banderole de l'équipe, ballons qui
 // s'envolent ; le nom de l'étudiant (ou du chef de groupe) est mis à l'honneur.
+// Abonnement longue durée (Semaine, Mois, Trimestre, Flexi, Résidanat, Pass Bac…) : fête renforcée
+// (feu d'artifice, confettis, banderole dorée, formule affichée).
 // Tout nouvel inscrit du jour : version « grande fête » avec feu d'artifice et confettis.
 // Sources (Firebase) : journal_etudiant_auto/<jour> (abonnés « Confirmé en ligne ») et
 // demandes_acces (demande en ligne passée à « soldée » = confirmée par l'accueil).
@@ -2386,6 +2388,8 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
     return mots.slice(0,i).map(cap).join(' ') + (mots[i] ? ' '+mots[i].charAt(0).toUpperCase()+'.' : '');
   }
   const GROUPES = { BIN:'son binôme', TRI:'son trinôme', PACK:'son groupe' };
+  const RX_LD = /^(SEM|MOIS|TRIM|FLEXI|RESID|PASS|LD)|SEMAINE|MOIS|TRIM|FLEXI|R[ÉE]SID|PASS/i;
+  const libFormule = l=>String(l||'').replace(/\s*\((Confirmé en ligne|Demandé en ligne|Demandé à la borne)\)\s*/gi,'').trim();
 
   // ── Styles ──
   const css = document.createElement('style');
@@ -2393,6 +2397,9 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
 #fete{position:fixed;inset:0;z-index:2147483000;display:none;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#13606B 0%,#0B3A45 70%);font-family:'Bricolage Grotesque','Instrument Sans','Segoe UI',system-ui,sans-serif;color:#F6F1E4;opacity:0;transition:opacity .6s}
 #fete.vis{display:block}#fete.on{opacity:1}
 #fete.nouveau{background:radial-gradient(ellipse at 50% 30%,#1B4F72 0%,#061C24 72%)}
+#fete.ld{background:radial-gradient(ellipse at 50% 30%,#1E6B5C 0%,#0A2E33 72%)}
+#fete.ld .banderole{background:linear-gradient(90deg,#F2B544,#FFE29A,#F2B544)}
+#fete .formule{display:inline-block;margin-top:2vh;padding:.9vh 1.8vw;border-radius:99vh;border:.3vh solid #F2B544;background:#0A2E33;color:#FFE29A;font-weight:800;font-size:min(1.9vw,3.2vh)}
 #fete canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #fete .fanions{position:absolute;z-index:2;left:-2vw;right:-2vw;top:-1vh;height:16vh;pointer-events:none}
 #fete .banderole{position:absolute;z-index:3;left:50%;top:13vh;transform:translateX(-50%) rotate(-1.5deg) scale(.6);opacity:0;transition:transform .9s cubic-bezier(.2,1.5,.4,1) .3s,opacity .5s .3s;background:#F2B544;color:#0B3A45;font-weight:800;font-size:min(3.2vw,5.4vh);padding:1.6vh 4vw;border-radius:1vh;box-shadow:0 1.2vh 3vh rgba(0,0,0,.35);white-space:nowrap}
@@ -2411,7 +2418,7 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
 #fete.on .texte{transform:none;opacity:1}
 #fete .bienv{font-size:min(2.6vw,4.4vh);font-weight:600;color:#D7ECEA}
 #fete .nom{font-size:min(6.2vw,10.5vh);font-weight:800;line-height:1.02;margin:.6vh 0 1vh;color:#fff;text-shadow:0 .6vh 3vh rgba(0,0,0,.35)}
-#fete.nouveau .nom{background:linear-gradient(90deg,#F2B544,#FFE29A,#F2B544);-webkit-background-clip:text;background-clip:text;color:transparent;animation:brille 2.4s linear infinite;background-size:200% 100%}
+#fete.nouveau .nom,#fete.ld .nom{background:linear-gradient(90deg,#F2B544,#FFE29A,#F2B544);-webkit-background-clip:text;background-clip:text;color:transparent;animation:brille 2.4s linear infinite;background-size:200% 100%}
 @keyframes brille{to{background-position:-200% 0}}
 #fete .grp{font-size:min(2.2vw,3.8vh);color:#5DCAA5;font-weight:700}
 #fete .msg{margin-top:2.4vh;font-size:min(1.9vw,3.2vh);line-height:1.4;color:#F6F1E4;max-width:40vw}
@@ -2433,11 +2440,11 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
 
   // ── Fanfare (synthétisée, seulement si la voix de la démo est activée) ──
   let actx = null;
-  function son(nouveau){
+  function son(niv){
     if(!voixActive()) return;
     try{
       actx = actx || new (window.AudioContext||window.webkitAudioContext)();
-      const notes = nouveau ? [523.25,659.25,783.99,1046.5,783.99,1046.5,1318.5] : [523.25,659.25,783.99,1046.5];
+      const notes = niv>=2 ? [523.25,659.25,783.99,1046.5,783.99,1046.5,1318.5] : niv>=1 ? [523.25,659.25,783.99,1046.5,1318.5] : [523.25,659.25,783.99,1046.5];
       notes.forEach((f,i)=>{ const o = actx.createOscillator(), g = actx.createGain(); o.type = 'triangle'; o.frequency.value = f;
         const t = actx.currentTime + 0.25 + i*0.16; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.18,t+0.03); g.gain.exponentialRampToValueAtTime(0.0001,t+0.45);
         o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+0.5); });
@@ -2447,7 +2454,8 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
     for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1)*Math.pow(1-i/d.length,3); n.buffer = b; const g = actx.createGain(); g.gain.value = 0.12; n.connect(g); g.connect(actx.destination); n.start(); }catch(e){} }
 
   // ── Feu d'artifice + confettis (canvas) ──
-  function feuArtifice(cv, dureeMs, intense){
+  function feuArtifice(cv, dureeMs, niveau){
+    const intense = niveau>=2, fusees_on = niveau>=1, cadence = niveau>=2 ? 650 : 1150;
     const ctx = cv.getContext('2d'); let W, H; const dpr = Math.min(2, window.devicePixelRatio||1);
     const taille = ()=>{ W = cv.width = innerWidth*dpr; H = cv.height = innerHeight*dpr; }; taille();
     const COUL = ['#F2B544','#5DCAA5','#FFFFFF','#FF7A59','#7FD1FF','#FFE29A','#C77DFF'];
@@ -2455,10 +2463,10 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
     const t0 = performance.now(); let dernier = 0;
     function lancer(){ fusees.push({ x:W*(.15+Math.random()*.7), y:H, vx:(Math.random()-.5)*2*dpr, vy:-(H*(.012+Math.random()*.004)), c:COUL[Math.random()*COUL.length|0] }); }
     function eclater(f){ const n = intense ? 90 : 60; for(let i=0;i<n;i++){ const a = Math.PI*2*i/n, v = (2+Math.random()*4)*dpr; parts.push({x:f.x,y:f.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,v:1,c:Math.random()<.3?'#fff':f.c}); } pop(); }
-    for(let i=0;i<(intense?160:90);i++) conf.push({x:Math.random()*W,y:-Math.random()*H,vy:(1+Math.random()*2.5)*dpr,vx:(Math.random()-.5)*dpr,r:Math.random()*6.28,vr:(Math.random()-.5)*.2,c:COUL[Math.random()*COUL.length|0],w:(5+Math.random()*6)*dpr});
+    for(let i=0;i<(intense?160:niveau>=1?130:90);i++) conf.push({x:Math.random()*W,y:-Math.random()*H,vy:(1+Math.random()*2.5)*dpr,vx:(Math.random()-.5)*dpr,r:Math.random()*6.28,vr:(Math.random()-.5)*.2,c:COUL[Math.random()*COUL.length|0],w:(5+Math.random()*6)*dpr});
     function frame(now){
       const t = now - t0; if(t > dureeMs + 2500){ ctx.clearRect(0,0,W,H); return; }
-      if(intense && t < dureeMs && now - dernier > 650){ dernier = now; lancer(); if(Math.random()<.5) lancer(); }
+      if(fusees_on && t < dureeMs && now - dernier > cadence){ dernier = now; lancer(); if(Math.random()<.5) lancer(); }
       ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.fillRect(0,0,W,H); ctx.globalCompositeOperation = 'lighter';
       for(let i=fusees.length-1;i>=0;i--){ const f = fusees[i]; f.x += f.vx; f.y += f.vy; f.vy += .12*dpr; ctx.fillStyle = f.c; ctx.fillRect(f.x,f.y,3*dpr,6*dpr); if(f.vy >= -1*dpr){ eclater(f); fusees.splice(i,1); } }
       for(let i=parts.length-1;i>=0;i--){ const p = parts[i]; p.x += p.vx; p.y += p.vy; p.vy += .05*dpr; p.vx *= .985; p.vy *= .985; p.v -= .012; if(p.v<=0){ parts.splice(i,1); continue; } ctx.globalAlpha = p.v; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x,p.y,2.2*dpr,0,6.28); ctx.fill(); }
@@ -2485,29 +2493,30 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
     enCours = true; aRepris = false;
     if(!enPause() && bPause()){ bPause().click(); aRepris = true; }
     try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
-    const nouveau = !!ev.nouveau, duree = nouveau ? 15 : 10;
+    const nouveau = !!ev.nouveau, ld = !nouveau && !!ev.ld, niv = nouveau ? 2 : ld ? 1 : 0, duree = nouveau ? 15 : ld ? 12 : 10;
     const av = document.querySelector('#avatar svg');
     const svg = av ? av.outerHTML : '';
     const grp = ev.groupe && GROUPES[ev.groupe] ? '<div class="grp">et '+GROUPES[ev.groupe]+' 🎉</div>' : '';
-    ov.className = nouveau ? 'nouveau' : '';
+    ov.className = nouveau ? 'nouveau' : ld ? 'ld' : '';
     ov.innerHTML = '<canvas></canvas>' + fanionsSVG()
-      + '<div class="banderole">'+(nouveau ? 'Bienvenue dans la famille Hippo !' : 'Bienvenue chez Hippo !')+'</div>'
+      + '<div class="banderole">'+(nouveau ? 'Bienvenue dans la famille Hippo !' : ld ? '🌟 Bienvenue à notre abonné Hippo ! 🌟' : 'Bienvenue chez Hippo !')+'</div>'
       + '<div class="equipe">Toute l\'équipe Hippo vous salue</div>'
       + '<div class="hippie">'+svg+'</div>'
-      + '<div class="texte"><div class="bienv">'+(nouveau ? '✨ Notre tout nouveau membre ✨' : (ev.groupe ? 'Bonne séance au chef de groupe' : 'Bonne séance de travail'))+'</div>'
+      + '<div class="texte"><div class="bienv">'+(nouveau ? '✨ Notre tout nouveau membre ✨' : ld ? '💛 Merci pour ta fidélité' : (ev.groupe ? 'Bonne séance au chef de groupe' : 'Bonne séance de travail'))+'</div>'
       + '<div class="nom">'+esc(ev.nom||'Bienvenue !')+'</div>'+grp
-      + '<div class="msg">'+(nouveau ? 'Ton aventure commence aujourd\'hui. On est ravis de t\'accueillir : installe-toi, l\'équipe est là pour toi.' : 'Ton accès est confirmé. Installe-toi et bon courage !')+'</div>'
+      + '<div class="msg">'+(nouveau ? 'Ton aventure commence aujourd\'hui. On est ravis de t\'accueillir : installe-toi, l\'équipe est là pour toi.' : ld ? 'Ta place t\'attend. Installe-toi et bonne séance, on est fiers de t\'accompagner !' : 'Ton accès est confirmé. Installe-toi et bon courage !')+'</div>'
+      + (ev.formule && (ld || nouveau) ? '<div class="formule">'+esc(ev.formule)+'</div><br>' : '')
       + (nouveau && ev.num ? '<div class="badge">Ton N° Hippo : '+esc(ev.num)+'</div>' : '')
       + '</div><div class="barre"></div>';
     // Ballons
-    if(!reduit){ const C = ['#F2B544','#5DCAA5','#FF7A59','#7FD1FF','#F6F1E4','#C77DFF','#2EC4B6']; const n = nouveau ? 26 : 16;
+    if(!reduit){ const C = ['#F2B544','#5DCAA5','#FF7A59','#7FD1FF','#F6F1E4','#C77DFF','#2EC4B6']; const n = nouveau ? 26 : ld ? 22 : 16;
       for(let i=0;i<n;i++){ const b = document.createElement('div'); b.className = 'ballon'; const c = C[i%C.length];
         b.style.cssText = 'left:'+(3+Math.random()*94)+'vw;background:'+c+';color:'+c+';--dx:'+((Math.random()-.5)*14)+'vw;animation-duration:'+(6+Math.random()*5)+'s;animation-delay:'+(Math.random()*(nouveau?6:3.5))+'s;transform:scale('+(.75+Math.random()*.55)+')';
         ov.appendChild(b); } }
     ov.classList.add('vis'); void ov.offsetWidth; ov.classList.add('on');
     setTimeout(()=>ov.classList.add('salue'), 1300);
-    if(!reduit) feuArtifice(ov.querySelector('canvas'), (duree-2)*1000, nouveau);
-    son(nouveau);
+    if(!reduit) feuArtifice(ov.querySelector('canvas'), (duree-2)*1000, niv);
+    son(niv);
     const bar = ov.querySelector('.barre'); bar.style.transition = 'transform '+duree+'s linear'; void bar.offsetWidth; bar.style.transform = 'scaleX(0)';
     setTimeout(()=>{
       ov.classList.remove('on');
@@ -2531,7 +2540,7 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
       const e = s.val()||{}, k = s.key; const ts = parseInt(String(k).split('_')[0],10);
       if(!e.enLigne || e.cancelled || vus.has('j'+k) || !(ts > T0 - 60000)) return;
       marquer('j'+k);
-      feter({ nom:nomPublic(e.nom), num:e.num, nouveau:nouveaux.has(String(e.num)) });
+      feter({ nom:nomPublic(e.nom), num:e.num, nouveau:nouveaux.has(String(e.num)), ld:!!e.aboId || RX_LD.test(e.formule||''), formule:libFormule(e.label||e.formule) });
     });
     // Demandes faites en ligne, confirmées par l'accueil (statut « soldée »)
     const deja = {};
@@ -2541,7 +2550,7 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
         if(d.statut!=='soldee' || avant==='soldee' || d.source!=='en_ligne' || vus.has('d'+k)) return;
         marquer('d'+k);
         const membres = Array.isArray(d.membres) ? d.membres.map(String) : [String(d.num)];
-        feter({ nom:nomPublic(d.nom), num:d.num, groupe:(d.typeAcces && d.typeAcces!=='IND') ? d.typeAcces : null, nouveau:membres.some(m=>nouveaux.has(m)) });
+        feter({ nom:nomPublic(d.nom), num:d.num, groupe:(d.typeAcces && d.typeAcces!=='IND') ? d.typeAcces : null, nouveau:membres.some(m=>nouveaux.has(m)), ld:RX_LD.test(d.formule||''), formule:libFormule(d.label||d.formule) });
       };
       ref.on('child_changed', traiter);
       ref.on('child_added', sn=>{ if(!(sn.key in deja)) { deja[sn.key] = (sn.val()||{}).statut; } });
@@ -2552,8 +2561,8 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
   }
   const base = 'https://www.gstatic.com/firebasejs/9.23.0/';
   const pret = ()=>{ try{ if(!firebase.apps.length) firebase.initializeApp(CONFIG); const go = ()=>ecouter(firebase.database()); try{ firebase.auth().signInAnonymously().then(go).catch(go); }catch(e){ go(); } }catch(e){ console.warn('Fête', e); } };
-  if(Q.get('test_fete')){ const nv = Q.get('test_fete')==='nouveau';
-    setTimeout(()=>feter({ nom:nomPublic(nv?'Mohamed Saif Allah KHOUALDI':'Sanad BEN SLIMENE'), num:nv?11694:8997, groupe:nv?null:'TRI', nouveau:nv }), 4000); }
+  if(Q.get('test_fete')){ const m = Q.get('test_fete'), nv = m==='nouveau', ab = m==='ld';
+    setTimeout(()=>feter({ nom:nomPublic(nv?'Mohamed Saif Allah KHOUALDI':ab?'Ahmed YAHYAOUI':'Sanad BEN SLIMENE'), num:nv?11694:ab?7706:8997, groupe:(nv||ab)?null:'TRI', nouveau:nv, ld:ab, formule:ab?'Mois JC':(nv?'Journée complète':'') }), 4000); }
   else charger(base+'firebase-app-compat.js').then(()=>Promise.all([charger(base+'firebase-database-compat.js'), charger(base+'firebase-auth-compat.js')])).then(pret).catch(()=>{});
 })();
 </script>
