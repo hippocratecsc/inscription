@@ -363,19 +363,17 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 #fete.on .equipe{opacity:1}
 #fete .hippie{position:absolute;z-index:2;left:50%;bottom:6vh;height:56vh;width:28vh;transform:translateX(-118%);transform-origin:50% 96%}
 #fete .hippie svg{width:100%;height:100%;overflow:visible}
-#fete .hippie .haut{transform-box:view-box;transform-origin:150px 428px}
-#fete .hippie .tete{transform-box:view-box;transform-origin:150px 250px}
-#fete.salue .hippie .haut{animation:ojHaut 2.8s ease-in-out 3}
-#fete.salue .hippie .tete{animation:ojTete 2.8s ease-in-out 3}
-#fete.salue .hippie{animation:ojVers 2.8s ease-in-out 3}
-/* Révérence japonaise vue DE FACE, avec effet de profondeur : le buste se plie aux hanches (raccourci),
-   la tête plonge vers l'avant et GROSSIT comme si elle sortait de l'écran, ombre qui s'élargit ; trois fois. */
-@keyframes ojHaut{0%,10%,90%,100%{transform:none}38%,62%{transform:scale(1.14,.6)}}
-@keyframes ojTete{0%,10%,90%,100%{transform:none}38%,62%{transform:translateY(122px) scale(1.55,1.22)}}
-#fete .hippie .crane{opacity:0}
-#fete.salue .hippie .crane{animation:ojCrane 2.8s ease-in-out 3}
-@keyframes ojCrane{0%,14%,86%,100%{opacity:0}38%,62%{opacity:1}}
-@keyframes ojVers{0%,10%,90%,100%{transform:translateX(-118%) scale(1);filter:drop-shadow(0 0 0 rgba(0,0,0,0))}38%,62%{transform:translateX(-118%) scale(1.1);filter:drop-shadow(0 2.2vh 2.4vh rgba(0,0,0,.45))}}
+#fete .hippie .brasG{transform-box:view-box;transform-origin:88px 296px}
+#fete .hippie .pompon{transform-box:fill-box;transform-origin:center}
+#fete.salue .hippie{animation:ppSaut .8s ease-in-out infinite}
+#fete.salue .hippie .bras{animation:ppBrasD 1.6s ease-in-out infinite}
+#fete.salue .hippie .brasG{animation:ppBrasG 1.6s ease-in-out infinite}
+#fete.salue .hippie .pompon{animation:ppSecoue .4s ease-in-out infinite alternate}
+/* Salut « pom-pom girl » : Hippie sautille, lève les bras en V, agite les pompons (en alternance haut / diagonale) */
+@keyframes ppSaut{0%,100%{transform:translateX(-118%) translateY(0) scale(1,1)}18%{transform:translateX(-118%) translateY(0) scale(1.05,.94)}50%{transform:translateX(-118%) translateY(-5vh) scale(.97,1.04)}82%{transform:translateX(-118%) translateY(0) scale(1.03,.97)}}
+@keyframes ppBrasD{0%,100%{transform:rotate(-150deg)}25%{transform:rotate(-115deg)}50%{transform:rotate(-165deg)}75%{transform:rotate(-125deg)}}
+@keyframes ppBrasG{0%,100%{transform:rotate(-14deg)}6%{transform:rotate(150deg)}25%{transform:rotate(165deg)}50%{transform:rotate(118deg)}75%{transform:rotate(160deg)}}
+@keyframes ppSecoue{from{transform:rotate(-14deg) scale(1)}to{transform:rotate(14deg) scale(1.12)}}
 #fete .hippie .bras{transform-box:view-box;transform-origin:212px 282px;transform:rotate(8deg)}
 #fete .texte{position:absolute;z-index:3;left:50%;top:31vh;width:46vw;transform:translateY(3vh);opacity:0;transition:transform .8s cubic-bezier(.2,1.3,.4,1) .9s,opacity .6s .9s}
 #fete.on .texte{transform:none;opacity:1}
@@ -391,7 +389,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 #fete .ballon:before{content:'';position:absolute;left:calc(50% - .6vh);top:calc(100% - .2vh);border:.6vh solid transparent;border-bottom:.9vh solid currentColor;transform:rotate(180deg)}
 @keyframes monte{0%{transform:translate(0,0) rotate(-4deg)}50%{transform:translate(var(--dx),-70vh) rotate(5deg)}100%{transform:translate(calc(var(--dx)*-.6),-135vh) rotate(-3deg)}}
 #fete .barre{position:absolute;left:0;bottom:0;height:.7vh;width:100%;background:#F2B544;transform-origin:left;transform:scaleX(1)}
-@media (prefers-reduced-motion:reduce){#fete .ballon{display:none}#fete.salue .hippie,#fete.salue .hippie .haut,#fete.salue .hippie .tete,#fete.salue .hippie .crane{animation:none}#fete.nouveau .nom{animation:none}}`;
+@media (prefers-reduced-motion:reduce){#fete .ballon{display:none}#fete.salue .hippie,#fete.salue .hippie .bras,#fete.salue .hippie .brasG,#fete.salue .hippie .pompon{animation:none}#fete.nouveau .nom{animation:none}}`;
   document.head.appendChild(css);
   const ov = document.createElement('div'); ov.id = 'fete'; ov.setAttribute('role','status'); ov.setAttribute('aria-live','polite');
   document.body.appendChild(ov);
@@ -493,20 +491,19 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
       for(let i=0;i<n;i++){ const b = document.createElement('div'); b.className = 'ballon'; const c = C[i%C.length];
         b.style.cssText = 'left:'+(3+Math.random()*94)+'vw;background:'+c+';color:'+c+';--dx:'+((Math.random()-.5)*14)+'vw;animation-duration:'+(6+Math.random()*5)+'s;animation-delay:'+(Math.random()*(nouveau?6:3.5))+'s;transform:scale('+(.75+Math.random()*.55)+')';
         ov.appendChild(b); } }
-    // Séparer jambes / buste / tête : la révérence plie le corps aux hanches, la tête vient vers l'écran
+    // Salut « pom-pom girl » : le plateau disparaît, les deux bras deviennent mobiles et tiennent des pompons
     try{ const corps = ov.querySelector('.hippie .corps');
-      if(corps){ const NS = 'http://www.w3.org/2000/svg', haut = document.createElementNS(NS,'g'), tete = document.createElementNS(NS,'g');
-        haut.setAttribute('class','haut'); tete.setAttribute('class','tete'); let modeTete = false;
-        [...corps.children].forEach(el=>{ const c = el.getAttribute('class')||'';
-          if(/\b(jg|jd)\b/.test(c)) return;
-          if(el.tagName.toLowerCase()==='rect' && el.getAttribute('y')==='232') modeTete = true;
-          (modeTete ? tete : haut).appendChild(el); });
-        // Dessus du crâne : apparaît quand la tête plonge (on voit le haut de la tête plutôt que le front)
-        const crane = document.createElementNS(NS,'g'); crane.setAttribute('class','crane');
-        crane.innerHTML = '<path d="M90 194 Q88 110 150 104 Q212 110 210 194 Q196 176 150 174 Q104 176 90 194 Z" fill="#3A2418"/>'
-          + '<g stroke="#65544A" stroke-width="3" fill="none" stroke-linecap="round" opacity=".55"><path d="M112 140 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2"/><path d="M106 160 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2"/><path d="M126 122 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2"/></g>';
-        tete.appendChild(crane);
-        corps.appendChild(haut); corps.appendChild(tete); } }catch(e){}
+      if(corps){ const NS = 'http://www.w3.org/2000/svg';
+        const pompon = (cx, cy, c1, c2)=>{ let h = ''; for(let k=0;k<12;k++){ const a = k*Math.PI/6, r = 19;
+            h += '<circle cx="'+(cx+r*Math.cos(a)).toFixed(1)+'" cy="'+(cy+r*Math.sin(a)).toFixed(1)+'" r="14" fill="'+(k%2?c1:c2)+'"/>'; }
+          return '<g class="pompon">'+h+'<circle cx="'+cx+'" cy="'+cy+'" r="16" fill="'+c1+'"/></g>'; };
+        const plateau = corps.querySelector('.main-g'); if(plateau) plateau.style.display = 'none';
+        const brasGOrig = [...corps.children].find(el=>el.tagName.toLowerCase()==='rect' && /rotate\(14/.test(el.getAttribute('transform')||''));
+        if(brasGOrig){ const g = document.createElementNS(NS,'g'); g.setAttribute('class','brasG');
+          brasGOrig.parentNode.insertBefore(g, brasGOrig); g.appendChild(brasGOrig);
+          g.insertAdjacentHTML('beforeend', '<circle cx="66" cy="394" r="14" fill="#EDC6A4"/>' + pompon(64, 404, '#2EC4B6', '#F6F1E4')); }
+        const brasD = corps.querySelector('.bras'); if(brasD) brasD.insertAdjacentHTML('beforeend', pompon(212, 400, '#FF7A59', '#F2B544'));
+      } }catch(e){}
     ov.classList.add('vis'); void ov.offsetWidth; ov.classList.add('on');
     setTimeout(()=>ov.classList.add('salue'), 1300);
     if(!reduit) feuArtifice(ov.querySelector('canvas'), (duree-2)*1000, niv);
@@ -527,7 +524,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
   // version sur GitHub et se recharge tout seul (jamais pendant une fête).
-  const VERSION_ECRAN = 'ecran-20261116-0000';
+  const VERSION_ECRAN = 'ecran-20261116-0015';
   setInterval(async ()=>{
     if(enCours || file.length) return;
     try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
