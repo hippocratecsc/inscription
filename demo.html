@@ -2358,14 +2358,14 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
 </script>
 <script>
 // ═══════════════════════════════════════════════════════════════════
-// (15/11/2026) FÊTE DE BIENVENUE — chaque accès confirmé EN LIGNE interrompt la démo :
+// (15/11/2026) FÊTE DE BIENVENUE — chaque accès validé (accueil ou en ligne) interrompt la démo :
 // Hippie salue (révérence à la japonaise) devant la banderole de l'équipe, ballons qui
 // s'envolent ; le nom de l'étudiant (ou du chef de groupe) est mis à l'honneur.
 // Abonnement longue durée (Semaine, Mois, Trimestre, Flexi, Résidanat, Pass Bac…) : fête renforcée
 // (feu d'artifice, confettis, banderole dorée, formule affichée).
 // Tout nouvel inscrit du jour : version « grande fête » avec feu d'artifice et confettis.
-// Sources (Firebase) : journal_etudiant_auto/<jour> (abonnés « Confirmé en ligne ») et
-// demandes_acces (demande en ligne passée à « soldée » = confirmée par l'accueil).
+// Sources (Firebase) : journal_<jour> (TOUT accès validé, à l'accueil comme en ligne) et
+// journal_etudiant_auto/<jour> (abonnés « Confirmé en ligne »). Une seule fête par étudiant et par jour.
 // Nom affiché : prénom + initiale du nom (écran public). Test : ?test_fete=1 ou ?test_fete=nouveau
 // ═══════════════════════════════════════════════════════════════════
 (function(){
@@ -2490,7 +2490,7 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
   function suivante(){
     const ev = file.shift(); if(!ev) return;
     if(priereEnCours() || document.visibilityState==='hidden'){ file.unshift(ev); setTimeout(suivante, 5000); return; }
-    enCours = true; aRepris = false;
+    enCours = true;
     if(!enPause() && bPause()){ bPause().click(); aRepris = true; }
     try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
     const nouveau = !!ev.nouveau, ld = !nouveau && !!ev.ld, niv = nouveau ? 2 : ld ? 1 : 0, duree = nouveau ? 15 : ld ? 12 : 10;
@@ -2521,7 +2521,7 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
     setTimeout(()=>{
       ov.classList.remove('on');
       setTimeout(()=>{ ov.className = ''; ov.innerHTML = ''; enCours = false;
-        if(file.length) suivante(); else if(aRepris && enPause() && bPause()) bPause().click(); }, 700);
+        if(file.length) suivante(); else { if(aRepris && enPause() && bPause()) bPause().click(); aRepris = false; } }, 700);
     }, duree*1000);
   }
   window.hccFete = feter;
@@ -2535,28 +2535,39 @@ body{margin:0;background:#061B20;color:var(--cream);font-family:var(--body);over
   function ecouter(db){
     const J = auj();
     db.ref('nouveaux_etudiants_'+J).on('value', s=>{ nouveaux = new Set(Object.keys(s.val()||{}).map(String)); });
-    // Abonnés : présence confirmée en ligne
+    // Une seule fête par étudiant et par jour (accès saisi à l'accueil OU confirmé en ligne)
+    const dejaFete = n=>vus.has('n'+n);
+    function annoncer(e, src){
+      if(!e || e.cancelled) return;
+      const n = Number(e.num); if(!n || dejaFete(n)) return;
+      const membres = (Array.isArray(e.membres) && e.membres.length>1) ? e.membres.map(Number).filter(Boolean) : [n];
+      membres.forEach(m=>marquer('n'+m));
+      const f = String(e.formule||'');
+      const groupe = membres.length>1 ? (/^BIN/i.test(f) ? 'BIN' : /^TRI/i.test(f) ? 'TRI' : membres.length===2 ? 'BIN' : membres.length===3 ? 'TRI' : 'PACK') : null;
+      feter({ nom:nomPublic(e.nom), num:n, groupe, nouveau:membres.some(m=>nouveaux.has(String(m))),
+              ld:!!e.aboId || RX_LD.test(f), formule:libFormule(e.label||f) });
+    }
+    // 1) Journal du jour (tout accès validé, à l'accueil comme en ligne) — seulement les
+    //    nouvelles lignes arrivées après l'ouverture de la démo.
+    const refJ = db.ref('journal_'+J);
+    refJ.once('value', snap=>{
+      const connus = new Set(Object.keys(snap.val()||{}));
+      refJ.on('child_added', sn=>{
+        if(connus.has(sn.key)) return; connus.add(sn.key);
+        const e = sn.val()||{};
+        if(e.type!=='acces' || e.date && e.date!==J) return;
+        if(/^COMPLEMENT$/i.test(e.formule||'') || /compl[ée]ment/i.test(e.label||'')) return;
+        annoncer(e, 'journal');
+      });
+    });
+    // 2) Abonnés qui confirment leur présence en ligne (même si l'appli de l'accueil est fermée)
     db.ref('journal_etudiant_auto/'+J).on('child_added', s=>{
       const e = s.val()||{}, k = s.key; const ts = parseInt(String(k).split('_')[0],10);
-      if(!e.enLigne || e.cancelled || vus.has('j'+k) || !(ts > T0 - 60000)) return;
-      marquer('j'+k);
-      feter({ nom:nomPublic(e.nom), num:e.num, nouveau:nouveaux.has(String(e.num)), ld:!!e.aboId || RX_LD.test(e.formule||''), formule:libFormule(e.label||e.formule) });
-    });
-    // Demandes faites en ligne, confirmées par l'accueil (statut « soldée »)
-    const deja = {};
-    const ref = db.ref('demandes_acces').orderByChild('date').equalTo(J);
-    ref.once('value', s=>{ const v = s.val()||{}; Object.keys(v).forEach(k=>{ deja[k] = v[k] && v[k].statut; });
-      const traiter = sn=>{ const d = sn.val()||{}, k = sn.key; const avant = deja[k]; deja[k] = d.statut;
-        if(d.statut!=='soldee' || avant==='soldee' || d.source!=='en_ligne' || vus.has('d'+k)) return;
-        marquer('d'+k);
-        const membres = Array.isArray(d.membres) ? d.membres.map(String) : [String(d.num)];
-        feter({ nom:nomPublic(d.nom), num:d.num, groupe:(d.typeAcces && d.typeAcces!=='IND') ? d.typeAcces : null, nouveau:membres.some(m=>nouveaux.has(m)), ld:RX_LD.test(d.formule||''), formule:libFormule(d.label||d.formule) });
-      };
-      ref.on('child_changed', traiter);
-      ref.on('child_added', sn=>{ if(!(sn.key in deja)) { deja[sn.key] = (sn.val()||{}).statut; } });
+      if(!e.enLigne || !(ts > T0 - 60000)) return;
+      annoncer(e, 'en_ligne');
     });
     // Changement de jour : recharger les écoutes
-    setTimeout(()=>{ try{ db.ref('nouveaux_etudiants_'+J).off(); db.ref('journal_etudiant_auto/'+J).off(); ref.off(); }catch(e){} ecouter(db); },
+    setTimeout(()=>{ try{ db.ref('nouveaux_etudiants_'+J).off(); refJ.off(); db.ref('journal_etudiant_auto/'+J).off(); }catch(e){} ecouter(db); },
       (()=>{ const d = new Date(); d.setHours(24,0,30,0); return d - new Date(); })());
   }
   const base = 'https://www.gstatic.com/firebasejs/9.23.0/';
