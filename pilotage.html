@@ -97,6 +97,7 @@
     <details id="d-clot" class="hide"><summary>🏦 Clôture(s) de la journée <span id="n-clot">0</span></summary><div class="lst" id="l-clot"></div></details>
     <details><summary>📦 Articles vendables <span id="n-art">0</span></summary><div class="lst" id="l-art"></div></details>
     <details><summary>🧪 Matières (transformables) <span id="n-mat">0</span></summary><div class="lst" id="l-mat"></div></details>
+    <details id="d-apc" open><summary><span id="t-apc">🌙 Accès après caisse</span> <span id="n-apc">0</span></summary><div class="lst" id="l-apc"></div></details>
     <details><summary>🎟 Derniers accès <span id="n-acc">0</span></summary><div class="lst" id="l-acc"></div></details>
     <details><summary>☕ Dernières ventes buvette <span id="n-buv">0</span></summary><div class="lst" id="l-buv"></div></details>
     <details><summary><span id="t-cre">💳 Crédits encaissés aujourd'hui</span> <span id="n-cre">0</span></summary><div class="lst" id="l-cre"></div></details>
@@ -112,7 +113,8 @@
 <script>
 (function(){
   'use strict';
-  // Tableau de bord de l'administrateur — LECTURE SEULE (aucune écriture dans Firebase).
+  // Tableau de bord de l'administrateur — LECTURE SEULE (aucune écriture dans Firebase), sauf la validation
+  // des « accès après caisse » par le gestionnaire (acces_apres_caisse/<jour>/<id>).
   const CONFIG = {
     apiKey: "AIzaSyD1UAodYE2HzrwvNiCS005bpcmuxlplBRw",
     authDomain: "hippocrate-dk.firebaseapp.com",
@@ -226,6 +228,9 @@
     ecouter('nouveaux', db.ref('nouveaux_etudiants_'+jour));
     ecouter('demandes', db.ref('demandes_acces').orderByChild('date').equalTo(jour));
     ecouter('journal', db.ref('journal_'+jour));
+    // (18/11/2026) Arrêté « Excel » de la journée et validations des accès « après caisse »
+    ecouter('arrete', db.ref('etat_cloture/arreteExcel'));
+    ecouter('valApc', db.ref('acces_apres_caisse/'+jour));
     ecouter('vd', db.ref('ventes_directes/'+jour));
     ecouter('cmd', enDirect() ? db.ref('commandes').orderByChild('createdAt').startAt(depuis.getTime() - 36*3600e3)
                               : db.ref('commandes').orderByChild('createdAt').startAt(depuis.getTime() - 36*3600e3).endAt(depuis.getTime() + 24*3600e3));
@@ -310,6 +315,47 @@
   const mn = h=>{ const m = String(h||'').match(/(\d{1,2})\D(\d{2})/); return m ? (+m[1])*60+(+m[2]) : null; };
   function li(a, b, m){ return '<div class="li"><div>'+a+(b?'<br><em>'+b+'</em>':'')+'</div>'+(m!=null?'<div class="m">'+m+'</div>':'')+'</div>'; }
 
+  // ── (18/11/2026) ACCÈS APRÈS CAISSE : tous les accès validés après l'arrêté « Excel » (ou la fin de
+  // service de l'opérateur de l'accueil). Le gestionnaire est notifié et les valide un par un.
+  // Seule écriture de cette page : acces_apres_caisse/<jour>/<id> (la validation du gestionnaire).
+  const _tsEntree = e=>{ const m = String(e.id||'').match(/(\d{13})/); if(m) return +m[1]; const h = mn(e.heure); return h==null ? 0 : new Date((e.dateAccesReelle||e.date||jour)+'T00:00').getTime() + h*60000; };
+  const _cleApc = e=>String(e.id || [e.num,e.heure,e.formule].join('_')).replace(/[.#$\[\]\/]/g,'_');
+  function _notifier(titre, corps){
+    try{ if(navigator.vibrate) navigator.vibrate([180,80,180]); }catch(e){}
+    try{ if('Notification' in window && Notification.permission==='granted'){ const n = new Notification(titre, { body:corps, tag:'apc_'+Date.now() }); setTimeout(()=>{ try{ n.close(); }catch(e){} }, 15000); } }catch(e){}
+  }
+  function rendreApresCaisse(J, T, direct){
+    const A = D.arrete && D.arrete.ts && jourDe(new Date(D.arrete.ts))===T ? D.arrete : null;
+    const V = D.valApc || {};
+    if(!A){ $('n-apc').textContent = '—'; $('t-apc').textContent = '🌙 Accès après caisse';
+      $('l-apc').innerHTML = '<div class="it" style="opacity:.75">Pas encore d\'arrêté aujourd\'hui (bouton « 📌 Poser l\'arrêté Excel » dans l\'app, ou fin de service de l\'opérateur de l\'accueil).</div>'; return; }
+    const L = J.filter(e=>e.type==='acces' && e.formule!=='COMPLEMENT' && _tsEntree(e) > A.ts).sort((a,b)=>_tsEntree(a)-_tsEntree(b));
+    const nOk = L.filter(e=>V[_cleApc(e)]).length;
+    const tot = L.reduce((t,e)=>t+(Number(e.montantPaye!=null?e.montantPaye:e.montant)||0),0);
+    $('t-apc').textContent = '🌙 Accès après caisse (depuis '+(A.heure||'')+')';
+    $('n-apc').textContent = L.length ? nOk+'/'+L.length+' validé(s)' : '0';
+    const perm = ('Notification' in window) ? Notification.permission : 'absent';
+    $('l-apc').innerHTML = '<div class="it" style="font-size:12px">📌 Arrêté de '+esc(A.heure||'')+' · '+esc(A.par||'')+' — trésorerie nette '+f3(A.netArrete)+' TND · après caisse : <b>'+L.length+' accès, '+f3(tot)+' TND</b></div>'
+      + (perm==='default' ? '<div class="it"><button id="b-notif" style="background:#FFD54F;border:none;border-radius:8px;padding:6px 10px;font-weight:700">🔔 Activer les notifications sur ce téléphone</button></div>' : (perm==='denied' ? '<div class="it" style="opacity:.75">🔕 Notifications bloquées pour cette page (réglages du navigateur).</div>' : ''))
+      + (L.length ? L.map(e=>{ const k = _cleApc(e), v = V[k]; const m = Number(e.montantPaye!=null?e.montantPaye:e.montant)||0;
+          return '<div class="it" style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span><b>'+esc(e.heure||'')+'</b> · '+esc(e.nom||'')+' N°'+esc(e.num)+' · '+esc(e.label||e.formule||'')+' · <b>'+f3(m)+'</b>'+(e.credit?' (crédit)':'')+' <span style="opacity:.6">'+esc(e.poste||'')+'</span></span>'
+            + (v ? '<span style="color:#7CD992;white-space:nowrap">✓ '+esc(new Date(v.ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}))+'</span>'
+                 : (direct || true ? '<button data-apc="'+esc(k)+'" style="background:#2E7D32;color:#fff;border:none;border-radius:8px;padding:5px 10px;font-weight:700;white-space:nowrap">✓ Valider</button>' : ''))+'</div>'; }).join('')
+        : '<div class="it" style="opacity:.75">Aucun accès depuis l\'arrêté.</div>');
+    const bn = $('b-notif'); if(bn) bn.onclick = ev=>{ ev.stopPropagation(); try{ Notification.requestPermission().then(()=>planifier()); }catch(e){} };
+    $('l-apc').querySelectorAll('[data-apc]').forEach(b=>b.onclick = ev=>{ ev.stopPropagation(); try{ db.ref('acces_apres_caisse/'+T+'/'+b.dataset.apc).set({ ok:true, ts:Date.now() }); }catch(e){} });
+    // Notification des NOUVEAUX accès après caisse (une seule fois par accès, sur ce téléphone)
+    if(direct){
+      let vus = {}; try{ vus = JSON.parse(localStorage.getItem('pil_apc_vus_'+T)||'{}'); }catch(e){}
+      const neufs = L.filter(e=>!vus[_cleApc(e)]);
+      if(neufs.length && Object.keys(vus).length + 0 >= 0){
+        neufs.forEach(e=>{ vus[_cleApc(e)] = 1; });
+        try{ localStorage.setItem('pil_apc_vus_'+T, JSON.stringify(vus)); }catch(e){}
+        if(window._apcPremierRendu) _notifier('🌙 '+neufs.length+' accès après caisse', neufs.map(e=>(e.nom||'')+' — '+(e.label||e.formule||'')+' '+f3(Number(e.montantPaye!=null?e.montantPaye:e.montant)||0)).join('\n'));
+      }
+      window._apcPremierRendu = true;
+    }
+  }
   function rendre(){
     const T = jour, direct = enDirect();
     // Tranches archivées (relais / clôtures) de la journée : journal, ventes directes, dépenses
@@ -336,6 +382,7 @@
     $('k-nv-s').textContent = dems.length+' demande(s) d\'accès en ligne/borne'+(demAtt.length?' · '+demAtt.length+' en attente':'');
     // Accès + fournitures (journal du jour)
     const J = fusion(val(D.journal), TR.flatMap(t=>val(t.journal)), cleJ).filter(e=>!e.cancelled && (!e.date || e.date===T));
+    try{ rendreApresCaisse(J, T, direct); }catch(e){ console.warn('Après caisse', e); }
     let caAcc = 0, caFrt = 0, nPay = 0, nGrat = 0, credit = 0; const accL = [];
     J.forEach(e=>{
       if(e.type==='fourniture'){ caFrt += Number(e.montant)||0; return; }
