@@ -51,13 +51,15 @@
   }
 
   var CSS = ''
-  + '#hof-barre{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;max-width:460px;margin:0 auto;display:flex;align-items:center;gap:10px;background:#F2B544;color:#14282C;border-radius:14px;padding:11px 12px 11px 14px;box-shadow:0 8px 24px rgba(0,0,0,.35);font:600 14px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;transform:translateY(160%);transition:transform .45s cubic-bezier(.2,.8,.2,1)}'
+  // (21/11/2026) Barre réduite à une petite pastille à droite : elle ne recouvre plus les boutons de validation.
+  + '#hof-barre{position:fixed;left:auto;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:6px;background:#F2B544;color:#14282C;border-radius:999px;padding:7px 7px 7px 13px;box-shadow:0 8px 24px rgba(0,0,0,.35);font:600 14px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;transform:translateY(160%);transition:transform .45s cubic-bezier(.2,.8,.2,1)}'
   + '#hof-barre.on{transform:none}'
   + '#hof-barre button{font:inherit;border:0;cursor:pointer}'
   + '#hof-barre .hof-ouvrir{flex:1;text-align:left;background:none;color:inherit;padding:0}'
-  + '#hof-barre .hof-ouvrir b{display:block;font-size:15px;font-weight:800}'
-  + '#hof-barre .hof-ouvrir span{font-weight:500;font-size:12.5px}'
-  + '#hof-barre .hof-x{background:rgba(20,40,44,.12);color:#14282C;width:30px;height:30px;border-radius:50%;font-size:16px;flex:none}'
+  + '#hof-barre .hof-ouvrir b{display:block;font-size:14px;font-weight:800;white-space:nowrap}'
+  + '#hof-barre .hof-x{background:rgba(20,40,44,.12);color:#14282C;width:24px;height:24px;border-radius:50%;font-size:12px;flex:none}'
+  // Page avec une barre de navigation fixe en bas (inscription) : bouton « Formules » À CÔTÉ de « Suivant »
+  + '#nav #hof-nav{flex:0 0 auto;max-width:none;padding:15px 14px;background:rgba(242,181,68,.14);color:#F2B544;border:1.5px solid #F2B544;font-size:14px;white-space:nowrap}'
   + '#hof-fond{position:fixed;inset:0;z-index:2147483001;background:rgba(4,20,24,.6);opacity:0;transition:opacity .3s;display:flex;align-items:flex-end;justify-content:center}'
   + '#hof-fond.on{opacity:1}'
   + '#hof-fiche{width:100%;max-width:480px;max-height:92vh;overflow:auto;background:#0A353D;color:#F6F1E4;border-radius:22px 22px 0 0;border-top:3px solid #F2B544;padding:16px 0 calc(16px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .4s cubic-bezier(.2,.8,.2,1);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}'
@@ -107,9 +109,18 @@
   function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
   function barre(){
-    if(document.getElementById('hof-barre')) return;
+    if(document.getElementById('hof-barre') || document.getElementById('hof-nav')) return;
+    // (21/11/2026) Si la page a sa propre barre de boutons fixée en bas (← Retour / Suivant →),
+    // le bouton « Formules » s'y range, côte à côte avec eux, au lieu de flotter par-dessus.
+    var nav = document.getElementById('nav');
+    if(nav && getComputedStyle(nav).position === 'fixed'){
+      var bn = document.createElement('button'); bn.type = 'button'; bn.id = 'hof-nav'; bn.textContent = '💡 Formules';
+      bn.setAttribute('aria-label', 'Nos formules'); bn.onclick = ouvrir;
+      nav.insertBefore(bn, nav.firstChild);
+      return;
+    }
     var b = document.createElement('div'); b.id = 'hof-barre'; b.setAttribute('role','region'); b.setAttribute('aria-label','Nos formules');
-    b.innerHTML = '<button class="hof-ouvrir" type="button"><b>💡 Nos formules</b><span>Pass Hippo Bac, Mois, Semaine, Flexi… choisis la tienne</span></button><button class="hof-x" type="button" aria-label="Masquer">✕</button>';
+    b.innerHTML = '<button class="hof-ouvrir" type="button" title="Pass Hippo Bac, Mois, Semaine, Flexi… choisis la tienne"><b>💡 Nos formules</b></button><button class="hof-x" type="button" aria-label="Masquer">✕</button>';
     document.body.appendChild(b);
     b.querySelector('.hof-ouvrir').onclick = ouvrir;
     // La barre ne doit jamais cacher le bas de la page (bouton « Suivant » / « Envoyer ») : on réserve sa hauteur.

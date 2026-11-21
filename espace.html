@@ -76,6 +76,21 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
 .panier{position:sticky;bottom:0;background:var(--teal);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:12px}
 .tot{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-bottom:10px}
 .hide{display:none!important}
+.frt-code{display:flex;gap:8px}.frt-code input{flex:1;font-family:ui-monospace,Menlo,monospace;letter-spacing:1px}
+.frt-scan{flex:none;width:auto;padding:0 14px;border-radius:10px;border:1px solid var(--mint);background:rgba(93,202,165,.15);color:var(--cream);font-size:15px;font-weight:800;cursor:pointer}
+.frt-art{margin:8px 0 0;padding:9px 11px;border-radius:10px;font-size:14px;line-height:1.4;background:rgba(255,255,255,.05);border:1px dashed var(--line)}
+.frt-art.ok2{border-style:solid;border-color:var(--mint)}.frt-art.inc{border-color:var(--saffron);color:var(--saffron)}
+.frt-qte{display:flex;align-items:center;gap:10px;margin:12px 0}.frt-qte button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--cream);font-size:22px;font-weight:800;cursor:pointer}
+.frt-qte b{min-width:34px;text-align:center;font-size:20px}
+.frt-l{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.frt-l small{display:block;color:var(--dim);font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+.frt-l button{background:none;border:0;color:var(--err);font-size:18px;cursor:pointer;padding:4px 6px}
+#frt-cam{position:fixed;inset:0;z-index:2147483500;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
+#frt-cam video{width:100%;max-width:480px;max-height:65vh;border-radius:12px;background:#111}
+#frt-cam .cadre{color:#fff;font-size:14px;text-align:center}
+.rappel-infos{margin:0 0 12px;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:rgba(93,202,165,.10);font-size:14px;line-height:1.45}
+.rappel-infos .acts{display:flex;gap:8px;margin-top:9px}.rappel-infos .acts button{flex:1;border-radius:10px;padding:10px 6px;font-weight:800;font-size:13.5px;cursor:pointer;border:0}
+.dem-st{display:inline-block;margin-top:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;background:rgba(255,255,255,.08)}
 .foot{font-size:12px;color:var(--dim);text-align:center;margin:22px 0 10px;line-height:1.5}
 .statut{display:inline-block;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:800;background:rgba(242,181,68,.18);color:var(--saffron)}
 .statut.v{background:rgba(93,202,165,.2);color:var(--mint)}
@@ -152,10 +167,15 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
     <div class="tuiles">
       <button class="tuile" id="t-acces"><i>🎫</i>Mon accès<br>aujourd'hui</button>
       <button class="tuile" id="t-buv"><i>☕</i>Commander<br>à la buvette</button>
+      <button class="tuile" id="t-frt"><i>🛒</i>Commander<br>des fournitures</button>
+      <button class="tuile" id="t-infos"><i>👤</i>Mes<br>informations</button>
       <button class="tuile tuile-l" id="t-recl"><i>📝</i>Réclamation ou suggestion</button>
     </div>
+    <div id="z-rappel-infos" class="hide"></div>
     <div id="z-acces" class="hide"></div>
     <div id="z-buv" class="hide"></div>
+    <div id="z-frt" class="hide"></div>
+    <div id="z-infos" class="hide"></div>
     <div id="z-recl" class="hide"></div>
   </section>
 
@@ -257,9 +277,9 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
     erreur('e-id'); const ok = await connecter(r.n, ddn, 'e-id');
     if(ok) montrerInfo('Bonjour '+esc(cap(r.p))+' ! Votre numéro est <b style="font-size:20px">'+r.n+'</b> — notez-le.');
   });
-  $('b-sortir').addEventListener('click', ()=>{ couperEcoutes(); try{ if(window.hccOffres) window.hccOffres.oublier(); }catch(e){} ls.del('hcc_espace_moi'); ls.del('hcc_espace_cmd'); moi = null; $('i-num').value=''; $('i-ddn').value=''; voir('v-id'); });
+  $('b-sortir').addEventListener('click', ()=>{ couperEcoutes(); try{ arreterCamera(); }catch(e){} try{ if(window.hccOffres) window.hccOffres.oublier(); }catch(e){} ls.del('hcc_espace_moi'); ls.del('hcc_espace_cmd'); moi = null; $('i-num').value=''; $('i-ddn').value=''; voir('v-id'); });
 
-  function montrerInfo(html){ const z = $('z-acces'); z.classList.remove('hide'); $('z-buv').classList.add('hide'); $('z-recl').classList.add('hide'); z.innerHTML = '<div class="ok">'+html+'</div>'; }
+  function montrerInfo(html){ const z = $('z-acces'); z.classList.remove('hide'); ['z-buv','z-recl','z-frt','z-infos'].forEach(i=>$(i).classList.add('hide')); z.innerHTML = '<div class="ok">'+html+'</div>'; }
 
   let gen = 0;
   function couperEcoutes(){ gen++; [ecouteDem, ecouteCmd].forEach(r=>{ try{ if(r) r.off(); }catch(e){} }); ecouteDem = null; ecouteCmd = null; choixF = null; panier = {}; window._noteCmd = '';  typeA = 'IND'; membresA = []; nbH = 1; aboJour = null; monGroupe = null; }
@@ -287,8 +307,9 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
     $('q-num').textContent = moi.n;
     try{ if(window.hccOffres) window.hccOffres.identifier({ n:moi.n, nom:cap(moi.p)+' '+String(moi.f||'').toUpperCase() }); }catch(e){}
     voir('v-menu');
-    $('z-acces').classList.add('hide'); $('z-buv').classList.add('hide'); $('z-recl').classList.add('hide');
-    ['t-acces','t-buv','t-recl'].forEach(t=>$(t).setAttribute('aria-pressed','false'));
+    ['z-acces','z-buv','z-recl','z-frt','z-infos'].forEach(i=>$(i).classList.add('hide'));
+    ['t-acces','t-buv','t-recl','t-frt','t-infos'].forEach(t=>$(t).setAttribute('aria-pressed','false'));
+    try{ rappelInfos(); }catch(e){}
   }
   // Reprise de session mémorisée
   (async ()=>{
@@ -755,10 +776,192 @@ textarea{resize:vertical;min-height:110px;line-height:1.45}
         + (r.reponse ? '<div class="recl-rep"><b>Réponse de l\'accueil :</b> '+esc(r.reponse)+'</div>' : '')
         + '</div>'; }).join('') : '';
   }
+  // ══ (21/11/2026) Les tuiles des anciennes rubriques ferment aussi les deux nouvelles, et inversement ══
+  ['t-acces','t-buv','t-recl'].forEach(t=>$(t).addEventListener('click', ()=>{ ['z-frt','z-infos'].forEach(i=>$(i).classList.add('hide')); ['t-frt','t-infos'].forEach(x=>$(x).setAttribute('aria-pressed','false')); arreterCamera(); }));
+  function activerTuile(id){
+    ['t-acces','t-buv','t-recl','t-frt','t-infos'].forEach(t=>$(t).setAttribute('aria-pressed', t===id ? 'true' : 'false'));
+    ['z-acces','z-buv','z-recl','z-frt','z-infos'].forEach(z=>$(z).classList.add('hide'));
+  }
+
+  // ══ (21/11/2026) COMMANDE DE FOURNITURES — code-barres (caméra ou saisie) + quantité ══
+  // L'étudiant n'a pas la liste des articles : il scanne ou tape le code. L'accueil confirme, encaisse et remet.
+  let FRT = null, frtPanier = [], frtArt = null, frtQte = 1, camFlux = null, camBoucle = 0;
+  const FRT_ST = { nouvelle:'📨 Reçue — passe à l\'accueil pour régler et récupérer', confirmee:'✅ Servie par l\'accueil', refusee:'✕ Non servie' };
+  const normCode = c=>String(c||'').replace(/\s+/g,'').trim();
+  function trouverArt(code){
+    const c = normCode(code); if(!c || !FRT) return null;
+    return FRT.find(a=>normCode(a.code)===c) || FRT.find(a=>normCode(a.code).replace(/^0+/,'')===c.replace(/^0+/,'')) || null;
+  }
+  $('t-frt').addEventListener('click', ()=>{ activerTuile('t-frt'); ouvrirFrt(); });
+  async function ouvrirFrt(note){
+    const z = $('z-frt'); z.classList.remove('hide');
+    if(!FRT){ z.innerHTML = '<div class="carte">Chargement…</div>'; try{ const v = await lire('catalogue_fournitures_public'); FRT = (v && Array.isArray(v.items)) ? v.items : []; }catch(e){ FRT = []; } }
+    const scanOk = ('BarcodeDetector' in window) && navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+    z.innerHTML = (note ? '<div class="ok">'+note+'</div>' : '')
+      + '<div class="carte"><h2 style="margin-top:0">🛒 Commander des fournitures</h2>'
+      + '<p class="sub" style="margin-bottom:12px">'+(scanOk ? 'Scanne le code-barres de l\'article avec ton téléphone, ou tape les chiffres écrits dessous.' : 'Tape les chiffres écrits sous le code-barres de l\'article.')+' Tu règles et tu récupères à l\'accueil.</p>'
+      + '<div class="f"><label for="frt-c">Code-barres</label><div class="frt-code"><input id="frt-c" inputmode="numeric" autocomplete="off" placeholder="Ex. 6191234567890">'
+      + (scanOk ? '<button class="frt-scan" id="frt-s" type="button">📷 Scanner</button>' : '') + '</div><div id="frt-a"></div></div>'
+      + '<div class="frt-qte"><span style="flex:1;font-size:13px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Quantité</span><button type="button" id="frt-m" aria-label="Moins">−</button><b id="frt-q">1</b><button type="button" id="frt-p" aria-label="Plus">+</button></div>'
+      + '<div class="err" id="e-frt"></div>'
+      + '<button class="btn sec" id="frt-aj" type="button">➕ Ajouter à ma commande</button>'
+      + '<div id="frt-pan"></div></div>'
+      + '<div id="frt-mes"></div>';
+    frtArt = null; frtQte = 1;
+    const ci = $('frt-c');
+    ci.addEventListener('input', ()=>montrerArt(ci.value));
+    if(scanOk) $('frt-s').addEventListener('click', scanner);
+    $('frt-m').addEventListener('click', ()=>{ frtQte = Math.max(1, frtQte-1); $('frt-q').textContent = frtQte; });
+    $('frt-p').addEventListener('click', ()=>{ frtQte = Math.min(50, frtQte+1); $('frt-q').textContent = frtQte; });
+    $('frt-aj').addEventListener('click', ajouterFrt);
+    rendrePanierFrt(); mesCommandesFrt();
+  }
+  function montrerArt(code){
+    const z = $('frt-a'); if(!z) return; const c = normCode(code);
+    if(c.length < 4){ z.innerHTML = ''; frtArt = null; return; }
+    const a = trouverArt(c); frtArt = a;
+    z.innerHTML = a ? '<div class="frt-art ok2">✓ <b>'+esc(a.nom)+'</b> — '+fmt(a.prix)+' TND'+(a.dispo===false ? '<br><small style="color:var(--saffron)">Peut-être épuisé : l\'accueil te dira.</small>' : '')+'</div>'
+      : '<div class="frt-art inc">Code inconnu dans notre liste. Tu peux l\'ajouter quand même : l\'accueil vérifiera.</div>';
+  }
+  function ajouterFrt(){
+    erreur('e-frt'); const c = normCode(($('frt-c')||{}).value);
+    if(c.length < 4){ erreur('e-frt', 'Scanne ou tape le code-barres de l\'article.'); return; }
+    const a = trouverArt(c);
+    const ex = frtPanier.find(x=>x.code===c);
+    if(ex) ex.qty = Math.min(50, ex.qty + frtQte);
+    else frtPanier.push({ code:c, nom:a ? a.nom : '', prix:a ? +a.prix||0 : 0, qty:frtQte, connu:!!a });
+    $('frt-c').value = ''; $('frt-a').innerHTML = ''; frtArt = null; frtQte = 1; $('frt-q').textContent = '1';
+    rendrePanierFrt();
+  }
+  function rendrePanierFrt(){
+    const z = $('frt-pan'); if(!z) return;
+    if(!frtPanier.length){ z.innerHTML = ''; return; }
+    const tot = frtPanier.reduce((s,x)=>s + x.prix*x.qty, 0);
+    z.innerHTML = '<h2>Ma commande</h2>' + frtPanier.map((x,i)=>'<div class="frt-l"><span>'+(x.connu ? '<b>'+esc(x.nom)+'</b>' : '<b style="color:var(--saffron)">Article à vérifier</b>')+' × '+x.qty+'<small>'+esc(x.code)+'</small></span>'
+        + '<span style="white-space:nowrap">'+(x.connu ? fmt(x.prix*x.qty) : '—')+' <button type="button" data-i="'+i+'" aria-label="Retirer">✕</button></span></div>').join('')
+      + '<div style="display:flex;justify-content:space-between;font-weight:800;padding:10px 0 14px"><span>Total estimé</span><span>'+fmt(tot)+' TND</span></div>'
+      + '<div class="err" id="e-frt2"></div><button class="btn" id="frt-env" type="button">📨 Envoyer ma commande à l\'accueil</button>';
+    z.querySelectorAll('button[data-i]').forEach(b=>b.addEventListener('click', ()=>{ frtPanier.splice(+b.getAttribute('data-i'),1); rendrePanierFrt(); }));
+    $('frt-env').addEventListener('click', envoyerFrt);
+  }
+  async function envoyerFrt(){
+    erreur('e-frt2'); if(!frtPanier.length) return;
+    const b = $('frt-env'); b.disabled = true; b.textContent = 'Envoi…';
+    const T = auj(), items = frtPanier.map(x=>({ code:x.code, nom:x.nom||'', prix:x.prix||0, qty:x.qty, connu:!!x.connu }));
+    const c = { id:'FR'+Date.now()+'_'+moi.n, num:Number(moi.n), nom:nomComplet(), items, total:Math.round(items.reduce((s,x)=>s+x.prix*x.qty,0)*1000)/1000,
+      date:T, heure:heure(), ts:Date.now(), statut:'nouvelle', source:'espace' };
+    try{
+      await Promise.race([ pret().then(()=>db.ref('commandes_fournitures/'+c.id).set(c)), new Promise((_,ko)=>setTimeout(()=>ko(new Error('délai')),12000)) ]);
+      const l = ls.get('hcc_espace_frt')||[]; l.unshift({id:c.id, n:c.num, date:T}); ls.set('hcc_espace_frt', l.slice(0,10));
+      frtPanier = [];
+      ouvrirFrt('✅ <b>Commande envoyée à l\'accueil.</b><br>Passe à l\'accueil : l\'opérateur la confirme, tu règles et tu récupères tes articles.');
+    }catch(err){ b.disabled = false; b.textContent = '📨 Envoyer ma commande à l\'accueil'; erreur('e-frt2', 'Envoi impossible pour le moment (connexion). Réessaie dans un instant ou présente-toi à l\'accueil.'); }
+  }
+  async function mesCommandesFrt(){
+    const z = $('frt-mes'); const L = (ls.get('hcc_espace_frt')||[]).filter(x=>x && Number(x.n)===Number(moi && moi.n)).slice(0,5); if(!z || !L.length) return;
+    const g = gen; const V = await Promise.all(L.map(x=>lire('commandes_fournitures/'+x.id).catch(()=>null)));
+    if(g!==gen || !$('frt-mes')) return; const ok = V.filter(Boolean); if(!ok.length) return;
+    $('frt-mes').innerHTML = '<h2>Mes commandes de fournitures</h2>' + ok.map(c=>{ const d = String(c.date||'').split('-');
+      return '<div class="carte"><div style="display:flex;justify-content:space-between;font-size:13px;color:var(--dim)"><span>'+(d.length===3?d[2]+'/'+d[1]:'')+' '+esc(c.heure||'')+'</span><span>'+fmt(c.total)+' TND</span></div>'
+        + '<div style="font-size:14px;margin-top:4px">'+(c.items||[]).map(x=>esc(x.nom||x.code)+' × '+x.qty).join(' · ')+'</div>'
+        + '<span class="dem-st">'+(FRT_ST[c.statut]||FRT_ST.nouvelle)+'</span>'+(c.motif ? '<div style="font-size:13px;margin-top:6px;color:var(--dim)">'+esc(c.motif)+'</div>' : '')+'</div>'; }).join('');
+  }
+  // Caméra : BarcodeDetector (Chrome Android) — sinon la saisie des chiffres reste disponible
+  async function scanner(){
+    erreur('e-frt');
+    let det; try{ det = new BarcodeDetector({ formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf'] }); }catch(e){ try{ det = new BarcodeDetector(); }catch(e2){ erreur('e-frt','Le scan n\'est pas disponible sur ce téléphone : tape les chiffres.'); return; } }
+    const o = document.createElement('div'); o.id = 'frt-cam';
+    o.innerHTML = '<video playsinline muted autoplay></video><div class="cadre">Place le code-barres face à la caméra…</div><button class="btn sec" type="button" style="max-width:300px">Annuler</button>';
+    document.body.appendChild(o);
+    o.querySelector('button').addEventListener('click', arreterCamera);
+    try{ camFlux = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } }, audio:false }); }
+    catch(e){ arreterCamera(); erreur('e-frt','Caméra refusée ou indisponible : autorise la caméra pour ce site, ou tape les chiffres.'); return; }
+    const v = o.querySelector('video'); v.srcObject = camFlux; try{ await v.play(); }catch(e){}
+    const moiGen = ++camBoucle;
+    const tour = async ()=>{
+      if(moiGen!==camBoucle || !camFlux) return;
+      try{ const r = await det.detect(v); if(r && r.length && r[0].rawValue){ const code = normCode(r[0].rawValue); arreterCamera(); try{ navigator.vibrate && navigator.vibrate(80); }catch(e){} const ci = $('frt-c'); if(ci){ ci.value = code; montrerArt(code); } return; } }catch(e){}
+      setTimeout(tour, 250);
+    };
+    tour();
+  }
+  function arreterCamera(){
+    camBoucle++;
+    try{ if(camFlux) camFlux.getTracks().forEach(t=>t.stop()); }catch(e){} camFlux = null;
+    const o = document.getElementById('frt-cam'); if(o) o.remove();
+  }
+
+  // ══ (21/11/2026) MES INFORMATIONS — l'étudiant propose une mise à jour, l'accueil la valide ══
+  // Jamais bloquant : l'accès se confirme normalement ; un simple rappel discret tous les 90 jours.
+  const INFOS_JOURS = 90;
+  const MAJ_ST = { nouvelle:'📨 Envoyée — l\'accueil va vérifier', appliquee:'✅ Fiche mise à jour', refusee:'✕ Non retenue' };
+  function joursDepuisInfos(){ const v = ls.get('hcc_espace_infos_ok_'+(moi && moi.n)); if(!v) return 9999; return Math.floor((Date.now() - Date.parse(v+'T12:00:00'))/86400000); }
+  function rappelInfos(){
+    const z = $('z-rappel-infos'); if(!z || !moi) return;
+    if(joursDepuisInfos() < INFOS_JOURS){ z.classList.add('hide'); z.innerHTML = ''; return; }
+    z.className = 'rappel-infos';
+    z.innerHTML = '👤 Tes informations sont-elles toujours à jour (téléphone, niveau, établissement…) ? <small style="color:var(--dim)">Facultatif — ça ne bloque rien.</small>'
+      + '<div class="acts"><button type="button" id="ri-ok" style="background:rgba(255,255,255,.1);color:var(--cream)">Oui, tout est à jour</button><button type="button" id="ri-maj" style="background:var(--mint);color:var(--ink)">Vérifier / modifier</button></div>';
+    $('ri-ok').addEventListener('click', ()=>{ ls.set('hcc_espace_infos_ok_'+moi.n, auj()); z.classList.add('hide'); });
+    $('ri-maj').addEventListener('click', ()=>{ z.classList.add('hide'); activerTuile('t-infos'); ouvrirInfos(); });
+  }
+  $('t-infos').addEventListener('click', ()=>{ activerTuile('t-infos'); ouvrirInfos(); });
+  function ouvrirInfos(note){
+    const z = $('z-infos'); z.classList.remove('hide');
+    const sel = (id, opts, cur)=>'<select id="'+id+'"><option value="">— inchangé —</option>'+opts.map(o=>'<option value="'+esc(o[0])+'"'+(cur===o[0]?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>';
+    z.innerHTML = (note ? '<div class="ok">'+note+'</div>' : '')
+      + '<div class="carte"><h2 style="margin-top:0">👤 Mes informations</h2>'
+      + '<p class="sub" style="margin-bottom:12px">Remplis seulement ce qui a changé. L\'accueil vérifie puis met ta fiche à jour. Ton accès n\'est jamais bloqué en attendant.</p>'
+      + '<div class="f"><label for="m-tel">Téléphone</label><input id="m-tel" inputmode="tel" maxlength="12" placeholder="8 chiffres — vide si inchangé"></div>'
+      + '<div class="f"><label for="m-etab">Établissement</label><input id="m-etab" maxlength="80" value="'+esc((moi && moi.e)||'')+'"></div>'
+      + '<div class="f"><label for="m-cycle">Cycle</label>'+sel('m-cycle', [['Supérieur','Supérieur'],['Secondaire','Secondaire'],['Professionnel','Professionnel']], '')+'</div>'
+      + '<div class="f"><label for="m-niv">Niveau / année d\'études</label><input id="m-niv" maxlength="40" placeholder="Ex. 2e année médecine — vide si inchangé"></div>'
+      + '<div class="f"><label for="m-genre">Genre</label>'+sel('m-genre', [['F','Féminin'],['M','Masculin']], '')+'</div>'
+      + '<div class="f"><label for="m-ddn">Date de naissance (si elle est fausse)</label><input id="m-ddn" inputmode="numeric" maxlength="10" placeholder="JJ/MM/AAAA — vide si correcte"></div>'
+      + '<div class="err" id="e-infos"></div>'
+      + '<button class="btn" id="m-env" type="button">📨 Envoyer à l\'accueil</button>'
+      + '<button class="lien" id="m-ok" type="button">Tout est à jour, rien à changer</button></div>'
+      + '<div id="m-mes"></div>';
+    masque($('m-ddn'));
+    $('m-env').addEventListener('click', envoyerInfos);
+    $('m-ok').addEventListener('click', ()=>{ ls.set('hcc_espace_infos_ok_'+moi.n, auj()); $('z-rappel-infos').classList.add('hide'); ouvrirInfos('✅ Merci ! Rien à changer : on te le redemandera dans quelques mois.'); });
+    mesDemandesInfos();
+  }
+  async function envoyerInfos(){
+    erreur('e-infos');
+    const ch = {};
+    const tel = String($('m-tel').value||'').replace(/\D/g,'');
+    if(tel){ if(tel.slice(-8).length!==8){ erreur('e-infos','Le téléphone doit avoir 8 chiffres.'); return; } ch.tel = tel.slice(-8); }
+    const etab = String($('m-etab').value||'').trim(); if(etab && etab.toLowerCase()!==String(moi.e||'').trim().toLowerCase()) ch.etab = etab;
+    const cyc = $('m-cycle').value; if(cyc && cyc!==moi.c) ch.cycle = cyc;
+    const niv = String($('m-niv').value||'').trim(); if(niv) ch.niveau = niv;
+    const ge = $('m-genre').value; if(ge) ch.genre = ge;
+    const dv = String($('m-ddn').value||'').trim(); if(dv){ const iso = ddnIso(dv); if(!iso){ erreur('e-infos','Date de naissance au format JJ/MM/AAAA.'); return; } ch.ddn = iso; }
+    if(!Object.keys(ch).length){ erreur('e-infos','Rien à modifier. Si tout est correct, appuie sur « Tout est à jour ».'); return; }
+    const b = $('m-env'); b.disabled = true; b.textContent = 'Envoi…';
+    const T = auj(), d = { id:'MF'+Date.now()+'_'+moi.n, num:Number(moi.n), nom:nomComplet(), champs:ch, date:T, heure:heure(), ts:Date.now(), statut:'nouvelle', source:'espace' };
+    try{
+      await Promise.race([ pret().then(()=>db.ref('demandes_maj_fiche/'+d.id).set(d)), new Promise((_,ko)=>setTimeout(()=>ko(new Error('délai')),12000)) ]);
+      const l = ls.get('hcc_espace_maj')||[]; l.unshift({id:d.id, n:d.num, date:T}); ls.set('hcc_espace_maj', l.slice(0,5));
+      ls.set('hcc_espace_infos_ok_'+moi.n, T); $('z-rappel-infos').classList.add('hide');
+      ouvrirInfos('✅ <b>Merci, c\'est envoyé.</b> L\'accueil vérifie et met ta fiche à jour.'+(ch.ddn ? '<br><small>Pour te connecter, garde ton ancienne date de naissance jusqu\'à la validation.</small>' : ''));
+    }catch(err){ b.disabled = false; b.textContent = '📨 Envoyer à l\'accueil'; erreur('e-infos','Envoi impossible pour le moment (connexion). Réessaie plus tard ou signale-le à l\'accueil.'); }
+  }
+  async function mesDemandesInfos(){
+    const z = $('m-mes'); const L = (ls.get('hcc_espace_maj')||[]).filter(x=>x && Number(x.n)===Number(moi && moi.n)).slice(0,3); if(!z || !L.length) return;
+    const g = gen; const V = await Promise.all(L.map(x=>lire('demandes_maj_fiche/'+x.id).catch(()=>null)));
+    if(g!==gen || !$('m-mes')) return; const ok = V.filter(Boolean); if(!ok.length) return;
+    const NOMS = { tel:'Téléphone', etab:'Établissement', cycle:'Cycle', niveau:'Niveau', genre:'Genre', ddn:'Date de naissance' };
+    $('m-mes').innerHTML = '<h2>Mes demandes</h2>' + ok.map(dm=>{ const d = String(dm.date||'').split('-');
+      return '<div class="carte"><div style="font-size:13px;color:var(--dim)">'+(d.length===3?d[2]+'/'+d[1]:'')+' '+esc(dm.heure||'')+'</div>'
+        + '<div style="font-size:14px;margin-top:4px">'+Object.keys(dm.champs||{}).map(k=>esc(NOMS[k]||k)).join(' · ')+'</div>'
+        + '<span class="dem-st">'+(MAJ_ST[dm.statut]||MAJ_ST.nouvelle)+'</span></div>'; }).join('');
+  }
+
   function rendreMenuOuCharger(){ if(CAT && CAT.length) rendreMenu(); else { CAT = null; ouvrirBuvette(); } }
 })();
 </script>
 <script src="fonds.js?v=20261101"></script>
-<script src="offres.js?v=20261111"></script>
+<script src="offres.js?v=20261121"></script>
 </body>
 </html>
