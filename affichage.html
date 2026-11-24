@@ -124,21 +124,40 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 @keyframes rEtoile{0%{opacity:0;transform:translate(0,0) scale(.3) rotate(0)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(180deg)}}
 @keyframes rPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 /* (24/11/2026) Chut ! — rappel du silence, par-dessus tous les écrans à intervalles réguliers */
-#chut{position:fixed;inset:0;z-index:2147482000;display:none;overflow:hidden;background:radial-gradient(ellipse at 30% 40%,#1B4F72 0%,#0B2233 75%);color:#F6F1E4;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;opacity:0;transition:opacity .7s}
+#chut{position:fixed;inset:0;z-index:2147482000;display:none;overflow:hidden;background:#0A353D;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;opacity:0;transition:opacity .7s}
 #chut.vis{display:block}#chut.on{opacity:1}
-#chut .ch-hp{position:absolute;left:4vw;bottom:-1vh;width:24vw;height:48vw;max-height:96vh;animation:chPointe 2.4s ease-in-out infinite}
-#chut .ch-hp svg{width:100%;height:100%;overflow:visible}
-#chut .ch-t{position:absolute;left:33vw;right:5vw;top:13vh}
-#chut .ch-t h1{margin:0;font-size:9vw;line-height:1;font-weight:900;letter-spacing:-.02em}
-#chut .ch-t h1 em{font-style:normal;color:#F2B544}
-#chut .ch-t p{font-size:2.9vw;line-height:1.3;margin:3vh 0 0;font-weight:700}
-#chut .ch-t small{display:block;font-size:2.1vw;color:#7FD1FF;margin-top:2.4vh;font-weight:700}
-#chut .vu{display:flex;align-items:flex-end;gap:1vw;height:16vh;margin-top:5vh}
-#chut .vu i{display:block;width:3.2vw;border-radius:.6vw;background:#5DCAA5;transition:opacity .25s,background .25s}
-#chut .vu-l{font-size:2.2vw;margin-top:1.4vh;color:#F2B544;font-weight:800}
-#chut .chh{position:absolute;font-size:3vw;font-weight:900;color:rgba(246,241,228,.85);font-style:italic;animation:chChh 2.6s ease-out infinite;opacity:0}
-@keyframes chPointe{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.6vh)}}
-@keyframes chChh{0%{opacity:0;transform:translate(0,0) scale(.7)}20%{opacity:1}100%{opacity:0;transform:translate(7vw,-6vh) scale(1.3)}}
+#chut .sc{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;transform-origin:center}
+#chut .sc>svg.fond{position:absolute;inset:0;width:1920px;height:1080px}
+#chut .tit{position:absolute;left:0;right:0;text-align:center;z-index:6}
+#chut .tit h1{margin:0;font-size:86px;line-height:1;font-weight:900;letter-spacing:-.01em}
+#chut .tit h1 em{font-style:normal;color:#F2B544}
+#chut .tit p{margin:8px 0 0;font-size:34px;font-weight:700}
+#chut .hpc{position:absolute;bottom:18px;width:270px;height:540px;z-index:5}
+#chut .hpc svg{width:100%;height:100%;overflow:visible}
+#chut .hpc.flip svg{transform:scaleX(-1)}
+#chut .bu{position:absolute;z-index:7;background:#F6F1E4;color:#14282C;font-weight:800;font-size:38px;line-height:1.2;padding:16px 26px;border-radius:26px;box-shadow:0 14px 34px rgba(0,0,0,.28);opacity:0;white-space:nowrap}
+#chut .bu.sm{font-size:30px;padding:10px 18px;border-radius:20px}
+/* Scène A : un hall carré, trois salles vitrées ; Hippie passe sur la pointe des pieds */
+#chut .porte{position:absolute;left:0;top:0;width:260px;height:500px;transform-origin:0 0;z-index:2}
+#chut .porte svg{display:block;width:260px;height:500px}
+#chut .sA .hpc{left:0;width:230px;height:460px;animation:aMarche 14s linear forwards}
+#chut .sA .hpc .corps{animation:aPointe .42s ease-in-out infinite alternate}
+#chut .sA .hpc .jg{animation:aJambe .42s ease-in-out infinite alternate}
+#chut .sA .hpc .jd{animation:aJambe .42s ease-in-out infinite alternate-reverse}
+@keyframes aMarche{0%{transform:translateX(-300px)}9%,25%{transform:translateX(405px)}33%,49%{transform:translateX(845px)}57%,73%{transform:translateX(1285px)}86%,100%{transform:translateX(1980px)}}
+@keyframes aPointe{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+@keyframes aJambe{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+#chut .coeur{position:absolute;z-index:4;font-size:54px;opacity:0;animation:aCoeur 2.2s ease-out forwards}
+@keyframes aCoeur{0%{opacity:0;transform:translateY(0) scale(.5)}20%{opacity:1}100%{opacity:0;transform:translateY(-140px) scale(1.2)}}
+/* Scène B : la buvette et la terrasse couverte du 1er étage, pleine de monde */
+#chut .sB .hpc{left:0;width:230px;height:460px;animation:bHip 16s ease-in-out forwards}
+@keyframes bHip{0%,6%{transform:translateX(2000px)}12%,24%{transform:translateX(1675px)}30%,42%{transform:translateX(1285px)}48%,60%{transform:translateX(935px)}66%,100%{transform:translateX(585px)}}
+#chut .sB .grp{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;animation-duration:16s;animation-fill-mode:forwards;animation-timing-function:ease-in}
+#chut .sB .grp svg{display:block;width:1920px;height:1080px;overflow:visible}
+#chut .sB .st{animation:bBob .55s ease-in-out infinite alternate}
+@keyframes bBob{to{transform:translateY(-5px)}}
+#chut .sB .aig{transform-origin:1700px 300px;animation:bAig 1.2s linear infinite}
+@keyframes bAig{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -425,35 +444,193 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   // ══ (24/11/2026) CHUT ! — toutes les 6 à 9 minutes, un rappel du silence passe par-dessus l'écran
   // (jamais la nuit, jamais pendant une fête de bienvenue ; la démo est mise en pause pendant ce temps).
   const chut = document.createElement('div'); chut.id = 'chut'; document.body.appendChild(chut);
-  const PHR_CHUT = [
-    ['Chut… <em>on révise !</em>', 'Merci de parler tout bas près des salles : vos voisins préparent leurs examens.', 'Merci pour votre compréhension 🙏'],
-    ['Un peu <em>de calme</em>, s\'il vous plaît', 'Les salles sont juste à côté : un murmure suffit.', 'Le calme, c\'est la clé de la concentration 📚'],
-    ['Silence, <em>on se concentre</em>', 'Pour les appels et les discussions, merci de vous éloigner des salles.', 'Hippie vous remercie 💛']
-  ];
   let iChut = 0;
+  // Hippie, l'index posé sur les lèvres (main repliée sous le menton, lèvres visibles de part et d'autre)
   function hippieChut(){
     const o = document.querySelector('#s-menu .hpw svg') || document.querySelector('.hpw svg'); if(!o) return '';
     const d = document.createElement('div'); d.innerHTML = o.outerHTML; const svg = d.firstChild, corps = svg.querySelector('.corps');
     if(corps){ const b = corps.querySelector('.bras'); if(b) b.style.display = 'none';
-      corps.insertAdjacentHTML('beforeend', '<path d="M214 292 L240 346 L170 262" stroke="#E3A43A" stroke-width="27" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
-        + '<circle cx="160" cy="250" r="15" fill="#EDC6A4"/><rect x="144" y="205" width="11" height="44" rx="5.5" fill="#EDC6A4" stroke="#C99A78" stroke-width="1.5"/>'); }
+      corps.querySelectorAll('.m-ferme,.m-ouv').forEach(x=>x.style.display = 'none');
+      const P = 'fill="#EDC6A4" stroke="#C99A78" stroke-width="1.6"';
+      corps.insertAdjacentHTML('beforeend',
+        '<ellipse cx="150" cy="233" rx="12.5" ry="5" fill="#C9675F" stroke="#8C3B3B" stroke-width="1.4"/>'                       // lèvres
+        + '<path d="M214 292 L234 338 L178 290" stroke="#E3A43A" stroke-width="26" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' // manche
+        + '<rect x="134" y="250" width="36" height="30" rx="13" '+P+'/>'                                                                        // main repliée
+        + '<path d="M139 261 h24 M139 269 h24" stroke="#C99A78" stroke-width="1.6" stroke-linecap="round"/>'                                   // doigts repliés
+        + '<ellipse cx="168" cy="259" rx="6.5" ry="9" '+P+'/>'                                                                                 // pouce
+        + '<path d="M143.5 256 V226 Q143.5 219 150 219 Q156.5 219 156.5 226 V256 Z" '+P+'/>'); }                                             // index levé
     return svg.outerHTML;
+  }
+  function hippieSimple(){ const o = document.querySelector('#s-menu .hpw svg') || document.querySelector('.hpw svg'); return o ? o.outerHTML : ''; }
+  // Transformation « perspective » : le rectangle W×H se pose sur le quadrilatère q = [haut-gauche, haut-droit, bas-droit, bas-gauche]
+  function versQuad(W, H, q){
+    const [[x0,y0],[x1,y1],[x2,y2],[x3,y3]] = q;
+    const dx1=x1-x2, dx2=x3-x2, dx3=x0-x1+x2-x3, dy1=y1-y2, dy2=y3-y2, dy3=y0-y1+y2-y3, den = dx1*dy2-dx2*dy1;
+    const g = (dx3*dy2-dx2*dy3)/den, h = (dx1*dy3-dx3*dy1)/den;
+    const a = x1-x0+g*x1, b = x3-x0+h*x3, d = y1-y0+g*y1, e = y3-y0+h*y3;
+    return 'matrix3d('+[a/W, d/W, 0, g/W, b/H, e/H, 0, h/H, 0,0,1,0, x0, y0, 0, 1].map(v=>+v.toFixed(8)).join(',')+')';
+  }
+  // Une porte entièrement vitrée (260×500 : plaque en haut, porte de 430 dessous) ; au fond, des étudiants concentrés
+  function porteVitree(n){
+    const U = 'font-family="system-ui,Arial"';
+    const tete = (cx, cy, peau, chev, fille)=>'<circle cx="'+cx+'" cy="'+cy+'" r="21" fill="'+peau+'"/>'
+      + (fille ? '<path d="M'+(cx-22)+' '+(cy+4)+' Q'+(cx-24)+' '+(cy-26)+' '+cx+' '+(cy-25)+' Q'+(cx+24)+' '+(cy-26)+' '+(cx+22)+' '+(cy+4)+' L'+(cx+24)+' '+(cy+30)+' L'+(cx+14)+' '+(cy+10)+' Q'+cx+' '+(cy-14)+' '+(cx-14)+' '+(cy+10)+' L'+(cx-24)+' '+(cy+30)+' Z" fill="'+chev+'"/>'
+               : '<path d="M'+(cx-21)+' '+(cy-2)+' Q'+(cx-20)+' '+(cy-24)+' '+cx+' '+(cy-24)+' Q'+(cx+20)+' '+(cy-24)+' '+(cx+21)+' '+(cy-2)+' Q'+(cx+10)+' '+(cy-12)+' '+cx+' '+(cy-12)+' Q'+(cx-10)+' '+(cy-12)+' '+(cx-21)+' '+(cy-2)+' Z" fill="'+chev+'"/>')
+      + '<path d="M'+(cx-10)+' '+(cy+4)+' q4 3 8 0 M'+(cx+2)+' '+(cy+4)+' q4 3 8 0" stroke="#14282C" stroke-width="2.4" fill="none" stroke-linecap="round"/>';  // yeux baissés
+    const P = [['#F1C27D','#4A2E1A',1,'#7FD1FF'],['#C68642','#1B1B1B',0,'#5DCAA5'],['#E0AC69','#7B4A2A',1,'#C77DFF']][n%3];
+    const Q = [['#8D5524','#1B1B1B',0,'#FF7A59'],['#F1C27D','#2B1B12',1,'#F2B544'],['#C68642','#4A2E1A',0,'#2EC4B6']][n%3];
+    return '<svg viewBox="0 0 260 500"><defs><linearGradient id="vit'+n+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF6DC"/><stop offset="1" stop-color="#F3E3B8"/></linearGradient></defs>'
+      + '<rect x="20" y="0" width="220" height="50" rx="10" fill="#F2B544"/><text x="130" y="34" text-anchor="middle" font-size="27" font-weight="900" fill="#0A353D" '+U+'>Aphrodite '+(n+1)+'</text>'
+      + '<rect x="0" y="70" width="260" height="430" rx="6" fill="#0A353D"/>'
+      + '<rect x="10" y="80" width="240" height="420" fill="url(#vit'+n+')"/>'
+      + '<rect x="10" y="80" width="240" height="70" fill="#FFFFFF" opacity=".35"/><circle cx="130" cy="112" r="16" fill="#FFF3B0"/><rect x="128" y="80" width="4" height="18" fill="#9E9E9E"/>'   // lampe
+      // étudiant 1 : sur son PC
+      + '<rect x="40" y="268" width="66" height="80" rx="24" fill="'+P[3]+'"/>' + tete(73, 246, P[0], P[1], P[2])
+      + '<path d="M50 318 L96 318 L102 352 L44 352 Z" fill="#B0BEC5" stroke="#546E7A" stroke-width="2"/><circle cx="73" cy="334" r="4" fill="#ECEFF1"/>'
+      // étudiant 2 : dans son livre
+      + '<rect x="154" y="268" width="66" height="80" rx="24" fill="'+Q[3]+'"/>' + tete(187, 246, Q[0], Q[1], Q[2])
+      + '<path d="M160 330 L187 322 L214 330 L214 352 L187 344 L160 352 Z" fill="#F6F1E4" stroke="#14282C" stroke-width="2"/><line x1="187" y1="322" x2="187" y2="344" stroke="#14282C" stroke-width="2"/>'
+      + '<rect x="10" y="350" width="240" height="14" fill="#8D6E63"/><rect x="10" y="364" width="240" height="136" fill="#A1887F" opacity=".55"/>'   // table
+      + '<path d="M40 80 L10 140 L10 190 L90 80 Z M200 80 L120 500 L150 500 L230 80 Z" fill="#FFFFFF" opacity=".22"/>'                              // reflets
+      + '<rect x="30" y="96" width="200" height="1" fill="none"/>'
+      + '<rect x="232" y="230" width="11" height="120" rx="5.5" fill="#F2B544" stroke="#0A353D" stroke-width="2"/>'                                       // poignée
+      + '<rect x="56" y="168" width="148" height="40" rx="9" fill="#F6F1E4" opacity=".95"/><text x="130" y="195" text-anchor="middle" font-size="20" font-weight="800" fill="#0E4A55" '+U+'>📚 En révision</text>'
+      + '</svg>';
+  }
+  // ── Scène A : le hall carré, trois salles vitrées (gauche, fond, droite) ; Hippie passe sur la pointe des pieds ──
+  function sceneSalles(){
+    const vp = [960, 495];                                     // point de fuite
+    const hautG = x=>140 + 90*x/560, basG = x=>1000 - 240*x/560;   // mur gauche (x de 0 à 560)
+    const yv = (x, v)=>basG(x) - v*(basG(x)-hautG(x));
+    const VT = 0.70*500/430;                                   // la porte occupe 70 % de la hauteur du mur ; la plaque au-dessus
+    const qG = [[130, yv(130,VT)], [395, yv(395,VT)], [395, basG(395)], [130, basG(130)]];
+    const qD = qG.map(([x,y])=>[1920-x, y]); const qDr = [qD[1], qD[0], qD[3], qD[2]];   // mur droit (en miroir)
+    const qF = [[840, 760-371*500/430], [1080, 760-371*500/430], [1080, 760], [840, 760]];
+    const portes = [qG, qF, qDr].map((q,i)=>'<div class="porte" style="transform:'+versQuad(260, 500, q)+'">'+porteVitree(i)+'</div>').join('');
+    const fuite = Array.from({length:9},(_,k)=>{ const x = 560 + k*100, x2 = vp[0] + (x-vp[0])*(1080-vp[1])/(760-vp[1]); return '<line x1="'+x+'" y1="760" x2="'+x2.toFixed(0)+'" y2="1080" stroke="#0A353D" stroke-width="3" opacity=".35"/>'; }).join('')
+      + [800, 860, 950, 1060].map(y=>'<line x1="0" y1="'+y+'" x2="1920" y2="'+y+'" stroke="#0A353D" stroke-width="3" opacity=".3"/>').join('');
+    const plante = x=>'<rect x="'+(x-22)+'" y="712" width="44" height="48" rx="6" fill="#B5651D"/><ellipse cx="'+(x-14)+'" cy="690" rx="16" ry="34" fill="#2E8B57" transform="rotate(-20 '+(x-14)+' 690)"/><ellipse cx="'+(x+14)+'" cy="690" rx="16" ry="34" fill="#3CB371" transform="rotate(20 '+(x+14)+' 690)"/><ellipse cx="'+x+'" cy="676" rx="15" ry="38" fill="#2E8B57"/>';
+    const fond = '<svg class="fond" viewBox="0 0 1920 1080">'
+      + '<rect width="1920" height="1080" fill="#F6F1E4"/>'
+      + '<polygon points="0,140 560,230 560,760 0,1000" fill="#EADFC4"/><polygon points="1920,140 1360,230 1360,760 1920,1000" fill="#EADFC4"/>'   // murs latéraux
+      + '<rect x="560" y="230" width="800" height="530" fill="#F3EAD3"/>'                                                                     // mur du fond
+      + '<clipPath id="solA"><polygon points="0,1000 560,760 1360,760 1920,1000 1920,1080 0,1080"/></clipPath><polygon points="0,1000 560,760 1360,760 1920,1000 1920,1080 0,1080" fill="#13606B"/><g clip-path="url(#solA)">' + fuite + '</g>'                                      // sol
+      + '<polygon points="0,0 1920,0 1920,140 1360,230 560,230 0,140" fill="#FBF7EC"/>'                                                         // plafond
+      + '<polyline points="0,140 560,230 1360,230 1920,140" fill="none" stroke="#D9C9A4" stroke-width="4"/><polyline points="0,1000 560,760 1360,760 1920,1000" fill="none" stroke="#0A353D" stroke-width="5"/>'
+      + '<line x1="560" y1="230" x2="560" y2="760" stroke="#D9C9A4" stroke-width="4"/><line x1="1360" y1="230" x2="1360" y2="760" stroke="#D9C9A4" stroke-width="4"/>'
+      + '<ellipse cx="960" cy="905" rx="330" ry="60" fill="#F2B544" opacity=".9"/><text x="960" y="918" text-anchor="middle" font-size="34" font-weight="900" fill="#0A353D" font-family="system-ui,Arial" letter-spacing="4">HIPPOCRATE</text>'
+      + plante(610) + plante(1310) + '</svg>';
+    // Trois arrêts : à droite de la salle de gauche, devant celle du fond, à gauche de celle de droite
+    const mots = ['Tout doux… 💛', 'On parle tout bas 😊', 'Merci pour eux 🙏'];
+    const pos = [['left:640px'], ['left:1080px'], ['right:640px']];
+    const bulles = mots.map((m,i)=>'<div class="bu sm" style="'+pos[i]+';bottom:400px;animation-delay:'+(1.5+i*3.4)+'s;animation-duration:2.3s;animation-name:aBulle2">'+m+'</div>').join('');
+    const coeurs = [[240, 600], [935, 520], [1630, 600]].map(([x,y],i)=>'<div class="coeur" style="left:'+x+'px;top:'+y+'px;animation-delay:'+(2.6+i*3.4)+'s">💛</div>').join('');
+    return '<div class="sc sA">'+fond+portes
+      + '<div class="tit" style="top:22px;color:#0A353D"><h1>Tout doux… <em>on révise !</em></h1><p style="color:#0E4A55">Près des salles, on baisse la voix : merci pour ceux qui travaillent 💛</p></div>'
+      + '<div class="hpc">'+hippieChut()+'</div>'+bulles+coeurs+'</div>';
+  }
+  // Un étudiant debout (120×330), de face ou de profil (tourné vers la droite), gobelet ou téléphone à la main
+  function debout(peau, chev, sweat, jean, fille, objet, profil){
+    const tasse = (x,y)=>'<rect x="'+x+'" y="'+y+'" width="22" height="28" rx="4" fill="#F6F1E4" stroke="#14282C" stroke-width="2"/><rect x="'+x+'" y="'+(y+8)+'" width="22" height="7" fill="#0E4A55"/>';
+    const tel = (x,y)=>'<rect x="'+x+'" y="'+y+'" width="16" height="26" rx="3" fill="#263238"/><rect x="'+(x+2)+'" y="'+(y+3)+'" width="12" height="19" rx="2" fill="#7FD1FF"/>';
+    if(profil) return '<rect x="46" y="200" width="18" height="112" rx="8" fill="'+jean+'" opacity=".8"/><rect x="58" y="200" width="18" height="112" rx="8" fill="'+jean+'"/>'
+      + '<ellipse cx="62" cy="314" rx="16" ry="7" fill="#F6F1E4" stroke="#14282C" stroke-width="2"/><ellipse cx="74" cy="314" rx="16" ry="7" fill="#F6F1E4" stroke="#14282C" stroke-width="2"/>'
+      + '<rect x="34" y="102" width="54" height="114" rx="24" fill="'+sweat+'"/>'
+      + '<rect x="54" y="88" width="14" height="22" fill="'+peau+'"/><circle cx="62" cy="60" r="30" fill="'+peau+'"/>'
+      + '<path d="M90 60 q7 5 0 10" fill="'+peau+'" stroke="#C99A78" stroke-width="1.5"/>'
+      + (fille ? '<path d="M34 64 Q28 24 62 26 Q94 26 92 50 Q76 40 60 44 Q50 54 50 76 Q40 86 34 64 Z M34 58 Q24 104 42 120 L52 70 Z" fill="'+chev+'"/>'
+               : '<path d="M33 64 Q28 26 62 26 Q93 26 92 50 Q76 40 60 44 Q50 52 50 72 Q40 80 33 64 Z" fill="'+chev+'"/>')
+      + '<circle cx="78" cy="58" r="3.8" fill="#14282C"/><path d="M74 76 Q82 82 89 73" stroke="#14282C" stroke-width="3.2" fill="none" stroke-linecap="round"/>'
+      + '<rect x="56" y="110" width="18" height="62" rx="9" fill="'+sweat+'" transform="rotate(-50 65 110)"/><circle cx="112" cy="150" r="9" fill="'+peau+'"/>'
+      + (objet ? tel(104,124) : tasse(102,122));
+    return '<rect x="40" y="200" width="18" height="112" rx="8" fill="'+jean+'"/><rect x="62" y="200" width="18" height="112" rx="8" fill="'+jean+'"/>'
+      + '<ellipse cx="47" cy="314" rx="14" ry="7" fill="#F6F1E4" stroke="#14282C" stroke-width="2"/><ellipse cx="73" cy="314" rx="14" ry="7" fill="#F6F1E4" stroke="#14282C" stroke-width="2"/>'
+      + '<rect x="24" y="102" width="72" height="114" rx="26" fill="'+sweat+'"/>'
+      + '<rect x="12" y="110" width="20" height="84" rx="10" fill="'+sweat+'" transform="rotate(10 22 110)"/><circle cx="14" cy="194" r="9" fill="'+peau+'"/>'
+      + '<rect x="88" y="110" width="20" height="62" rx="10" fill="'+sweat+'" transform="rotate(-30 98 110)"/><circle cx="122" cy="160" r="9" fill="'+peau+'"/>'
+      + (objet ? tel(114,138) : tasse(110,132))
+      + '<rect x="52" y="86" width="16" height="22" fill="'+peau+'"/><circle cx="60" cy="60" r="31" fill="'+peau+'"/>'
+      + (fille ? '<path d="M28 64 Q24 22 60 22 Q96 22 92 64 Q88 42 60 40 Q32 42 28 64 Z M28 58 Q22 92 34 110 L40 66 Z M92 58 Q98 92 86 110 L80 66 Z" fill="'+chev+'"/>'
+               : '<path d="M30 56 Q30 24 60 24 Q90 24 90 56 Q82 40 60 38 Q38 40 30 56 Z" fill="'+chev+'"/>')
+      + '<circle cx="49" cy="62" r="3.8" fill="#14282C"/><circle cx="71" cy="62" r="3.8" fill="#14282C"/><path d="M48 76 Q60 86 72 76" stroke="#14282C" stroke-width="3.4" fill="none" stroke-linecap="round"/>';
+  }
+  // ── Scène B : la buvette et la terrasse couverte, au 1er étage côté rue ; Hippie passe de groupe en groupe ──
+  function sceneTerrasse(){
+    // Bandeau en panneaux composites (aspect Alucobond turquoise) en haut de la terrasse
+    const festons = '<defs><linearGradient id="alu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3CC4C0"/><stop offset=".55" stop-color="#22A3A0"/><stop offset="1" stop-color="#167F7D"/></linearGradient>'
+      + '<linearGradient id="aluR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset=".5" stop-color="#FFFFFF" stop-opacity=".16"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>'
+      + '<rect width="1920" height="180" fill="url(#alu)"/>'
+      + Array.from({length:8},(_,k)=>'<rect x="'+(k*240+20)+'" y="0" width="120" height="180" fill="url(#aluR)"/>').join('')
+      + Array.from({length:9},(_,k)=>'<rect x="'+(k*240-2)+'" y="0" width="4" height="180" fill="#0F6463"/>').join('')
+      + '<rect y="88" width="1920" height="4" fill="#0F6463"/><rect y="172" width="1920" height="8" fill="#0F6463"/><rect y="180" width="1920" height="10" fill="#0A353D" opacity=".18"/>';
+    const immeubles = [[0,430,260],[240,380,200],[420,460,240],[640,400,220],[840,350,260],[1080,440,200],[1260,390,240],[1480,420,220],[1680,370,240]]
+      .map(([x,y,w],k)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+(760-y)+'" fill="'+(k%2?'#9FB8BD':'#B5C9CC')+'"/>'
+        + Array.from({length:6},(_,r)=>Array.from({length:3},(_,c)=>'<rect x="'+(x+26+c*(w/3.2))+'" y="'+(y+24+r*52)+'" width="30" height="34" rx="3" fill="#E9F1F2" opacity=".85"/>').join('')).join('')).join('');
+    // Muret surmonté de larges baies vitrées en aluminium, sur toute la largeur
+    const balustrade = '<rect y="690" width="1920" height="124" fill="#E6DAC0"/><rect y="682" width="1920" height="16" rx="3" fill="#CDBF9C"/>'
+      + Array.from({length:12},(_,k)=>'<line x1="'+(k*160+80)+'" y1="700" x2="'+(k*160+80)+'" y2="812" stroke="#D6C8A8" stroke-width="2"/>').join('')
+      + '<rect y="660" width="1920" height="22" fill="#B0BEC5"/><rect y="676" width="1920" height="6" fill="#78909C"/>'                    // appui
+      + '<rect y="176" width="1920" height="16" fill="#B0BEC5"/><rect y="366" width="1920" height="12" fill="#B0BEC5"/>'                  // rail haut, imposte
+      + Array.from({length:6},(_,k)=>'<rect x="'+(k*384-9)+'" y="176" width="18" height="500" fill="#B0BEC5"/><rect x="'+(k*384-2)+'" y="176" width="4" height="500" fill="#78909C"/>').join('')  // montants
+      + Array.from({length:5},(_,k)=>'<rect x="'+(k*384+180)+'" y="378" width="10" height="282" fill="#CFD8DC" opacity=".9"/>'                                           // chevauchement des vantaux coulissants
+        + '<path d="M'+(k*384+40)+' 660 L'+(k*384+150)+' 378 L'+(k*384+190)+' 378 L'+(k*384+80)+' 660 Z M'+(k*384+250)+' 660 L'+(k*384+330)+' 378 L'+(k*384+350)+' 378 L'+(k*384+270)+' 660 Z" fill="#FFFFFF" opacity=".18"/>').join('');
+    const sol = '<rect y="812" width="1920" height="268" fill="#D9C9A4"/>' + Array.from({length:17},(_,k)=>'<line x1="'+(k*120)+'" y1="812" x2="'+(k*120-60)+'" y2="1080" stroke="#C2AE84" stroke-width="3"/>').join('') + '<line x1="0" y1="900" x2="1920" y2="900" stroke="#C2AE84" stroke-width="3"/><line x1="0" y1="1000" x2="1920" y2="1000" stroke="#C2AE84" stroke-width="3"/>';
+    const buvette = '<rect x="40" y="540" width="380" height="330" rx="14" fill="#0E4A55"/><rect x="40" y="520" width="380" height="40" rx="10" fill="#0A353D"/>'
+      + '<rect x="80" y="450" width="120" height="76" rx="10" fill="#37474F"/><rect x="108" y="470" width="64" height="20" rx="4" fill="#90A4AE"/><rect x="270" y="470" width="40" height="56" rx="6" fill="#F6F1E4"/><rect x="325" y="478" width="40" height="48" rx="6" fill="#5DCAA5"/>'
+      + '<text x="200" y="660" text-anchor="middle" font-size="46" font-weight="900" fill="#F2B544" font-family="system-ui,Arial">☕ Buvette</text>';
+    const horloge = '<g transform="translate(60,-22)"><rect x="1697" y="198" width="6" height="42" fill="#78909C"/><circle cx="1700" cy="300" r="62" fill="#F6F1E4" stroke="#0A353D" stroke-width="8"/><line x1="1700" y1="300" x2="1700" y2="262" stroke="#0A353D" stroke-width="7" stroke-linecap="round"/><g class="aig"><line x1="1700" y1="300" x2="1736" y2="300" stroke="#C62828" stroke-width="5" stroke-linecap="round"/></g><circle cx="1700" cy="300" r="7" fill="#0A353D"/></g>';
+    const fond = '<svg class="fond" viewBox="0 0 1920 1080"><defs><linearGradient id="ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFE3F0"/><stop offset="1" stop-color="#F6F1E4"/></linearGradient></defs>'
+      + '<rect width="1920" height="812" fill="url(#ciel)"/>'+immeubles+'<rect y="176" width="1920" height="500" fill="#DFF1F6" opacity=".22"/>'+balustrade+sol+festons+'<text x="40" y="236" font-size="30" font-weight="800" fill="#0A353D" font-family="system-ui,Arial">Terrasse · 1er étage</text>'+horloge+buvette+'</svg>';
+    // Tables hautes (mange-debout)
+    const tables = '<svg class="fond" viewBox="0 0 1920 1080" style="z-index:3;pointer-events:none">' + [820, 1190, 1560].map(x=>
+        '<ellipse cx="'+x+'" cy="958" rx="58" ry="11" fill="#0A353D" opacity=".25"/><rect x="'+(x-8)+'" y="700" width="16" height="252" fill="#455A64"/><ellipse cx="'+x+'" cy="952" rx="46" ry="9" fill="#37474F"/>'
+        + '<ellipse cx="'+x+'" cy="704" rx="84" ry="17" fill="#5D4037"/><ellipse cx="'+x+'" cy="698" rx="84" ry="17" fill="#8D6E63"/>'
+        + '<rect x="'+(x-40)+'" y="676" width="20" height="24" rx="3" fill="#F6F1E4" stroke="#14282C" stroke-width="2"/><rect x="'+(x+22)+'" y="678" width="20" height="22" rx="3" fill="#5DCAA5" stroke="#14282C" stroke-width="2"/>').join('') + '</svg>';
+    // Groupes d'étudiants : [x, pieds, échelle, de dos-de face (miroir), peau, cheveux, sweat, jean, fille, téléphone, rang (0 derrière la table, 1 devant)]
+    const PE = ['#F1C27D','#C68642','#E0AC69','#8D5524','#FFDBAC'], CH = ['#1B1B1B','#4A2E1A','#7B4A2A','#2B1B12','#B5651D'];
+    const SW = ['#5DCAA5','#7FD1FF','#C77DFF','#FF7A59','#F2B544','#2EC4B6','#EF5DA8','#90A4AE'], JE = ['#2F4F6F','#1E3A5F','#37474F','#3E2723'];
+    let r = 7; const al = n=>{ r = (r*9301+49297)%233280; return Math.floor(r/233280*n); };
+    // [x, pieds, échelle, miroir (tourné vers la gauche), profil] — les profils se font face autour de chaque table
+    const G = [ [[405,930,1,0,1],[505,902,.94,0,0],[612,940,1.02,1,1],[548,992,1.08,1,0]],
+                [[650,905,.95,0,0],[720,935,1,0,1],[820,885,.92,0,0],[925,935,1,1,1],[860,996,1.08,1,1]],
+                [[1010,905,.95,1,1],[1090,935,1,0,1],[1190,885,.92,1,0],[1292,940,1.02,1,1],[1150,996,1.08,0,0]],
+                [[1460,935,1,0,1],[1560,885,.92,1,0],[1662,935,1,1,1],[1600,996,1.08,0,1],[1380,905,.95,0,0]] ];
+    const groupe = (liste, rang)=>liste.filter(e=>(e[1] >= 900) === !!rang).map(([x,pied,sc,m,pr])=>{
+      const ty = pied - 320*sc;
+      return '<g transform="translate('+(m ? x+60*sc : x-60*sc).toFixed(1)+','+ty.toFixed(1)+') scale('+(m?-sc:sc)+','+sc+')"><g class="st" style="animation-delay:-'+(al(10)/10)+'s">'
+        + debout(PE[al(5)], CH[al(5)], SW[al(8)], JE[al(4)], al(2), al(3)===0, pr) + '</g></g>'; }).join('');
+    // Départs (de droite à gauche) : groupe 4 puis 3, 2, et enfin la buvette
+    const dep = [[74,88],[56,70],[38,52],[20,34]];
+    let kf = '', grps = '';
+    G.forEach((liste,i)=>{ const [a,b] = dep[i];
+      kf += '@keyframes gDep'+i+'{0%,'+a+'%{transform:none;opacity:1}'+b+'%{transform:translateX(-2300px);opacity:1}'+(b+1)+'%,100%{transform:translateX(-2300px);opacity:0}}';
+      grps += '<div class="grp" style="z-index:2;animation-name:gDep'+i+'"><svg viewBox="0 0 1920 1080">'+groupe(liste,0)+'</svg></div>'
+           +  '<div class="grp" style="z-index:4;animation-name:gDep'+i+'"><svg viewBox="0 0 1920 1080">'+groupe(liste,1)+'</svg></div>'; });
+    // Papotages au-dessus de chaque groupe, jusqu'à l'arrivée de Hippie
+    const papo = [[380,'encore 5 min !',66],[740,'bla bla…',48],[1110,'hi hi !',30],[1470,'t\'as vu ça ?',12]];
+    papo.forEach(([x,t,fin],i)=>{ const a = 1+i*1.5; kf += '@keyframes gPap'+i+'{0%,'+a+'%{opacity:0;transform:scale(.7)}'+(a+2)+'%,'+fin+'%{opacity:1;transform:none}'+(fin+2)+'%,100%{opacity:0}}'; });
+    const blas = papo.map(([x,t],i)=>'<div class="bu sm" style="left:'+(x-60)+'px;top:'+(470+(i%2)*36)+'px;animation:gPap'+i+' 16s linear forwards">'+t+'</div>').join('');
+    // Ce que dit Hippie à chaque groupe, puis le merci final
+    const H = [['Tout doux… on y retourne ? 😊',12,24,90],['Les révisions vous attendent 📚',30,42,480],['Allez, encore un effort ! 💪',48,60,830],['On libère le comptoir ? Merci ! 🙏',66,78,1180],['Merci, à tout à l\'heure ! 💛',80,101,1180]];
+    const hb = H.map(([t,a,b,rt],i)=>{ kf += '@keyframes hDit'+i+'{0%,'+a+'%{opacity:0;transform:scale(.7)}'+(a+1.5)+'%,'+Math.min(b,100)+'%{opacity:1;transform:none}'+(b<100?(b+1.5)+'%,100%{opacity:0}':'')+'}';
+      return '<div class="bu" style="right:'+rt+'px;bottom:600px;animation:hDit'+i+' 16s linear forwards">'+t+'</div>'; }).join('');
+    return '<style>'+kf+'</style><div class="sc sB">'+fond
+      + '<div class="tit" style="top:200px;color:#0A353D"><h1>La pause <em>est finie ?</em></h1><p style="color:#0E4A55">On libère les tables, groupe par groupe : les révisions vous attendent 📚</p></div>'
+      + grps + tables + blas
+      + '<div class="hpc hp montre flip parle">'+hippieSimple()+'</div>' + hb + '</div>';
   }
   function afficherChut(){
     const fete = document.getElementById('fete');
     if(nuit || (fete && fete.classList.contains('vis')) || document.visibilityState==='hidden') return false;
-    const P = PHR_CHUT[iChut++ % PHR_CHUT.length];
-    chut.innerHTML = '<div class="ch-hp">'+hippieChut()+'</div><div class="chh" style="left:22vw;top:30vh">chhhut…</div>'
-      + '<div class="ch-t"><h1>'+P[0]+'</h1><p>'+P[1]+'</p><small>'+P[2]+'</small>'
-      + '<div class="vu">'+Array.from({length:10},(_,k)=>'<i style="height:'+(18+k*9)+'%"></i>').join('')+'</div><div class="vu-l">🔈 Volume conseillé : un murmure 🤫</div></div>';
+    const scene = (iChut++ % 2) ? 'terrasse' : 'salles';
+    chut.innerHTML = '<style>@keyframes aBulle2{0%{opacity:0;transform:translateY(16px) scale(.8)}12%,78%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-14px)}}</style>'
+      + (scene==='salles' ? sceneSalles() : sceneTerrasse());
+    const sc = chut.querySelector('.sc'); const k = Math.min(innerWidth/1920, innerHeight/1080);
+    sc.style.transform = 'translate(-50%,-50%) scale('+k+')';
     const fr = document.getElementById('d-if'); const pause = m=>{ try{ if(fr && fr.src && fr.src.indexOf('demo.html')>=0) fr.contentWindow.postMessage(m,'*'); }catch(e){} };
     pause('hcc-fete-pause');
     chut.classList.add('vis'); void chut.offsetWidth; chut.classList.add('on');
-    // Le « vumètre » descend : du rouge (trop fort) au vert (juste un murmure)
-    const barres = [...chut.querySelectorAll('.vu i')]; let niv = 10;
-    barres.forEach((b,k)=>{ b.style.background = k>=7 ? '#E74C3C' : k>=4 ? '#F2B544' : '#5DCAA5'; });
-    const tv = setInterval(()=>{ niv = Math.max(2, niv-1); barres.forEach((b,k)=>{ b.style.opacity = k < niv ? 1 : .12; }); if(niv<=2) clearInterval(tv); }, 650*RAP);
-    setTimeout(()=>{ chut.classList.remove('on'); clearInterval(tv); setTimeout(()=>{ chut.className = ''; chut.innerHTML = ''; pause('hcc-fete-reprise'); }, 800); }, 12000*RAP);
+    setTimeout(()=>{ chut.classList.remove('on'); setTimeout(()=>{ chut.className = ''; chut.innerHTML = ''; pause('hcc-fete-reprise'); }, 800); }, (scene==='salles' ? 14500 : 16500)*RAP);
     return true;
   }
   window.hccChut = afficherChut;
@@ -709,7 +886,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
   // version sur GitHub et se recharge tout seul (jamais pendant une fête).
-  const VERSION_ECRAN = 'ecran-20261124-2345';
+  const VERSION_ECRAN = 'ecran-20261125-0200';
   setInterval(async ()=>{
     if(enCours || file.length) return;
     try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
