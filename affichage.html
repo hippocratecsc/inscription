@@ -97,6 +97,48 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 @keyframes hpCligne{0%,93%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
 @keyframes hpBouche{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
 @keyframes hpTape{from{transform:rotate(0)}to{transform:rotate(-12deg)}}
+/* (24/11/2026) R.E.S.P.E.C.T — recommandations de la direction */
+#s-respect{background:radial-gradient(ellipse at 50% 30%,#13606B 0%,var(--deep) 75%);padding:0}
+#s-respect .rtit{position:absolute;left:0;right:0;top:44px;text-align:center;font-size:30px;letter-spacing:.22em;text-transform:uppercase;color:var(--saffron);font-weight:800}
+#s-respect .rslots{position:absolute;left:0;right:0;top:96px;height:150px}
+#s-respect .rslot{position:absolute;top:0;width:120px;height:150px;margin-left:-60px;text-align:center;font-size:126px;line-height:150px;font-weight:900;color:rgba(246,241,228,.10);border-bottom:6px solid rgba(246,241,228,.14)}
+#s-respect .rslot.ok{color:var(--saffron);border-bottom-color:var(--saffron);text-shadow:0 0 28px rgba(242,181,68,.45)}
+#s-respect .rbig{position:absolute;left:170px;top:300px;width:330px;height:420px;font-size:400px;line-height:420px;text-align:center;font-weight:900;color:var(--saffron);text-shadow:0 18px 40px rgba(0,0,0,.35),0 0 60px rgba(242,181,68,.35);will-change:transform}
+#s-respect .rcard{position:absolute;left:520px;top:310px;width:1040px;min-height:360px;display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,.07);border:3px solid rgba(93,202,165,.45);border-radius:40px;padding:44px 56px;box-shadow:0 30px 80px rgba(0,0,0,.3);will-change:transform}
+#s-respect .rph{font-size:56px;font-weight:800;line-height:1.18;color:#fff}
+#s-respect .rph u{text-decoration:none;color:var(--saffron)}
+#s-respect .rsub{font-size:40px;line-height:1.3;color:var(--mint);font-weight:700;margin-top:22px}
+#s-respect .rnum{position:absolute;right:34px;top:22px;font-size:28px;color:rgba(246,241,228,.45);font-weight:800}
+#s-respect .rhp{position:absolute;bottom:-8px;width:300px;height:600px;z-index:3;will-change:transform}
+#s-respect .rhp svg{width:100%;height:100%;overflow:visible}
+#s-respect .rhp.flip svg{transform:scaleX(-1)}
+#s-respect .rhp.g{left:-10px}#s-respect .rhp.d{right:-10px}
+#s-respect .rbul{position:absolute;z-index:4;bottom:110px;max-width:620px;background:var(--cream);color:var(--ink);font-weight:800;font-size:36px;line-height:1.25;padding:20px 28px;border-radius:28px;box-shadow:0 16px 40px rgba(0,0,0,.25);opacity:0;transform:scale(.6);transition:opacity .35s,transform .45s cubic-bezier(.3,1.6,.5,1)}
+#s-respect .rbul.on{opacity:1;transform:scale(1)}
+#s-respect .rbul{right:330px;transform-origin:100% 60%}
+#s-respect .rfin{position:absolute;left:300px;right:300px;top:660px;text-align:center;opacity:0;transition:opacity 1s}
+#s-respect .rfin b{display:block;font-size:58px;color:#fff;font-weight:900}
+#s-respect .rfin span{display:block;font-size:36px;color:var(--mint);margin-top:14px;font-weight:700;letter-spacing:.06em}
+#s-respect.final .rfin{opacity:1}
+#s-respect .etoile{position:absolute;font-size:46px;opacity:0;animation:rEtoile 2.4s ease-out forwards}
+@keyframes rEtoile{0%{opacity:0;transform:translate(0,0) scale(.3) rotate(0)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(180deg)}}
+@keyframes rPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+/* (24/11/2026) Chut ! — rappel du silence, par-dessus tous les écrans à intervalles réguliers */
+#chut{position:fixed;inset:0;z-index:2147482000;display:none;overflow:hidden;background:radial-gradient(ellipse at 30% 40%,#1B4F72 0%,#0B2233 75%);color:#F6F1E4;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;opacity:0;transition:opacity .7s}
+#chut.vis{display:block}#chut.on{opacity:1}
+#chut .ch-hp{position:absolute;left:4vw;bottom:-1vh;width:24vw;height:48vw;max-height:96vh;animation:chPointe 2.4s ease-in-out infinite}
+#chut .ch-hp svg{width:100%;height:100%;overflow:visible}
+#chut .ch-t{position:absolute;left:33vw;right:5vw;top:13vh}
+#chut .ch-t h1{margin:0;font-size:9vw;line-height:1;font-weight:900;letter-spacing:-.02em}
+#chut .ch-t h1 em{font-style:normal;color:#F2B544}
+#chut .ch-t p{font-size:2.9vw;line-height:1.3;margin:3vh 0 0;font-weight:700}
+#chut .ch-t small{display:block;font-size:2.1vw;color:#7FD1FF;margin-top:2.4vh;font-weight:700}
+#chut .vu{display:flex;align-items:flex-end;gap:1vw;height:16vh;margin-top:5vh}
+#chut .vu i{display:block;width:3.2vw;border-radius:.6vw;background:#5DCAA5;transition:opacity .25s,background .25s}
+#chut .vu-l{font-size:2.2vw;margin-top:1.4vh;color:#F2B544;font-weight:800}
+#chut .chh{position:absolute;font-size:3vw;font-weight:900;color:rgba(246,241,228,.85);font-style:italic;animation:chChh 2.6s ease-out infinite;opacity:0}
+@keyframes chPointe{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.6vh)}}
+@keyframes chChh{0%{opacity:0;transform:translate(0,0) scale(.7)}20%{opacity:1}100%{opacity:0;transform:translate(7vw,-6vh) scale(1.3)}}
 </style>
 </head>
 <body>
@@ -143,6 +185,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
     <div class="bul g">Scanne-moi ça !</div>
     <div class="hpw hp montre"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 600"><ellipse cx="150" cy="590" rx="78" ry="9" fill="rgba(0,0,0,.18)"/><g class="corps"><rect class="jg" x="114" y="410" width="34" height="150" rx="15" fill="#1D3F47"/><rect class="jd" x="153" y="410" width="34" height="150" rx="15" fill="#1D3F47"/><g class="jg"><ellipse cx="128" cy="566" rx="26" ry="13" fill="#F6F1E4" stroke="#14282C" stroke-width="3"/></g><g class="jd"><ellipse cx="172" cy="566" rx="26" ry="13" fill="#F6F1E4" stroke="#14282C" stroke-width="3"/></g><rect x="74" y="300" width="28" height="96" rx="14" fill="#E3A43A" transform="rotate(14 88 300)"/><ellipse cx="150" cy="262" rx="56" ry="22" fill="#D9962A"/><path d="M88 280 Q150 248 212 280 L226 424 Q150 446 74 424 Z" fill="#F2B544"/><path d="M104 290 L98 420 M196 290 L202 420" stroke="#0E4A55" stroke-width="10" stroke-linecap="round" opacity="1"/><path d="M118 380 H182 L176 412 H124 Z" fill="#E3A43A"/><rect x="132" y="318" width="36" height="36" rx="7" fill="#0E4A55"/><path d="M141 326v20M159 326v20M141 336h18" stroke="#F2B544" stroke-width="4" stroke-linecap="round"/><path d="M140 268v26M160 268v26" stroke="#0E4A55" stroke-width="3" stroke-linecap="round"/><g class="main-g"><circle cx="70" cy="398" r="14" fill="#EDC6A4"/><rect x="50" y="360" width="34" height="42" rx="6" fill="#F6F1E4" stroke="#14282C" stroke-width="3"/><rect x="50" y="372" width="34" height="12" fill="#0E4A55"/><path d="M60 352c-4-8 4-10 0-18M72 352c-4-8 4-10 0-18" stroke="#F6F1E4" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/></g><g class="bras"><rect x="198" y="276" width="28" height="104" rx="14" fill="#E3A43A"/><circle cx="212" cy="388" r="15" fill="#EDC6A4"/></g><rect x="136" y="232" width="28" height="30" rx="8" fill="#DDB18E"/><ellipse cx="150" cy="162" rx="64" ry="56" fill="#3A2418"/><g transform="rotate(-28 150 96)"><rect x="100" y="92.5" width="108" height="7" rx="1.5" fill="#F2B544" stroke="#14282C" stroke-width="2"/><rect x="104" y="92.5" width="6" height="7" fill="#0E4A55"/><rect x="94" y="92.5" width="8" height="7" rx="2.5" fill="#E98A8A" stroke="#14282C" stroke-width="2"/><path d="M208 92.5 L220 96 L208 99.5 Z" fill="#F1D3A8" stroke="#14282C" stroke-width="2" stroke-linejoin="round"/><path d="M216.5 95 L220 96 L216.5 97 Z" fill="#14282C"/></g><g fill="#3A2418"><circle cx="150" cy="98" r="22"/><circle cx="130" cy="104" r="14"/><circle cx="170" cy="104" r="14"/><circle cx="139" cy="82" r="14"/><circle cx="161" cy="82" r="14"/><circle cx="150" cy="114" r="13"/></g><g stroke="#65544A" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"><path d="M134 84 q6 -7 11 0 q-2 6 -7 4"/><path d="M155 80 q6 -7 11 0 q-2 6 -7 4"/><path d="M142 100 q6 -7 12 0 q-2 6 -7 4"/><path d="M124 104 q5 -6 10 0 q-2 5 -6 3"/><path d="M165 104 q5 -6 10 0 q-2 5 -6 3"/></g><g transform="rotate(-28 150 96)"><rect x="170" y="92.5" width="38" height="7" fill="#F2B544" stroke="#14282C" stroke-width="2"/><path d="M208 92.5 L220 96 L208 99.5 Z" fill="#F1D3A8" stroke="#14282C" stroke-width="2" stroke-linejoin="round"/><path d="M216.5 95 L220 96 L216.5 97 Z" fill="#14282C"/></g><circle cx="92" cy="198" r="10" fill="#EDC6A4"/><circle cx="208" cy="198" r="10" fill="#EDC6A4"/><path d="M94 186 Q94 132 150 132 Q206 132 206 186 Q206 236 172 252 Q150 260 128 252 Q94 236 94 186 Z" fill="#EDC6A4"/><path d="M92 182 Q92 122 150 118 Q208 122 208 182 Q200 150 178 140 Q150 130 122 140 Q100 150 92 182 Z" fill="#3A2418"/><path d="M112 136 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2 q8 -8 16 -2" stroke="#65544A" stroke-width="3" fill="none" stroke-linecap="round" opacity=".55"/><g stroke="#3A2418" stroke-width="5" fill="none" stroke-linecap="round"><path d="M98 170 q-9 5 -3 12 q8 6 0 12 q-9 6 -2 13 q6 5 1 10"/><path d="M202 170 q9 5 3 12 q-8 6 0 12 q9 6 2 13 q-6 5 -1 10"/></g><path d="M113 176 Q127 166 143 174 M157 174 Q173 166 187 176" stroke="#3A2418" stroke-width="4.2" fill="none" stroke-linecap="round"/><g class="yeux"><path d="M115 197 Q127 183 141 195 Q128 207 115 197 Z" fill="#fff"/><path d="M159 195 Q173 183 185 197 Q172 207 159 195 Z" fill="#fff"/><circle cx="129" cy="195.5" r="7" fill="#5A3A22"/><circle cx="171" cy="195.5" r="7" fill="#5A3A22"/><circle cx="129" cy="195.5" r="3.6" fill="#14282C"/><circle cx="171" cy="195.5" r="3.6" fill="#14282C"/><circle cx="131.5" cy="193" r="2" fill="#fff"/><circle cx="173.5" cy="193" r="2" fill="#fff"/><path d="M114 197 Q127 182 142 195 M158 195 Q173 182 186 197" stroke="#14282C" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M115 196 q-6 -2 -9 -8 M118 192 q-5 -4 -5 -10 M182 192 q5 -4 5 -10 M185 196 q6 -2 9 -8" stroke="#14282C" stroke-width="2.3" fill="none" stroke-linecap="round"/></g><g fill="none" stroke="#14282C" stroke-width="2.6"><circle cx="128" cy="195" r="17"/><circle cx="172" cy="195" r="17"/><path d="M145 192 q5 -4 10 0"/><path d="M111 192 l-15 -3 M189 192 l15 -3"/></g><path d="M147 186 Q147 200 144 212 Q147 218 153 216" stroke="#B89A7F" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="111" cy="221" rx="10" ry="6" fill="#F08C78" opacity=".42"/><ellipse cx="189" cy="221" rx="10" ry="6" fill="#F08C78" opacity=".42"/><path class="m-ferme" d="M136 228 Q150 245 164 228 Q150 233 136 228 Z" fill="#8C3B3B" stroke="#14282C" stroke-width="2.4" stroke-linejoin="round"/><path class="m-ferme" d="M140 230 Q150 233 160 230" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse class="m-ouv" cx="150" cy="235" rx="9" ry="7.5" fill="#8C3B3B"/></g></svg></div>
   </section>
+  <section class="sl" id="s-respect"><div class="bande"></div><div class="rtit">Recommandations de la direction du club</div><div class="rslots"></div></section>
   <section class="sl" id="s-nuit"></section>
   <section class="sl" id="s-demo"><iframe id="d-if" allow="autoplay; fullscreen" title="Démo Hippocrate"></iframe></section>
 </div>
@@ -262,7 +305,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   let nuit = false;
   const hm = v=>{ const m = String(v||'').match(/^(\d{1,2}):(\d{2})/); return m ? (+m[1])*60 + (+m[2]) : null; };
   function enVeille(){
-    if(/[?&]test_fete=/.test(location.search)) return false; // démonstration : jamais de veille de nuit
+    if(/[?&](test_fete|test_respect|test_chut)=/.test(location.search)) return false; // démonstration : jamais de veille de nuit
     const v = hm(CFG.veille || '00:00'), r = hm(CFG.reveil || '08:00');
     if(v==null || r==null || v===r) return false;
     const d = new Date(), n = d.getHours()*60 + d.getMinutes();
@@ -290,12 +333,141 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
       montrer('s-demo');
     }).then(()=>{ $('d-if').src = 'about:blank'; });
   }
+
+  // ══ (24/11/2026) R.E.S.P.E.C.T : les 7 recommandations de la direction, une par une, qui arrivent
+  // tour à tour du haut, du bas, de la droite et de la gauche ; Hippie commente chaque point ; la
+  // lettre initiale part se ranger en haut, et à la fin les 7 lettres se rassemblent : RESPECT.
+  const RESPECT = [
+    { l:'R', ph:'<u>R</u>éduire au maximum les escales au niveau des couloirs, et surtout devant les salles.', sub:'', hp:'Un couloir dégagé, c\'est plus agréable pour tous.' },
+    { l:'E', ph:'<u>E</u>ssayer de replacer vos propres chaises en quittant les lieux.', sub:'', hp:'Une chaise rangée, un sourire gagné !' },
+    { l:'S', ph:'<u>S</u>eules les boissons et confiseries sont autorisées dans les salles.', sub:'🚭 Interdiction totale de fumer.', hp:'Pour votre santé et celle des autres, merci 🙏' },
+    { l:'P', ph:'<u>P</u>ropreté de votre espace : c\'est notre affaire à tous.', sub:'Bouteilles, récipients, brouillons et déchets : direction les corbeilles 🗑️', hp:'La corbeille est ta meilleure amie !' },
+    { l:'E', ph:'<u>É</u>vitez de garder les restes alimentaires après votre pause au coffee shop.', sub:'Contribuez à leur enlèvement : vous serez mieux servis ☕', hp:'Ton plateau aussi mérite une pause !' },
+    { l:'C', ph:'<u>C</u>ommunications téléphoniques et bavardages sont interdits dans les salles.', sub:'📵 On sort pour téléphoner.', hp:'Le calme, c\'est la clé de la concentration.' },
+    { l:'T', ph:'<u>T</u>oute réservation de places est interdite.', sub:'Le club n\'est pas responsable du déplacement ni de la perte des affaires personnelles.', hp:'Chacun trouve sa place, chaque jour. Merci !' }
+  ];
+  const DIRS = ['haut','bas','droite','gauche','haut','bas','droite'];
+  const HORS = { haut:'translate(0,-1150px) rotate(-8deg)', bas:'translate(0,1150px) rotate(8deg)', droite:'translate(2100px,0) rotate(10deg)', gauche:'translate(-2100px,0) rotate(-10deg)' };
+  const OPPOSE = { haut:'bas', bas:'haut', droite:'gauche', gauche:'droite' };
+  const SLOT_X = i=>960 + (i-3)*150;
+  function anim(el, kf, ms, ez, delai){
+    try{ const a = el.animate(kf, { duration:ms*RAP, easing:ez||'cubic-bezier(.2,1.25,.4,1)', delay:(delai||0)*RAP, fill:'forwards' }); return a.finished.catch(()=>{}); }
+    catch(e){ el.style.transform = kf[kf.length-1].transform || ''; if(kf[kf.length-1].opacity!=null) el.style.opacity = kf[kf.length-1].opacity; return Promise.resolve(); }
+  }
+  // (24/11/2026) Voix française : Hippie dit seulement sa petite phrase (pas les recommandations)
+  function direHippie(txt){
+    try{
+      if(!txt || !window.speechSynthesis) return;
+      const f = document.getElementById('fete'); if(f && f.classList.contains('vis')) return;
+      const t = String(txt).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu,'').replace(/\s+/g,' ').trim(); if(!t) return;
+      const vs = speechSynthesis.getVoices(); const v = vs.find(x=>/^fr[-_]FR/i.test(x.lang)) || vs.find(x=>/^fr/i.test(x.lang));
+      const u = new SpeechSynthesisUtterance(t); u.lang = v ? v.lang : 'fr-FR'; if(v) u.voice = v; u.rate = 0.95; u.pitch = 1.1; u.volume = 1;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  try{ if(window.speechSynthesis) speechSynthesis.getVoices(); }catch(e){}
+  function svgHippie(){ const o = document.querySelector('#s-menu .hpw svg') || document.querySelector('.hpw svg'); return o ? o.outerHTML : ''; }
+  async function respect(){
+    if(nuit) return;
+    const sec = $('s-respect'), slots = sec.querySelector('.rslots');
+    sec.classList.remove('final');
+    [...sec.querySelectorAll('.rbig,.rcard,.rhp,.rbul,.rfin,.etoile')].forEach(x=>x.remove());
+    slots.innerHTML = RESPECT.map((r,i)=>'<div class="rslot" style="left:'+SLOT_X(i)+'px">'+r.l+'</div>').join('');
+    const S = [...slots.children];
+    montrer('s-respect'); await attendre(900);
+    for(let i=0;i<RESPECT.length;i++){
+      if(nuit) return;
+      const r = RESPECT[i], dir = DIRS[i], cote = 'd', hpIn = i%2 ? 'translateX(420px)' : 'translateY(700px)';
+      const big = document.createElement('div'); big.className = 'rbig'; big.textContent = r.l === 'E' && i===4 ? 'É' : r.l;
+      const card = document.createElement('div'); card.className = 'rcard';
+      card.innerHTML = '<div class="rnum">'+(i+1)+' / 7</div><div class="rph">'+r.ph+'</div>'+(r.sub ? '<div class="rsub">'+r.sub+'</div>' : '');
+      const hp = document.createElement('div'); hp.className = 'rhp hp d montre flip'; hp.innerHTML = svgHippie();
+      const bul = document.createElement('div'); bul.className = 'rbul '+cote; bul.textContent = r.hp;
+      sec.append(card, big, hp, bul);
+      big.style.transform = card.style.transform = HORS[dir]; hp.style.transform = hpIn;
+      anim(card, [{ transform:HORS[dir] }, { transform:'none' }], 950);
+      anim(big, [{ transform:HORS[dir]+' scale(1.6)' }, { transform:'none' }], 1150, null, 180);
+      await attendre(700);
+      anim(hp, [{ transform:hpIn }, { transform:'none' }], 700, 'cubic-bezier(.3,1.4,.5,1)');
+      hp.classList.add('parle'); setTimeout(()=>hp.classList.remove('parle'), 2400*RAP);
+      setTimeout(()=>{ bul.classList.add('on'); direHippie(r.hp); }, 650*RAP);
+      await attendre(5600);
+      // La lettre file se ranger à sa place, en haut ; la carte repart à l'opposé
+      bul.classList.remove('on');
+      const dx = SLOT_X(i) - (170+165), dy = (96+75) - (300+210);
+      await Promise.all([
+        anim(big, [{ transform:'none' }, { transform:'translate('+dx+'px,'+dy+'px) scale(.34) rotate(360deg)' }], 1000, 'cubic-bezier(.6,0,.3,1)'),
+        anim(card, [{ transform:'none', opacity:1 }, { transform:HORS[OPPOSE[dir]], opacity:0 }], 900, 'cubic-bezier(.6,0,.8,.4)'),
+        anim(hp, [{ transform:'none' }, { transform:hpIn }], 700, 'ease-in')
+      ]);
+      S[i].classList.add('ok'); big.remove(); card.remove(); hp.remove(); bul.remove();
+      anim(S[i], [{ transform:'scale(1.35)' }, { transform:'scale(1)' }], 500);
+    }
+    // Final : les 7 lettres se rassemblent au centre et forment RESPECT
+    await attendre(500);
+    await Promise.all(S.map((el,i)=>anim(el, [{ transform:'none' }, { transform:'translate('+((i-3)*60)+'px,195px) scale(1.75)' }], 1100, 'cubic-bezier(.3,1.3,.5,1)', i*90)));
+    S.forEach((el,i)=>{ el.style.animation = 'rPulse 1.6s ease-in-out '+(i*0.12)+'s infinite'; });
+    const fin = document.createElement('div'); fin.className = 'rfin';
+    fin.innerHTML = '<b>Merci pour votre précieuse collaboration</b><span>La direction du club Hippocrate</span>';
+    const hp = document.createElement('div'); hp.className = 'rhp hp salut parle'; hp.style.left = '0px'; hp.style.width = '260px'; hp.style.height = '520px'; hp.innerHTML = svgHippie();
+    const hp2 = document.createElement('div'); hp2.className = 'rhp hp salut flip'; hp2.style.right = '0px'; hp2.style.width = '260px'; hp2.style.height = '520px'; hp2.innerHTML = svgHippie();
+    sec.append(fin, hp, hp2); void fin.offsetWidth; sec.classList.add('final');
+    anim(hp, [{ transform:'translateY(700px)' }, { transform:'none' }], 800); anim(hp2, [{ transform:'translateY(700px)' }, { transform:'none' }], 800, null, 200);
+    for(let k=0;k<26;k++){ const e = document.createElement('div'); e.className = 'etoile'; e.textContent = ['✨','⭐','💛','🌟'][k%4];
+      e.style.left = (960+(Math.random()-.5)*1100)+'px'; e.style.top = (330+(Math.random()-.5)*160)+'px';
+      e.style.setProperty('--dx', ((Math.random()-.5)*500)+'px'); e.style.setProperty('--dy', (-80-Math.random()*300)+'px'); e.style.animationDelay = (Math.random()*3)+'s';
+      sec.appendChild(e); }
+    await attendre(9500);
+    S.forEach(el=>{ el.style.animation = ''; });
+  }
+  window.hccRespect = respect;
+
+  // ══ (24/11/2026) CHUT ! — toutes les 6 à 9 minutes, un rappel du silence passe par-dessus l'écran
+  // (jamais la nuit, jamais pendant une fête de bienvenue ; la démo est mise en pause pendant ce temps).
+  const chut = document.createElement('div'); chut.id = 'chut'; document.body.appendChild(chut);
+  const PHR_CHUT = [
+    ['Chut… <em>on révise !</em>', 'Merci de parler tout bas près des salles : vos voisins préparent leurs examens.', 'Merci pour votre compréhension 🙏'],
+    ['Un peu <em>de calme</em>, s\'il vous plaît', 'Les salles sont juste à côté : un murmure suffit.', 'Le calme, c\'est la clé de la concentration 📚'],
+    ['Silence, <em>on se concentre</em>', 'Pour les appels et les discussions, merci de vous éloigner des salles.', 'Hippie vous remercie 💛']
+  ];
+  let iChut = 0;
+  function hippieChut(){
+    const o = document.querySelector('#s-menu .hpw svg') || document.querySelector('.hpw svg'); if(!o) return '';
+    const d = document.createElement('div'); d.innerHTML = o.outerHTML; const svg = d.firstChild, corps = svg.querySelector('.corps');
+    if(corps){ const b = corps.querySelector('.bras'); if(b) b.style.display = 'none';
+      corps.insertAdjacentHTML('beforeend', '<path d="M214 292 L240 346 L170 262" stroke="#E3A43A" stroke-width="27" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '<circle cx="160" cy="250" r="15" fill="#EDC6A4"/><rect x="144" y="205" width="11" height="44" rx="5.5" fill="#EDC6A4" stroke="#C99A78" stroke-width="1.5"/>'); }
+    return svg.outerHTML;
+  }
+  function afficherChut(){
+    const fete = document.getElementById('fete');
+    if(nuit || (fete && fete.classList.contains('vis')) || document.visibilityState==='hidden') return false;
+    const P = PHR_CHUT[iChut++ % PHR_CHUT.length];
+    chut.innerHTML = '<div class="ch-hp">'+hippieChut()+'</div><div class="chh" style="left:22vw;top:30vh">chhhut…</div>'
+      + '<div class="ch-t"><h1>'+P[0]+'</h1><p>'+P[1]+'</p><small>'+P[2]+'</small>'
+      + '<div class="vu">'+Array.from({length:10},(_,k)=>'<i style="height:'+(18+k*9)+'%"></i>').join('')+'</div><div class="vu-l">🔈 Volume conseillé : un murmure 🤫</div></div>';
+    const fr = document.getElementById('d-if'); const pause = m=>{ try{ if(fr && fr.src && fr.src.indexOf('demo.html')>=0) fr.contentWindow.postMessage(m,'*'); }catch(e){} };
+    pause('hcc-fete-pause');
+    chut.classList.add('vis'); void chut.offsetWidth; chut.classList.add('on');
+    // Le « vumètre » descend : du rouge (trop fort) au vert (juste un murmure)
+    const barres = [...chut.querySelectorAll('.vu i')]; let niv = 10;
+    barres.forEach((b,k)=>{ b.style.background = k>=7 ? '#E74C3C' : k>=4 ? '#F2B544' : '#5DCAA5'; });
+    const tv = setInterval(()=>{ niv = Math.max(2, niv-1); barres.forEach((b,k)=>{ b.style.opacity = k < niv ? 1 : .12; }); if(niv<=2) clearInterval(tv); }, 650*RAP);
+    setTimeout(()=>{ chut.classList.remove('on'); clearInterval(tv); setTimeout(()=>{ chut.className = ''; chut.innerHTML = ''; pause('hcc-fete-reprise'); }, 800); }, 12000*RAP);
+    return true;
+  }
+  window.hccChut = afficherChut;
+  const TEST_CHUT = /[?&]test_chut=1/.test(location.search);
+  (function planChut(){ const ms = TEST_CHUT ? 25000 : (6 + Math.random()*3)*60000; setTimeout(()=>{ try{ afficherChut(); }catch(e){} planChut(); }, ms); })();
+  if(TEST_CHUT) setTimeout(afficherChut, 2500);
   async function boucle(){
+    if(/[?&]test_respect=1/.test(location.search)){ for(;;){ await respect(); } }
     for(;;){
       if(placesOk()){ rendrePlaces(); montrer('s-places'); await attendre(14000); }
       const cc = concoursAVenir(); if(cc.length){ rendreConcours(cc); montrer('s-concours'); await attendre(14000); }
       const pg = pagesMenu(); for(let i=0;i<pg.length;i++){ rendreMenu(pg[i], i, pg.length); montrer('s-menu'); await attendre(11000); }
       rendreAbos(); montrer('s-abos'); await attendre(15000);
+      await respect();
       montrer('s-qr'); await attendre(14000);
       if(placesOk()){ rendrePlaces(); montrer('s-places'); await attendre(10000); }
       await demo();
@@ -537,7 +709,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
   // version sur GitHub et se recharge tout seul (jamais pendant une fête).
-  const VERSION_ECRAN = 'ecran-20261120-0930';
+  const VERSION_ECRAN = 'ecran-20261124-2345';
   setInterval(async ()=>{
     if(enCours || file.length) return;
     try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
