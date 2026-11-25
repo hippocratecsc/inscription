@@ -231,6 +231,13 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script>
+// (25/11/2026) Boîtier Android (Fully Kiosk Browser) : son navigateur intégré n'a pas la synthèse vocale
+// du web ; on passe alors par la voix d'Android via l'interface JavaScript de Fully
+// (Réglages Fully → Advanced Web Settings → Enable JavaScript Interface).
+window.hccDireFully = function(t){
+  try{ if(window.fully && typeof fully.textToSpeech === 'function'){ try{ fully.stopTextToSpeech && fully.stopTextToSpeech(); }catch(e){} fully.textToSpeech(String(t), 'fr_FR'); return true; } }catch(e){}
+  return false;
+};
 (function(){
   const CONFIG = { apiKey:"AIzaSyD1UAodYE2HzrwvNiCS005bpcmuxlplBRw", authDomain:"hippocrate-dk.firebaseapp.com", databaseURL:"https://hippocrate-dk-default-rtdb.firebaseio.com", projectId:"hippocrate-dk", storageBucket:"hippocrate-dk.firebasestorage.app", messagingSenderId:"128544353242", appId:"1:128544353242:web:908fb41ed08533afc82ee3" };
   const $ = id=>document.getElementById(id);
@@ -412,10 +419,12 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   function badgeSon(v){ const b = document.getElementById('badge-son'); if(b) b.style.display = v ? 'block' : 'none'; }
   function direHippie(txt, o){
     try{
-      if(!txt || !window.speechSynthesis) return;
+      if(!txt) return;
       const f = document.getElementById('fete'); if(f && f.classList.contains('vis')) return;
       const ch = document.getElementById('chut'); if(ch && ch.classList.contains('vis') && !(o && o.chut)) return;   // pendant « Tout doux », seule Hippie de la scène parle
       const t = String(txt).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu,'').replace(/\s+/g,' ').trim(); if(!t) return;
+      if(window.hccDireFully && window.hccDireFully(t)) return;   // boîtier Android avec Fully Kiosk
+      if(!window.speechSynthesis) return;
       const vs = speechSynthesis.getVoices(); const v = vs.find(x=>/^fr[-_]FR/i.test(x.lang)) || vs.find(x=>/^fr/i.test(x.lang));
       const u = new SpeechSynthesisUtterance(t); u.lang = v ? v.lang : 'fr-FR'; if(v) u.voice = v;
       u.rate = (o && o.rate) || 0.95; u.pitch = (o && o.pitch) || 1.1; u.volume = (o && o.volume!=null) ? o.volume : 1;
@@ -811,11 +820,13 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   try{ if(window.speechSynthesis){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = ()=>speechSynthesis.getVoices(); } }catch(e){}
   function direPrenom(nomComplet, niv, groupe){
     try{
-      if(!nomComplet || !window.speechSynthesis) return;
+      if(!nomComplet) return;
       const nom = casse(nomComplet).replace(/\s+/g,' ').trim();
       const txt = (niv>=2 ? 'Bienvenue dans la famille Hippo, '+nom+' !'
                  : niv>=1 ? 'Bienvenue '+nom+', merci pour ta fidélité !'
                  : 'Bienvenue '+nom+' !') + (groupe && GROUPES[groupe] ? ' Et bienvenue à '+GROUPES[groupe]+' !' : '');
+      if(window.hccDireFully && window.hccDireFully(txt)) return;
+      if(!window.speechSynthesis) return;
       const vs = speechSynthesis.getVoices();
       const v = vs.find(x=>/^fr[-_]FR/i.test(x.lang)) || vs.find(x=>/^fr/i.test(x.lang));
       const u = new SpeechSynthesisUtterance(txt); u.lang = v ? v.lang : 'fr-FR'; if(v) u.voice = v;
@@ -945,7 +956,8 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
     const etat = ()=>{
       const ss = !!window.speechSynthesis, vs = ss ? speechSynthesis.getVoices() : [], fr = vs.filter(v=>/^fr/i.test(v.lang));
       const ua = navigator.userActivation ? (navigator.userActivation.hasBeenActive ? 'oui' : 'non') : 'inconnu';
-      return '<b>Version :</b> '+VERSION_ECRAN+'<br><b>Navigateur :</b> '+navigator.userAgent.replace(/[<>]/g,'').slice(0,140)
+      const fk = window.fully ? ('oui — interface JavaScript '+(typeof fully.textToSpeech==='function' ? '<span style="color:#2E7D32">ACTIVÉE</span>' : '<span style="color:#C62828">non activée</span>')) : 'non';
+      return '<b>Version :</b> '+VERSION_ECRAN+'<br><b>Fully Kiosk :</b> '+fk+'<br><b>Navigateur :</b> '+navigator.userAgent.replace(/[<>]/g,'').slice(0,140)
         +'<br><b>Synthèse vocale disponible :</b> '+(ss?'oui':'<span style="color:#C62828">NON</span>')
         +'<br><b>Voix installées :</b> '+vs.length+' — <b>françaises :</b> '+(fr.length ? fr.map(v=>v.name+' ('+v.lang+')').join(', ') : '<span style="color:#C62828">aucune</span>')
         +'<br><b>Écran déjà touché :</b> '+ua;
@@ -959,7 +971,8 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
     maj(); setInterval(maj, 2000); try{ speechSynthesis.onvoiceschanged = maj; }catch(e){}
     document.getElementById('tv-voix').onclick = ()=>{
       try{
-        if(!window.speechSynthesis){ log('❌ Ce navigateur n\'a pas de synthèse vocale'); return; }
+        if(window.hccDireFully('Bonjour, je suis Hippie ! Tout doux, on révise.')){ log('✅ Phrase envoyée à la voix Android (Fully Kiosk)'); return; }
+        if(!window.speechSynthesis){ log('❌ Ce navigateur n\'a pas de synthèse vocale'+(window.fully ? ' — activez l\'interface JavaScript de Fully' : '')); return; }
         const vs = speechSynthesis.getVoices(), v = vs.find(x=>/^fr[-_]FR/i.test(x.lang)) || vs.find(x=>/^fr/i.test(x.lang));
         const u = new SpeechSynthesisUtterance('Bonjour, je suis Hippie ! Tout doux, on révise.'); u.lang = v ? v.lang : 'fr-FR'; if(v) u.voice = v; u.volume = 1;
         u.onstart = ()=>log('✅ La voix démarre ('+(v ? v.name : 'voix par défaut')+')');
@@ -977,7 +990,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
 
   // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
   // version sur GitHub et se recharge tout seul (jamais pendant une fête).
-  const VERSION_ECRAN = 'ecran-20261125-2015';
+  const VERSION_ECRAN = 'ecran-20261125-2040';
   setInterval(async ()=>{
     if(enCours || file.length) return;
     try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
