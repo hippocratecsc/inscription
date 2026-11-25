@@ -355,7 +355,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   let nuit = false;
   const hm = v=>{ const m = String(v||'').match(/^(\d{1,2}):(\d{2})/); return m ? (+m[1])*60 + (+m[2]) : null; };
   function enVeille(){
-    if(/[?&](test_fete|test_respect|test_chut|test_menu)=/.test(location.search)) return false; // démonstration : jamais de veille de nuit
+    if(/[?&](test_fete|test_respect|test_chut|test_menu|test_voix)=/.test(location.search)) return false; // démonstration : jamais de veille de nuit
     const v = hm(CFG.veille || '00:00'), r = hm(CFG.reveil || '08:00');
     if(v==null || r==null || v===r) return false;
     const d = new Date(), n = d.getHours()*60 + d.getMinutes();
@@ -937,9 +937,47 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none;font-
   const debloquer = ()=>{ try{ document.getElementById('badge-son').style.display = 'none'; }catch(e){} try{ if(window.speechSynthesis){ const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } }catch(e){} try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); const a = new Audio(SONS.simple); a.volume = 0; const pr = a.play(); if(pr && pr.then) pr.then(()=>{ a.pause(); }).catch(()=>{}); }catch(e){} };
   ['click','keydown','touchstart','pointerdown'].forEach(t=>addEventListener(t, debloquer, {passive:true}));
 
+  // ── (25/11) Diagnostic du son : affichage.html?test_voix=1 → panneau avec l'état de la voix et deux boutons d'essai
+  if(/[?&]test_voix=1/.test(location.search)) setTimeout(()=>{
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;inset:5%;z-index:2147483646;background:#F6F1E4;color:#0A353D;border-radius:24px;padding:36px;font:600 26px system-ui,Arial;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)';
+    const log = m=>{ const l = document.getElementById('tv-log'); if(l) l.innerHTML += '<div>'+new Date().toLocaleTimeString('fr-FR')+' — '+m+'</div>'; };
+    const etat = ()=>{
+      const ss = !!window.speechSynthesis, vs = ss ? speechSynthesis.getVoices() : [], fr = vs.filter(v=>/^fr/i.test(v.lang));
+      const ua = navigator.userActivation ? (navigator.userActivation.hasBeenActive ? 'oui' : 'non') : 'inconnu';
+      return '<b>Version :</b> '+VERSION_ECRAN+'<br><b>Navigateur :</b> '+navigator.userAgent.replace(/[<>]/g,'').slice(0,140)
+        +'<br><b>Synthèse vocale disponible :</b> '+(ss?'oui':'<span style="color:#C62828">NON</span>')
+        +'<br><b>Voix installées :</b> '+vs.length+' — <b>françaises :</b> '+(fr.length ? fr.map(v=>v.name+' ('+v.lang+')').join(', ') : '<span style="color:#C62828">aucune</span>')
+        +'<br><b>Écran déjà touché :</b> '+ua;
+    };
+    d.innerHTML = '<h2 style="margin:0 0 18px;font-size:40px">🔊 Test du son de l\'écran</h2><div id="tv-etat" style="line-height:1.6"></div>'
+      + '<div style="margin:24px 0;display:flex;gap:20px"><button id="tv-voix" style="font:800 30px system-ui;padding:18px 30px;border-radius:16px;border:0;background:#13606B;color:#fff">▶ Voix de Hippie</button>'
+      + '<button id="tv-son" style="font:800 30px system-ui;padding:18px 30px;border-radius:16px;border:0;background:#F2B544;color:#0A353D">▶ Son de fête</button></div>'
+      + '<div id="tv-log" style="font-size:22px;line-height:1.5"></div>';
+    document.body.appendChild(d);
+    const maj = ()=>{ const e = document.getElementById('tv-etat'); if(e) e.innerHTML = etat(); };
+    maj(); setInterval(maj, 2000); try{ speechSynthesis.onvoiceschanged = maj; }catch(e){}
+    document.getElementById('tv-voix').onclick = ()=>{
+      try{
+        if(!window.speechSynthesis){ log('❌ Ce navigateur n\'a pas de synthèse vocale'); return; }
+        const vs = speechSynthesis.getVoices(), v = vs.find(x=>/^fr[-_]FR/i.test(x.lang)) || vs.find(x=>/^fr/i.test(x.lang));
+        const u = new SpeechSynthesisUtterance('Bonjour, je suis Hippie ! Tout doux, on révise.'); u.lang = v ? v.lang : 'fr-FR'; if(v) u.voice = v; u.volume = 1;
+        u.onstart = ()=>log('✅ La voix démarre ('+(v ? v.name : 'voix par défaut')+')');
+        u.onend = ()=>log('✅ Phrase terminée');
+        u.onerror = e=>log('❌ Erreur de la voix : '+(e.error||'inconnue'));
+        speechSynthesis.cancel(); speechSynthesis.resume(); speechSynthesis.speak(u); log('… envoi de la phrase');
+        setTimeout(()=>{ if(!speechSynthesis.speaking) log('⚠️ Aucune voix ne parle après 3 s'); }, 3000);
+      }catch(e){ log('❌ '+e.message); }
+    };
+    document.getElementById('tv-son').onclick = ()=>{
+      try{ const a = new Audio(SONS.simple); a.volume = 1; const pr = a.play(); log('… lecture du son de fête');
+        if(pr && pr.then) pr.then(()=>log('✅ Le son de fête joue')).catch(e=>log('❌ Son de fête bloqué : '+e.message)); }catch(e){ log('❌ '+e.message); }
+    };
+  }, 1500);
+
   // ── (15/11) Mise à jour automatique : l'écran vérifie toutes les 5 min s'il y a une nouvelle
   // version sur GitHub et se recharge tout seul (jamais pendant une fête).
-  const VERSION_ECRAN = 'ecran-20261125-1945';
+  const VERSION_ECRAN = 'ecran-20261125-2015';
   setInterval(async ()=>{
     if(enCours || file.length) return;
     try{ const r = await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'}); if(!r.ok) return; const t = await r.text();
